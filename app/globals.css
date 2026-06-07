@@ -1,0 +1,166 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-gray-200;
+  }
+
+  body {
+    @apply bg-gray-50 text-gray-900 antialiased;
+    font-feature-settings: "cv11", "ss01";
+    font-variation-settings: "opsz" auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display text-gray-900;
+  }
+
+  ::selection {
+    @apply bg-primary-100 text-primary-900;
+  }
+}
+
+@layer components {
+  /* Premium Button Components */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2.5 px-6 py-3 text-sm font-medium rounded-lg transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed relative;
+  }
+
+  .btn-primary {
+    @apply bg-primary-500 text-white hover:bg-primary-600 shadow-soft hover:shadow-medium active:scale-[0.98];
+  }
+
+  .btn-secondary {
+    @apply bg-white text-gray-700 border border-gray-200 hover:border-gray-300 hover:bg-gray-50 shadow-subtle;
+  }
+
+  .btn-outline {
+    @apply bg-transparent text-gray-700 border border-gray-300 hover:bg-gray-50 hover:border-gray-400;
+  }
+
+  .btn-sm {
+    @apply px-4 py-2 text-xs gap-2;
+  }
+
+  .btn-lg {
+    @apply px-8 py-4 text-base gap-3 rounded-xl;
+  }
+
+  /* Premium Card Components */
+  .card {
+    @apply bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-subtle transition-all duration-200;
+  }
+
+  .card-hover {
+    @apply hover:border-gray-300 hover:shadow-soft hover:-translate-y-0.5;
+  }
+
+  /* Premium Card with Elevated Gradient */
+  .card-elevated {
+    @apply relative bg-white border border-gray-200 rounded-2xl shadow-soft;
+  }
+
+  /* Premium Input Components */
+  .input {
+    @apply w-full px-4 py-3.5 text-base bg-white border border-gray-200 rounded-lg
+           focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100
+           transition-all duration-200 hover:border-gray-300
+           placeholder:text-gray-400 text-gray-900;
+  }
+
+  .input:focus {
+    @apply bg-white;
+  }
+
+  .input-lg {
+    @apply px-5 py-4 text-lg rounded-xl;
+  }
+
+  .label {
+    @apply block text-xs font-medium text-gray-700 mb-2.5 uppercase tracking-wider;
+  }
+
+  /* Premium Section Titles */
+  .section-title {
+    @apply text-4xl font-bold text-gray-900 mb-8 tracking-tight;
+  }
+
+  .section-subtitle {
+    @apply text-xl font-semibold text-gray-700 mb-6 tracking-tight;
+  }
+
+  /* Premium Badge Components */
+  .badge {
+    @apply inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium border transition-all duration-200;
+  }
+
+  .badge-green {
+    @apply badge bg-emerald-50 text-emerald-700 border-emerald-200;
+  }
+
+  .badge-yellow {
+    @apply badge bg-amber-50 text-amber-700 border-amber-200;
+  }
+
+  .badge-red {
+    @apply badge bg-red-50 text-red-700 border-red-200;
+  }
+
+  .badge-blue {
+    @apply badge bg-blue-50 text-blue-700 border-blue-200;
+  }
+
+  .badge-verified {
+    @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200;
+  }
+
+  /* Premium Glass Effect */
+  .glass {
+    @apply bg-white/80 backdrop-blur-xl border border-gray-200 shadow-medium;
+  }
+
+  /* Gradient Text */
+  .text-gradient-accent {
+    @apply bg-gradient-to-r from-primary-500 to-primary-700 bg-clip-text text-transparent;
+  }
+
+  .text-gradient-primary {
+    @apply bg-gradient-to-r from-primary-600 to-primary-800 bg-clip-text text-transparent;
+  }
+
+  /* Premium Divider */
+  .divider {
+    @apply h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent;
+  }
+
+  /* Navbar Styles */
+  .navbar {
+    @apply bg-white/95 backdrop-blur-xl border-b border-gray-200 sticky top-0 z-50;
+  }
+
+  /* Premium Focus State */
+  .focus-premium {
+    @apply focus:outline-none focus:ring-2 focus:ring-primary-100 focus:border-primary-500;
+  }
+}
+
+@layer utilities {
+  /* Custom Scrollbar */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Smooth Transitions */
+  .transition-smooth {
+    @apply transition-all duration-300 ease-out;
+  }
+}
