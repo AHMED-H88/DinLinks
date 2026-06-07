@@ -1,8 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { CldUploadWidget } from "next-cloudinary";
 import Image from "next/image";
 
 interface Business {
@@ -44,10 +43,40 @@ const defaultOpeningHours = {
   sunday: { open: "", close: "", closed: true },
 };
 
+// ─── Upload helper ────────────────────────────────────────────────────────────
+// Sends a single file to /api/upload and returns the Supabase public URL.
+async function uploadFile(
+  file: File,
+  bucket: "logos" | "images",
+  businessId: string
+): Promise<string> {
+  const form = new FormData();
+  form.append("file", file);
+  form.append("bucket", bucket);
+  form.append("businessId", businessId);
+
+  const res = await fetch("/api/upload", { method: "POST", body: form });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error ?? "Upload failed");
+  return data.url as string;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 export default function BusinessForm({ business, categories }: BusinessFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // For new businesses (no id yet) we generate a stable temp ID so images
+  // can be uploaded before the profile is first saved.
+  const tempId     = useId().replace(/:/g, "");
+  const businessId = business?.id ?? tempId;
+
+  const [logoUploading,   setLogoUploading]   = useState(false);
+  const [imageUploading,  setImageUploading]  = useState(false);
+  const logoInputRef   = useRef<HTMLInputElement>(null);
+  const imagesInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
     name: business?.name || "",
@@ -65,6 +94,43 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
     mapLink: business?.mapLink || "",
     openingHours: business?.openingHours || defaultOpeningHours,
   });
+
+  const handleLogoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setLogoUploading(true);
+    setError("");
+    try {
+      const url = await uploadFile(file, "logos", businessId);
+      setFormData((prev) => ({ ...prev, logo: url }));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Logo upload failed");
+    } finally {
+      setLogoUploading(false);
+      if (logoInputRef.current) logoInputRef.current.value = "";
+    }
+  };
+
+  const handleImagesChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length) return;
+    setImageUploading(true);
+    setError("");
+    try {
+      const urls = await Promise.all(
+        files.map((f) => uploadFile(f, "images", businessId))
+      );
+      setFormData((prev) => ({
+        ...prev,
+        images: [...prev.images, ...urls],
+      }));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Image upload failed");
+    } finally {
+      setImageUploading(false);
+      if (imagesInputRef.current) imagesInputRef.current.value = "";
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -200,86 +266,126 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
 
         <div>
           <label className="label">Logo</label>
-          <p className="text-sm text-gray-500 mb-4">Last opp bedriftens logo (anbefalt: 400x400px)</p>
-          <CldUploadWidget
-            uploadPreset="dinlinks"
-            onSuccess={(result: any) => {
-              setFormData({ ...formData, logo: result.info.secure_url });
-            }}
+          <p className="text-sm text-gray-500 mb-4">
+            Last opp bedriftens logo (anbefalt: 400×400 px · maks 2 MB · JPG, PNG eller WebP)
+          </p>
+          <input
+            ref={logoInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            className="hidden"
+            onChange={handleLogoChange}
+          />
+          <button
+            type="button"
+            disabled={logoUploading}
+            onClick={() => logoInputRef.current?.click()}
+            className="btn btn-secondary disabled:opacity-50"
           >
-            {({ open }) => (
-              <div>
-                <button type="button" onClick={() => open()} className="btn btn-secondary">
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  Last opp logo
-                </button>
-                {formData.logo && (
-                  <div className="mt-6 inline-block">
-                    <div className="relative group">
-                      <Image src={formData.logo} alt="Logo" width={120} height={120} className="rounded-2xl shadow-soft border-2 border-gray-100" />
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl flex items-center justify-center">
-                        <button
-                          type="button"
-                          onClick={() => setFormData({ ...formData, logo: "" })}
-                          className="btn btn-sm bg-white text-red-600 hover:bg-red-50"
-                        >
-                          Fjern
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
+            {logoUploading ? (
+              <span className="flex items-center gap-2">
+                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+                Laster opp...
+              </span>
+            ) : (
+              <>
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                Last opp logo
+              </>
             )}
-          </CldUploadWidget>
+          </button>
+          {formData.logo && (
+            <div className="mt-6 inline-block">
+              <div className="relative group">
+                <Image
+                  src={formData.logo}
+                  alt="Logo"
+                  width={120}
+                  height={120}
+                  className="rounded-2xl shadow-soft border-2 border-gray-100"
+                />
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl flex items-center justify-center">
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, logo: "" })}
+                    className="btn btn-sm bg-white text-red-600 hover:bg-red-50"
+                  >
+                    Fjern
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         <div>
           <label className="label">Galleribilder</label>
-          <p className="text-sm text-gray-500 mb-4">Last opp bilder av bedriften, produkter eller tjenester</p>
-          <CldUploadWidget
-            uploadPreset="dinlinks"
-            onSuccess={(result: any) => {
-              setFormData({
-                ...formData,
-                images: [...formData.images, result.info.secure_url],
-              });
-            }}
+          <p className="text-sm text-gray-500 mb-4">
+            Last opp bilder av bedriften, produkter eller tjenester (maks 5 MB per bilde · JPG, PNG eller WebP)
+          </p>
+          <input
+            ref={imagesInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            multiple
+            className="hidden"
+            onChange={handleImagesChange}
+          />
+          <button
+            type="button"
+            disabled={imageUploading}
+            onClick={() => imagesInputRef.current?.click()}
+            className="btn btn-secondary disabled:opacity-50"
           >
-            {({ open }) => (
-              <div>
-                <button type="button" onClick={() => open()} className="btn btn-secondary">
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  </svg>
-                  Legg til bilde
-                </button>
-                {formData.images.length > 0 && (
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6">
-                    {formData.images.map((image, index) => (
-                      <div key={index} className="relative group">
-                        <Image src={image} alt={`Galleri ${index}`} width={200} height={200} className="rounded-xl shadow-soft border border-gray-100 w-full h-32 object-cover" />
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setFormData({
-                              ...formData,
-                              images: formData.images.filter((_, i) => i !== index),
-                            });
-                          }}
-                          className="absolute top-2 right-2 bg-red-500/90 hover:bg-red-600 text-white rounded-full w-7 h-7 flex items-center justify-center shadow-medium opacity-0 group-hover:opacity-100 transition-all"
-                        >
-                          ×
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+            {imageUploading ? (
+              <span className="flex items-center gap-2">
+                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+                Laster opp...
+              </span>
+            ) : (
+              <>
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                Legg til bilde
+              </>
             )}
-          </CldUploadWidget>
+          </button>
+          {formData.images.length > 0 && (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6">
+              {formData.images.map((image, index) => (
+                <div key={index} className="relative group">
+                  <Image
+                    src={image}
+                    alt={`Galleri ${index}`}
+                    width={200}
+                    height={200}
+                    className="rounded-xl shadow-soft border border-gray-100 w-full h-32 object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setFormData({
+                        ...formData,
+                        images: formData.images.filter((_, i) => i !== index),
+                      })
+                    }
+                    className="absolute top-2 right-2 bg-red-500/90 hover:bg-red-600 text-white rounded-full w-7 h-7 flex items-center justify-center shadow-medium opacity-0 group-hover:opacity-100 transition-all"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
