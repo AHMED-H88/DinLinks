@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 
 interface Category {
   id: string;
@@ -31,7 +31,7 @@ export default function CategoryList({ categories }: CategoryListProps) {
               {category.name}
             </h3>
             {category.count !== undefined && (
-              <p className="text-xs text-gray-400 mt-0.5">{category.count} bedrifter</p>
+              <p className="text-xs text-gray-400 mt-0.5">{category.count} businesses</p>
             )}
           </div>
         </Link>

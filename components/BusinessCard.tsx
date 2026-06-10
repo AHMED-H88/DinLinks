@@ -1,5 +1,5 @@
-import Link from "next/link";
 import Image from "next/image";
+import { Link } from "@/i18n/routing";
 
 interface BusinessCardProps {
   id: string;
@@ -8,10 +8,49 @@ interface BusinessCardProps {
   category: string;
   city: string;
   verified?: boolean;
-  initials?: string;
   logo?: string | null;
-  phone?: string;
-  website?: string;
+  coverImage?: string | null;
+  rating?: number | null;
+  reviewCount?: number;
+  highlight?: string; // search query for text highlighting
+}
+
+// ── Inline star rating ────────────────────────────────────────────────────────
+function Stars({ rating }: { rating: number }) {
+  return (
+    <div className="flex items-center gap-0.5" aria-label={`${rating.toFixed(1)} out of 5 stars`}>
+      {[1, 2, 3, 4, 5].map((n) => (
+        <svg
+          key={n}
+          className={`w-3.5 h-3.5 ${n <= Math.round(rating) ? "text-amber-400" : "text-gray-200"}`}
+          viewBox="0 0 20 20"
+          fill="currentColor"
+        >
+          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+        </svg>
+      ))}
+    </div>
+  );
+}
+
+// ── Simple inline text highlighter ───────────────────────────────────────────
+function Highlighted({ text, query }: { text: string; query?: string }) {
+  if (!query || !query.trim()) return <>{text}</>;
+  const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "gi");
+  const parts = text.split(regex);
+  return (
+    <>
+      {parts.map((part, i) =>
+        regex.test(part) ? (
+          <mark key={i} className="bg-amber-100 text-amber-900 rounded-sm px-0.5 not-italic">
+            {part}
+          </mark>
+        ) : (
+          <span key={i}>{part}</span>
+        )
+      )}
+    </>
+  );
 }
 
 export default function BusinessCard({
@@ -21,72 +60,113 @@ export default function BusinessCard({
   category,
   city,
   verified = false,
-  initials,
   logo,
+  coverImage,
+  rating,
+  reviewCount = 0,
+  highlight,
 }: BusinessCardProps) {
-  const displayInitials = initials ?? name.slice(0, 2).toUpperCase();
+  const initials = name.slice(0, 2).toUpperCase();
 
   return (
     <Link
       href={`/business/${id}`}
-      className="group card card-hover p-6 flex flex-col gap-4"
+      className="group card card-hover flex flex-col overflow-hidden"
     >
-      {/* Header row */}
-      <div className="flex items-start gap-4">
-        {/* Logo / initials */}
-        <div className="w-12 h-12 rounded-xl flex-shrink-0 overflow-hidden bg-primary-50 border border-primary-100 flex items-center justify-center">
+      {/* ── Cover image / colour band ─────────────────────────────────── */}
+      <div className="relative h-32 bg-gradient-to-br from-gray-100 to-gray-200 flex-shrink-0 overflow-hidden">
+        {coverImage ? (
+          <Image
+            src={coverImage}
+            alt=""
+            fill
+            className="object-cover group-hover:scale-[1.02] transition-transform duration-300"
+          />
+        ) : (
+          /* subtle branded gradient when no cover */
+          <div className="absolute inset-0 bg-gradient-to-br from-primary-50 via-white to-gray-100" />
+        )}
+
+        {/* Logo chip, bottom-left of cover */}
+        <div className="absolute bottom-3 left-4 w-11 h-11 rounded-xl border-2 border-white shadow-medium bg-white overflow-hidden flex items-center justify-center">
           {logo ? (
-            <Image src={logo} alt={name} width={48} height={48} className="w-full h-full object-cover" />
+            <Image src={logo} alt={name} width={44} height={44} className="w-full h-full object-cover" />
           ) : (
-            <span className="text-sm font-bold text-primary-700">{displayInitials}</span>
+            <span className="text-xs font-bold text-primary-700">{initials}</span>
           )}
         </div>
 
-        {/* Name + verified */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <h3 className="text-base font-semibold text-gray-900 truncate group-hover:text-primary-700 transition-colors">
-              {name}
-            </h3>
-            {verified && (
-              <span className="badge-verified flex-shrink-0">
-                <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none">
-                  <path d="M10 3L5 8.5 2 5.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-                Verifisert
-              </span>
-            )}
-          </div>
-          <div className="flex items-center gap-2 mt-0.5">
-            <span className="text-xs text-gray-500 font-medium">{category}</span>
-            <span className="text-gray-300">·</span>
-            <span className="text-xs text-gray-500 flex items-center gap-1">
-              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+        {/* Verified badge, top-right of cover */}
+        {verified && (
+          <div className="absolute top-2.5 right-2.5">
+            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-green-700 bg-green-50/90 backdrop-blur-sm border border-green-200 px-1.5 py-0.5 rounded-full">
+              <svg className="w-2.5 h-2.5" viewBox="0 0 12 12" fill="none">
+                <path d="M10 3L5 8.5 2 5.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
-              {city}
+              Verified
             </span>
           </div>
-        </div>
+        )}
       </div>
 
-      {/* Description */}
-      <p className="text-sm text-gray-600 leading-relaxed line-clamp-2">
-        {description}
-      </p>
+      {/* ── Card body ────────────────────────────────────────────────── */}
+      <div className="flex flex-col gap-2 p-4 flex-1">
+        {/* Name */}
+        <h3 className="text-sm font-semibold text-gray-900 group-hover:text-primary-700 transition-colors line-clamp-1 leading-snug mt-2">
+          <Highlighted text={name} query={highlight} />
+        </h3>
 
-      {/* Footer */}
-      <div className="flex items-center justify-between mt-auto pt-3 border-t border-gray-100">
-        <span className="text-xs text-gray-400">Se bedriftsprofil</span>
-        <svg
-          className="w-4 h-4 text-gray-400 group-hover:text-primary-600 group-hover:translate-x-0.5 transition-all"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-        </svg>
+        {/* Category + city */}
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {category && (
+            <span className="text-xs text-gray-500 font-medium">{category}</span>
+          )}
+          {city && (
+            <>
+              <span className="text-gray-300 text-xs">·</span>
+              <span className="text-xs text-gray-400 flex items-center gap-0.5">
+                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <Highlighted text={city} query={highlight} />
+              </span>
+            </>
+          )}
+        </div>
+
+        {/* Description */}
+        {description && (
+          <p className="text-xs text-gray-500 leading-relaxed line-clamp-2 flex-1">
+            <Highlighted text={description} query={highlight} />
+          </p>
+        )}
+
+        {/* Footer: rating + arrow */}
+        <div className="flex items-center justify-between mt-auto pt-2 border-t border-gray-50">
+          {rating != null && rating > 0 ? (
+            <div className="flex items-center gap-1.5">
+              <Stars rating={rating} />
+              <span className="text-xs text-gray-500">
+                {rating.toFixed(1)}
+                {reviewCount > 0 && (
+                  <span className="text-gray-400 ml-0.5">({reviewCount})</span>
+                )}
+              </span>
+            </div>
+          ) : (
+            <span className="text-xs text-gray-400 italic">No reviews yet</span>
+          )}
+
+          <svg
+            className="w-4 h-4 text-gray-300 group-hover:text-primary-600 group-hover:translate-x-0.5 transition-all flex-shrink-0"
+            fill="none" viewBox="0 0 24 24" stroke="currentColor"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </div>
       </div>
     </Link>
   );

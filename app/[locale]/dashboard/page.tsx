@@ -1,10 +1,13 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { Link } from "@/i18n/routing";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BusinessForm from "@/components/BusinessForm";
 import SubscriptionCard from "@/components/SubscriptionCard";
+
+export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -18,6 +21,7 @@ export default async function DashboardPage() {
     include: {
       category: true,
       subscription: true,
+      _count: { select: { favorites: true, reviews: true } },
     },
   });
 
@@ -25,65 +29,204 @@ export default async function DashboardPage() {
     orderBy: { name: "asc" },
   });
 
+  const stats = business
+    ? [
+        {
+          label: "Profile views",
+          value: business.views ?? 0,
+          icon: (
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1.75}
+              d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+            />
+          ),
+        },
+        {
+          label: "Favourites",
+          value: business._count.favorites,
+          icon: (
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1.75}
+              d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
+            />
+          ),
+        },
+        {
+          label: "Reviews",
+          value: business._count.reviews,
+          icon: (
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1.75}
+              d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.562.562 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"
+            />
+          ),
+        },
+      ]
+    : [];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+    <div className="min-h-screen bg-gray-50">
       <Header />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-        {/* Welcome Header */}
-        <div className="mb-10">
-          <h1 className="text-4xl font-bold text-gray-900 mb-3 tracking-tight">
-            Dashboard
-          </h1>
-          <p className="text-lg text-gray-600">
-            Velkommen tilbake! Administrer bedriftsprofilen din.
-          </p>
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+
+        {/* ── Welcome bar ─────────────────────────────────────────────── */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Dashboard</h1>
+            <p className="text-gray-500 text-sm mt-0.5">
+              Welcome back,{" "}
+              <span className="font-medium text-gray-700">
+                {session!.user!.name ?? session!.user!.email}
+              </span>
+            </p>
+          </div>
+
+          {business?.status === "APPROVED" && (
+            <Link
+              href={`/business/${business.id}`}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-gray-200 text-sm font-medium text-gray-700 hover:border-gray-300 hover:bg-gray-50 transition-all shadow-subtle"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75}
+                  d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+              </svg>
+              View public profile
+            </Link>
+          )}
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-            <div className="card p-8 sm:p-10 shadow-medium">
-              <div className="flex items-center justify-between mb-8">
-                <div>
-                  <h2 className="text-3xl font-bold text-gray-900 mb-2 tracking-tight">
-                    {business ? "Rediger profil" : "Opprett profil"}
-                  </h2>
-                  <p className="text-gray-600">
-                    {business
-                      ? "Oppdater bedriftsinformasjonen din"
-                      : "Lag din bedriftsprofil og kom i gang"}
-                  </p>
+        {/* ── Stats ───────────────────────────────────────────────────── */}
+        {stats.length > 0 && (
+          <div className="grid grid-cols-3 gap-4 mb-8">
+            {stats.map(({ label, value, icon }) => (
+              <div key={label} className="card p-4 sm:p-5 flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0">
+                  <svg className="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    {icon}
+                  </svg>
                 </div>
-                {business && (
-                  <div className="hidden sm:block">
-                    {business.status === "APPROVED" && (
-                      <span className="badge badge-green text-sm px-4 py-2">
-                        <svg className="w-4 h-4 mr-1.5" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                        </svg>
-                        Godkjent
-                      </span>
-                    )}
-                    {business.status === "PENDING" && (
-                      <span className="badge badge-yellow text-sm px-4 py-2">
-                        <svg className="w-4 h-4 mr-1.5" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
-                        </svg>
-                        Venter
-                      </span>
-                    )}
-                  </div>
-                )}
+                <div>
+                  <div className="text-xl sm:text-2xl font-bold text-gray-900">{value}</div>
+                  <div className="text-xs text-gray-500">{label}</div>
+                </div>
               </div>
-              <div className="divider mb-8"></div>
-              <BusinessForm business={business} categories={categories} />
+            ))}
+          </div>
+        )}
+
+        {/* ── Main grid ───────────────────────────────────────────────── */}
+        <div className="grid lg:grid-cols-3 gap-8 items-start">
+
+          {/* Business form — spans 2 cols */}
+          <div className="lg:col-span-2">
+            <div className="card p-6 sm:p-8">
+              <div className="mb-6">
+                <h2 className="text-lg font-semibold text-gray-900">
+                  {business ? "Edit business profile" : "Create your business profile"}
+                </h2>
+                <p className="text-sm text-gray-500 mt-0.5">
+                  {business
+                    ? "Changes are saved immediately. If you were rejected, saving will re-submit for review."
+                    : "Fill in your details and submit for admin approval. It only takes a few minutes."}
+                </p>
+              </div>
+
+              <BusinessForm
+                business={
+                  business
+                    ? {
+                        id:           business.id,
+                        userId:       business.userId,
+                        name:         business.name,
+                        description:  business.description,
+                        categoryId:   business.categoryId,
+                        logo:         business.logo,
+                        coverImage:   business.coverImage,
+                        images:       business.images,
+                        services:     business.services as any,
+                        address:      business.address,
+                        city:         business.city,
+                        postalCode:   business.postalCode,
+                        latitude:     business.latitude,
+                        longitude:    business.longitude,
+                        phone:        business.phone,
+                        email:        business.email,
+                        website:      business.website,
+                        bookingLink:  business.bookingLink,
+                        mapLink:      business.mapLink,
+                        openingHours: business.openingHours,
+                        status:       business.status,
+                      }
+                    : null
+                }
+                categories={categories}
+              />
             </div>
           </div>
 
           {/* Sidebar */}
-          <div className="space-y-6">
-            <SubscriptionCard subscription={business?.subscription} businessId={business?.id} />
+          <div className="space-y-5">
+            <SubscriptionCard
+              subscription={business?.subscription}
+              businessId={business?.id}
+            />
+
+            {/* Getting started tips (only for new users) */}
+            {!business && (
+              <div className="card p-5">
+                <h3 className="font-semibold text-gray-900 mb-3 text-sm">Getting started</h3>
+                <div className="space-y-3">
+                  {[
+                    { step: "1", text: "Enter your business name and category" },
+                    { step: "2", text: "Upload a logo for a professional look" },
+                    { step: "3", text: "Add contact details and opening hours" },
+                    { step: "4", text: "List your services and offers" },
+                    { step: "5", text: "Save — an admin will review and approve" },
+                  ].map(({ step, text }) => (
+                    <div key={step} className="flex items-start gap-2.5">
+                      <span className="w-5 h-5 rounded-full bg-primary-50 text-primary-700 text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
+                        {step}
+                      </span>
+                      <span className="text-sm text-gray-600">{text}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Quick info card for existing businesses */}
+            {business && (
+              <div className="card p-5 space-y-3">
+                <h3 className="font-semibold text-gray-900 text-sm">Profile info</h3>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Status</span>
+                    <StatusPill status={business.status} />
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Category</span>
+                    <span className="font-medium text-gray-800 text-right">{business.category?.name ?? "—"}</span>
+                  </div>
+                  {business.city && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">City</span>
+                      <span className="font-medium text-gray-800">{business.city}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Photos</span>
+                    <span className="font-medium text-gray-800">{business.images.length}</span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </main>
@@ -91,4 +234,12 @@ export default async function DashboardPage() {
       <Footer />
     </div>
   );
+}
+
+function StatusPill({ status }: { status: string }) {
+  if (status === "APPROVED")
+    return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700">✓ Approved</span>;
+  if (status === "PENDING")
+    return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">⏳ Pending</span>;
+  return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">✕ Rejected</span>;
 }

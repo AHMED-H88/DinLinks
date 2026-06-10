@@ -9,10 +9,49 @@ import "../globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
 
+const SITE_URL  = process.env.NEXTAUTH_URL ?? "https://dinlinks.no";
+const SITE_NAME = "DinLinks";
+
 export const metadata: Metadata = {
-  title: "DinLinks — Norway's Business Directory",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default:  "DinLinks — Norway's Business Directory",
+    template: "%s | DinLinks",
+  },
   description:
-    "Verified business profiles with accurate information about opening hours, contact details, and services.",
+    "Find verified local businesses in Norway. Accurate opening hours, contact details, reviews, and more — all in one place.",
+  keywords: [
+    "Norwegian business directory",
+    "local businesses Norway",
+    "finn bedrifter",
+    "bedriftskatalog Norge",
+    "DinLinks",
+  ],
+  authors: [{ name: SITE_NAME }],
+  creator: SITE_NAME,
+  openGraph: {
+    type:        "website",
+    locale:      "en_US",
+    url:          SITE_URL,
+    siteName:     SITE_NAME,
+    title:       "DinLinks — Norway's Business Directory",
+    description: "Find verified local businesses in Norway with accurate contact info, opening hours, and customer reviews.",
+  },
+  twitter: {
+    card:        "summary_large_image",
+    title:       "DinLinks — Norway's Business Directory",
+    description: "Find verified local businesses in Norway.",
+    creator:     "@dinlinks",
+  },
+  robots: {
+    index:           true,
+    follow:          true,
+    googleBot: {
+      index:          true,
+      follow:         true,
+      "max-image-preview": "large",
+    },
+  },
 };
 
 export default async function LocaleLayout({
@@ -24,8 +63,6 @@ export default async function LocaleLayout({
 }) {
   const { locale } = await params;
 
-  // Reject unknown locales — next-intl will have already redirected,
-  // but this is the safety net for direct URL access.
   if (!routing.locales.includes(locale as "en" | "no")) {
     notFound();
   }

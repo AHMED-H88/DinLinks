@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma";
 import AdminNav from "@/components/AdminNav";
 import BusinessTable from "@/components/BusinessTable";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminPage() {
   const session = await auth();
 
@@ -15,20 +17,29 @@ export default async function AdminPage() {
     include: {
       user: {
         select: {
+          name:  true,
           email: true,
         },
       },
-      category: true,
+      category:     true,
       subscription: true,
+      _count: {
+        select: {
+          favorites: true,
+          reviews:   true,
+        },
+      },
     },
-    orderBy: {
-      createdAt: "desc",
-    },
+    orderBy: [
+      // PENDING first so admins see what needs action immediately
+      { status: "asc" },
+      { createdAt: "desc" },
+    ],
   });
 
   const stats = {
-    total: businesses.length,
-    pending: businesses.filter((b) => b.status === "PENDING").length,
+    total:    businesses.length,
+    pending:  businesses.filter((b) => b.status === "PENDING").length,
     approved: businesses.filter((b) => b.status === "APPROVED").length,
     rejected: businesses.filter((b) => b.status === "REJECTED").length,
   };
@@ -38,34 +49,80 @@ export default async function AdminPage() {
       <AdminNav />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Admin Dashboard</h1>
 
-        <div className="grid grid-cols-4 gap-6 mb-8">
-          <div className="card p-6">
-            <p className="text-sm text-gray-600 mb-1">Total Businesses</p>
-            <p className="text-3xl font-bold text-gray-900">{stats.total}</p>
-          </div>
-          <div className="card p-6">
-            <p className="text-sm text-gray-600 mb-1">Pending</p>
-            <p className="text-3xl font-bold text-yellow-600">{stats.pending}</p>
-          </div>
-          <div className="card p-6">
-            <p className="text-sm text-gray-600 mb-1">Approved</p>
-            <p className="text-3xl font-bold text-green-600">{stats.approved}</p>
-          </div>
-          <div className="card p-6">
-            <p className="text-sm text-gray-600 mb-1">Rejected</p>
-            <p className="text-3xl font-bold text-red-600">{stats.rejected}</p>
-          </div>
+        {/* ── Page header ──────────────────────────────────────────────── */}
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Business management</h1>
+          <p className="text-sm text-gray-500 mt-0.5">
+            Review, approve, and manage all business listings.
+          </p>
         </div>
 
-        <div className="card">
-          <div className="p-6">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-6">All Businesses</h2>
-            <BusinessTable businesses={businesses as any} />
-          </div>
+        {/* ── Stats row ────────────────────────────────────────────────── */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+          <StatCard
+            label="Total"
+            value={stats.total}
+            color="text-gray-900"
+            bg="bg-white"
+          />
+          <StatCard
+            label="Pending review"
+            value={stats.pending}
+            color="text-amber-600"
+            bg="bg-amber-50"
+            border="border-amber-100"
+            urgent={stats.pending > 0}
+          />
+          <StatCard
+            label="Approved"
+            value={stats.approved}
+            color="text-green-600"
+            bg="bg-green-50"
+            border="border-green-100"
+          />
+          <StatCard
+            label="Rejected"
+            value={stats.rejected}
+            color="text-red-500"
+            bg="bg-red-50"
+            border="border-red-100"
+          />
+        </div>
+
+        {/* ── Business table ───────────────────────────────────────────── */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-subtle p-6">
+          <BusinessTable businesses={businesses as any} />
         </div>
       </main>
+    </div>
+  );
+}
+
+// ─── Stat card ────────────────────────────────────────────────────────────────
+
+function StatCard({
+  label,
+  value,
+  color,
+  bg,
+  border = "border-gray-100",
+  urgent = false,
+}: {
+  label: string;
+  value: number;
+  color: string;
+  bg: string;
+  border?: string;
+  urgent?: boolean;
+}) {
+  return (
+    <div className={`${bg} border ${border} rounded-2xl p-5 relative overflow-hidden`}>
+      {urgent && (
+        <span className="absolute top-3 right-3 w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+      )}
+      <p className="text-xs font-medium text-gray-500 mb-1">{label}</p>
+      <p className={`text-3xl font-bold ${color}`}>{value}</p>
     </div>
   );
 }

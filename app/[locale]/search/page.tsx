@@ -1,61 +1,89 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import SearchResults from "@/components/SearchResults";
 import SearchFilters from "@/components/SearchFilters";
+import SearchBar from "@/components/SearchBar";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: { q?: string; category?: string; city?: string };
+}): Promise<Metadata> {
+  const parts: string[] = [];
+  if (searchParams.q)        parts.push(`"${searchParams.q}"`);
+  if (searchParams.category) parts.push(searchParams.category);
+  if (searchParams.city)     parts.push(`in ${searchParams.city}`);
+
+  const title = parts.length
+    ? `Search: ${parts.join(" · ")} | DinLinks`
+    : "Search businesses | DinLinks";
+
+  return {
+    title,
+    description: "Search Norwegian businesses by name, category, or city. Find verified local businesses with accurate opening hours and contact information.",
+    alternates: { canonical: "/search" },
+  };
+}
+
 export default async function SearchPage({
   searchParams,
 }: {
-  searchParams: { q?: string; category?: string; lat?: string; lng?: string };
+  searchParams: { q?: string; category?: string; city?: string; sort?: string };
 }) {
-  const categories = await prisma.category.findMany({
-    orderBy: { name: "asc" },
-  });
+  // Fetch filters data in parallel
+  const [categories, cityGroups] = await Promise.all([
+    prisma.category.findMany({ orderBy: { name: "asc" } }),
+    prisma.business.groupBy({
+      by: ["city"],
+      where: { status: "APPROVED", city: { not: null } },
+      _count: { city: true },
+      orderBy: { _count: { city: "desc" } },
+      take: 20,
+    }),
+  ]);
+
+  const cities = cityGroups
+    .filter((g) => g.city)
+    .map((g) => ({ city: g.city as string, count: g._count.city }));
+
+  const hasSearch = searchParams.q || searchParams.category || searchParams.city;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+    <div className="min-h-screen bg-gray-50">
       <Header />
 
-      {/* Hero Section */}
-      <div className="bg-gradient-to-br from-primary-50 via-white to-accent-50 border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <h2 className="text-4xl font-bold text-gray-900 mb-4 tracking-tight">
-            Finn lokale bedrifter
-          </h2>
-          <p className="text-lg text-gray-600 max-w-2xl">
-            Oppdag og kontakt bedrifter i ditt område. Søk blant tusenvis av lokale tjenester.
+      {/* Search hero */}
+      <div className="bg-white border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <h1 className="text-2xl font-bold text-gray-900 mb-1 tracking-tight">
+            {hasSearch ? "Search results" : "Find businesses"}
+          </h1>
+          <p className="text-sm text-gray-500 mb-6">
+            Discover verified businesses across Norway.
           </p>
+          <SearchBar placeholder="Business name, service, or category…" />
         </div>
       </div>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* Filters Sidebar */}
-          <aside className="w-full lg:w-72 flex-shrink-0">
-            <div className="sticky top-24">
-              <SearchFilters categories={categories} />
+          {/* Sidebar */}
+          <aside className="w-full lg:w-64 flex-shrink-0">
+            <div className="lg:sticky lg:top-6">
+              <SearchFilters categories={categories} cities={cities} />
             </div>
           </aside>
 
           {/* Results */}
           <div className="flex-1 min-w-0">
             <Suspense
-              fallback={
-                <div className="flex items-center justify-center py-20">
-                  <div className="text-center">
-                    <svg className="animate-spin h-12 w-12 text-primary-500 mx-auto mb-4" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                    </svg>
-                    <p className="text-gray-600 font-medium">Laster bedrifter...</p>
-                  </div>
-                </div>
-              }
+              key={JSON.stringify(searchParams)}
+              fallback={<ResultsSkeleton />}
             >
               <SearchResults searchParams={searchParams} />
             </Suspense>
@@ -64,6 +92,24 @@ export default async function SearchPage({
       </main>
 
       <Footer />
+    </div>
+  );
+}
+
+function ResultsSkeleton() {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div key={i} className="card animate-pulse overflow-hidden">
+          <div className="h-32 bg-gray-200" />
+          <div className="p-4 space-y-3">
+            <div className="h-4 bg-gray-200 rounded w-3/4" />
+            <div className="h-3 bg-gray-200 rounded w-1/2" />
+            <div className="h-3 bg-gray-200 rounded w-full" />
+            <div className="h-3 bg-gray-200 rounded w-5/6" />
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
