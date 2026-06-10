@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
-
-export const dynamic = "force-dynamic";
+import type { Metadata } from "next";
 import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
@@ -8,6 +7,52 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import FavoriteButton from "@/components/FavoriteButton";
 import ReviewList from "@/components/ReviewList";
+import ReviewForm from "@/components/ReviewForm";
+import type { ServiceItem } from "@/components/BusinessForm";
+
+export const dynamic = "force-dynamic";
+
+const SITE_URL = process.env.NEXTAUTH_URL ?? "https://dinlinks.no";
+
+// ── Dynamic metadata ──────────────────────────────────────────────────────────
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const b = await prisma.business.findUnique({
+    where:   { id, status: "APPROVED" },
+    include: { category: true },
+  });
+  if (!b) return { title: "Business not found | DinLinks" };
+
+  const title = `${b.name} — ${b.category?.name ?? "Business"} in ${b.city ?? "Norway"} | DinLinks`;
+  const description =
+    b.description?.slice(0, 155) ??
+    `${b.name} is a verified business on DinLinks. Find contact details, opening hours, and reviews.`;
+  const ogImage = b.coverImage ?? b.logo ?? undefined;
+
+  return {
+    title,
+    description,
+    alternates: { canonical: `/business/${id}` },
+    openGraph: {
+      title,
+      description,
+      type:   "website",
+      url:    `${SITE_URL}/en/business/${id}`,
+      ...(ogImage ? { images: [{ url: ogImage, width: 1200, height: 630, alt: b.name ?? "" }] } : {}),
+    },
+    twitter: {
+      card:        "summary_large_image",
+      title,
+      description,
+      ...(ogImage ? { images: [ogImage] } : {}),
+    },
+  };
+}
 
 export default async function BusinessProfilePage({
   params,
@@ -15,226 +60,355 @@ export default async function BusinessProfilePage({
   params: Promise<{ id: string }>;
 }) {
   const session = await auth();
-  const { id } = await params;
+  const { id }  = await params;
 
   const business = await prisma.business.findUnique({
     where: { id },
     include: {
       category: true,
-      reviews: {
-        orderBy: { createdAt: "desc" },
-        take: 10,
-      },
-      _count: {
-        select: {
-          favorites: true,
-        },
-      },
+      reviews: { orderBy: { createdAt: "desc" }, take: 20 },
+      _count:   { select: { favorites: true } },
     },
   });
 
-  if (!business || business.status !== "APPROVED") {
-    notFound();
-  }
+  if (!business || business.status !== "APPROVED") notFound();
 
-  await prisma.business.update({
-    where: { id },
-    data: { views: { increment: 1 } },
-  });
+  // Increment view counter (fire-and-forget, never blocks render)
+  prisma.business.update({ where: { id }, data: { views: { increment: 1 } } }).catch(() => {});
 
   let isFavorite = false;
   if (session?.user?.id) {
-    const favorite = await prisma.favorite.findUnique({
-      where: {
-        userId_businessId: {
-          userId: session.user.id,
-          businessId: id,
-        },
-      },
+    const fav = await prisma.favorite.findUnique({
+      where: { userId_businessId: { userId: session.user.id, businessId: id } },
     });
-    isFavorite = !!favorite;
+    isFavorite = !!fav;
   }
 
-  const openingHours = business.openingHours as any;
+  const openingHours = (business.openingHours ?? {}) as Record<string, any>;
+  const services     = Array.isArray(business.services)
+    ? (business.services as unknown as ServiceItem[])
+    : [];
+
+  const DAY_LABELS: Record<string, string> = {
+    monday: "Monday", tuesday: "Tuesday", wednesday: "Wednesday",
+    thursday: "Thursday", friday: "Friday", saturday: "Saturday", sunday: "Sunday",
+  };
+
+  const allImages = [
+    ...(business.coverImage ? [business.coverImage] : []),
+    ...business.images,
+  ];
+
+  const navItems = [
+    { id: "about",    label: "About" },
+    ...(allImages.length   > 0 ? [{ id: "photos",   label: "Photos" }]         : []),
+    ...(services.length    > 0 ? [{ id: "services",  label: "Services" }]       : []),
+    ...(Object.keys(openingHours).length > 0 ? [{ id: "hours", label: "Opening hours" }] : []),
+    { id: "contact",  label: "Contact" },
+    ...(business.address   ? [{ id: "location", label: "Location" }]            : []),
+    { id: "reviews",  label: "Reviews" },
+  ];
+
+  // ── JSON-LD — LocalBusiness structured data ───────────────────────────────
+  const avgRating = business.reviews.length
+    ? business.reviews.reduce((s, r) => s + r.rating, 0) / business.reviews.length
+    : null;
+
+  const openingHoursSpec = Object.entries(openingHours)
+    .filter(([, h]: [string, any]) => !h?.closed)
+    .map(([day, h]: [string, any]) => ({
+      "@type":     "OpeningHoursSpecification",
+      dayOfWeek:   `https://schema.org/${day.charAt(0).toUpperCase() + day.slice(1)}`,
+      opens:       h?.open  ?? "09:00",
+      closes:      h?.close ?? "17:00",
+    }));
+
+  const jsonLd: Record<string, any> = {
+    "@context":   "https://schema.org",
+    "@type":      "LocalBusiness",
+    name:          business.name         ?? undefined,
+    description:   business.description  ?? undefined,
+    url:          `${SITE_URL}/en/business/${business.id}`,
+    telephone:     business.phone        ?? undefined,
+    email:         business.email        ?? undefined,
+    ...(business.website ? { sameAs: [business.website] } : {}),
+    ...(business.logo    ? { image: business.logo }        : {}),
+    address: business.address ? {
+      "@type":          "PostalAddress",
+      streetAddress:     business.address,
+      addressLocality:   business.city       ?? undefined,
+      postalCode:        business.postalCode  ?? undefined,
+      addressCountry:   "NO",
+    } : undefined,
+    ...(openingHoursSpec.length ? { openingHoursSpecification: openingHoursSpec } : {}),
+    ...(avgRating != null ? {
+      aggregateRating: {
+        "@type":       "AggregateRating",
+        ratingValue:    avgRating.toFixed(1),
+        reviewCount:    business.reviews.length,
+        bestRating:    "5",
+        worstRating:   "1",
+      },
+    } : {}),
+  };
 
   return (
-    <div className="min-h-screen bg-white text-gray-900 font-sans">
+    <div className="min-h-screen bg-white">
+      {/* Structured data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <Header />
 
-      <main className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Top Header with Name */}
-        <div className="mb-12">
-          <div className="flex items-center gap-6">
-            {business.logo && (
-              <div className="w-20 h-20 rounded-full overflow-hidden border border-gray-100 flex-shrink-0">
-                <Image
-                  src={business.logo!}
-                  alt={business.name ?? ""}
-                  width={80}
-                  height={80}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            )}
-            <div>
-              <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-2">
-                {business.name}
-              </h1>
-              <div className="flex items-center gap-3">
-                <span className="inline-block px-3 py-1 bg-gray-100 text-gray-600 text-sm font-medium rounded-full">
-                  {business.category?.name || "Uncategorized"}
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+
+        {/* ── Hero header ─────────────────────────────────────────────── */}
+        <div className="mb-10">
+          {/* Cover image */}
+          {business.coverImage && (
+            <div className="w-full h-48 sm:h-64 rounded-2xl overflow-hidden mb-6 relative bg-gray-100">
+              <Image
+                src={business.coverImage}
+                alt={`${business.name} cover`}
+                fill
+                className="object-cover"
+                priority
+              />
+            </div>
+          )}
+
+          <div className="flex items-start gap-5">
+            {/* Logo */}
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl flex-shrink-0 overflow-hidden border-2 border-white shadow-medium bg-gray-100 flex items-center justify-center -mt-2">
+              {business.logo ? (
+                <Image src={business.logo} alt={business.name ?? ""} width={80} height={80} className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-xl font-bold text-gray-400">
+                  {(business.name ?? "?").slice(0, 2).toUpperCase()}
                 </span>
-                {business.address && (
-                  <span className="text-gray-500 text-sm flex items-center gap-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
-                      <path fillRule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.45-1.015 2.37-1.945 1.901-1.92 4.264-5.32 4.264-9.406 0-4.418-3.582-8-8-8s-8 3.582-8 8c0 4.086 2.363 7.486 4.263 9.406.92.93 1.75 1.56 2.37 1.945.311.192.571.337.757.433.094.048.17.086.224.114.027.013.049.025.066.033.009.004.015.007.018.008l.006.003zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-                    </svg>
-                    {business.address}
-                  </span>
+              )}
+            </div>
+
+            <div className="flex-1 min-w-0">
+              <div className="flex flex-wrap items-center gap-2 mb-1">
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
+                  {business.name}
+                </h1>
+                <span className="inline-flex items-center gap-1 text-xs font-medium text-green-700 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full">
+                  <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none">
+                    <path d="M10 3L5 8.5 2 5.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  Verified
+                </span>
+              </div>
+              <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500">
+                {business.category && (
+                  <span className="font-medium text-gray-700">{business.category.name}</span>
+                )}
+                {business.city && (
+                  <>
+                    <span className="text-gray-300">·</span>
+                    <span className="flex items-center gap-1">
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      {business.city}
+                    </span>
+                  </>
+                )}
+                {business._count.favorites > 0 && (
+                  <>
+                    <span className="text-gray-300">·</span>
+                    <span>{business._count.favorites} favourites</span>
+                  </>
                 )}
               </div>
             </div>
-            <div className="ml-auto">
-              {session?.user && (
-                <FavoriteButton
-                  businessId={business.id}
-                  initialIsFavorite={isFavorite}
-                />
-              )}
-            </div>
+
+            {/* Favourite button */}
+            {session?.user && (
+              <div className="flex-shrink-0">
+                <FavoriteButton businessId={business.id} initialIsFavorite={isFavorite} />
+              </div>
+            )}
           </div>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-12">
-          {/* Sidebar Navigation */}
-          <aside className="w-full lg:w-64 flex-shrink-0">
-            <nav className="sticky top-24 space-y-1">
-              {[
-                { id: "om", label: "Om" },
-                ...(business.images && business.images.length > 0 ? [{ id: "bilder", label: "Bilder" }] : []),
-                { id: "apningstider", label: "Åpningstider" },
-                { id: "kontakt", label: "Kontakt informasjon" },
-                { id: "adresse", label: "Adresse" },
-                { id: "lenker", label: "Links" },
-                { id: "anmeldelser", label: "Anmeldelser" },
-              ].map((item) => (
+        <div className="flex flex-col lg:flex-row gap-10">
+          {/* ── Sticky sidebar nav ────────────────────────────────────── */}
+          <aside className="hidden lg:block w-48 flex-shrink-0">
+            <nav className="sticky top-24 space-y-0.5">
+              {navItems.map((item) => (
                 <a
                   key={item.id}
                   href={`#${item.id}`}
-                  className="block px-4 py-3 text-lg font-medium text-gray-500 hover:text-black transition-colors border-l-2 border-transparent hover:border-black"
+                  className="block px-3 py-2 text-sm font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all"
                 >
                   {item.label}
                 </a>
               ))}
+
+              {/* Action buttons in sidebar */}
+              <div className="pt-4 space-y-2">
+                {business.website && (
+                  <a
+                    href={business.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block w-full text-center px-4 py-2.5 rounded-xl bg-gray-900 text-white text-sm font-semibold hover:bg-gray-800 transition-colors"
+                  >
+                    Visit website
+                  </a>
+                )}
+                {business.bookingLink && (
+                  <a
+                    href={business.bookingLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block w-full text-center px-4 py-2.5 rounded-xl border border-gray-200 text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors"
+                  >
+                    Book now
+                  </a>
+                )}
+              </div>
             </nav>
           </aside>
 
-          {/* Main Content */}
-          <div className="flex-1 min-w-0">
-            {/* Images Section (Top of main content) */}
-            {business.images && business.images.length > 0 && (
-              <div id="bilder" className="mb-16 scroll-mt-24">
-                <div className="flex overflow-x-auto gap-4 pb-4 snap-x snap-mandatory scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
-                  {business.images.map((image, index) => (
-                    <div key={index} className="flex-shrink-0 snap-center first:pl-0">
-                      <div className="relative h-[400px] w-[600px] rounded-2xl overflow-hidden bg-gray-100">
-                        <Image
-                          src={image}
-                          alt={`${business.name} image ${index + 1}`}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                    </div>
+          {/* ── Main content ──────────────────────────────────────────── */}
+          <div className="flex-1 min-w-0 space-y-12">
+
+            {/* About */}
+            <section id="about" className="scroll-mt-24">
+              <h2 className="text-lg font-bold text-gray-900 mb-4">About</h2>
+              {business.description ? (
+                <div className="prose prose-gray max-w-none text-gray-700 leading-relaxed">
+                  {business.description.split("\n").map((p, i) => (
+                    <p key={i} className="mb-3">{p}</p>
                   ))}
                 </div>
-              </div>
-            )}
-
-            {/* About Section */}
-            <section id="om" className="mb-16 scroll-mt-24 max-w-2xl">
-              <h2 className="text-xl font-bold mb-4">Om</h2>
-              <div className="text-lg leading-relaxed text-gray-800">
-                {business.description?.split('\n').map((paragraph, i) => (
-                  <p key={i} className="mb-4">{paragraph}</p>
-                ))}
-                {!business.description && <p className="text-gray-400 italic">Ingen beskrivelse tilgjengelig.</p>}
-              </div>
-            </section>
-
-            {/* Key People / Nøkkel folk (Placeholder if needed, derived from requirements image, but putting existing data here first) */}
-            {/* Using Opening Hours here as per list order */}
-            <section id="apningstider" className="mb-16 scroll-mt-24 max-w-sm">
-              <h2 className="text-xl font-bold mb-4">Åpningstider</h2>
-              <div className="bg-gray-50 rounded-xl p-6">
-                <div className="space-y-3">
-                  {Object.entries(openingHours).map(([day, hours]: [string, any]) => (
-                    <div key={day} className="flex justify-between items-center text-base">
-                      <span className="font-medium text-gray-900 capitalize w-24">{day}</span>
-                      <span className="text-gray-600">
-                        {hours.closed ? "Stengt" : `${hours.open} - ${hours.close}`}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
-
-            {/* Contact Section */}
-            <section id="kontakt" className="mb-16 scroll-mt-24 max-w-2xl">
-              <h2 className="text-xl font-bold mb-4">Kontakt informasjon</h2>
-              <div className="grid sm:grid-cols-2 gap-6">
-                {business.phone && (
-                  <div className="flex flex-col">
-                    <span className="text-sm text-gray-500 mb-1">Telefon</span>
-                    <a href={`tel:${business.phone}`} className="text-lg font-medium hover:underline">
-                      {business.phone}
-                    </a>
-                  </div>
-                )}
-                {business.email && (
-                  <div className="flex flex-col">
-                    <span className="text-sm text-gray-500 mb-1">E-post</span>
-                    <a href={`mailto:${business.email}`} className="text-lg font-medium hover:underline break-all">
-                      {business.email}
-                    </a>
-                  </div>
-                )}
-              </div>
-            </section>
-
-            {/* Address Section */}
-            <section id="adresse" className="mb-16 scroll-mt-24 max-w-2xl">
-              <h2 className="text-xl font-bold mb-4">Adresse</h2>
-              <p className="text-lg text-gray-800 mb-4">{business.address}</p>
-              {business.mapLink && (
-                <a
-                  href={business.mapLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 text-black font-medium border-b border-black pb-0.5 hover:opacity-70 transition-opacity"
-                >
-                  <span>Vis på kart</span>
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                  </svg>
-                </a>
+              ) : (
+                <p className="text-gray-400 italic">No description provided.</p>
               )}
             </section>
 
-            {/* Links Section */}
-            {(business.website || business.bookingLink) && (
-              <section id="lenker" className="mb-16 scroll-mt-24 max-w-2xl">
-                <h2 className="text-xl font-bold mb-4">Links</h2>
-                <div className="flex flex-col sm:flex-row gap-4">
+            {/* Photos */}
+            {allImages.length > 0 && (
+              <section id="photos" className="scroll-mt-24">
+                <h2 className="text-lg font-bold text-gray-900 mb-4">Photos</h2>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {allImages.map((img, i) => (
+                    <div key={i} className="relative aspect-[4/3] rounded-xl overflow-hidden bg-gray-100">
+                      <Image src={img} alt={`Photo ${i + 1}`} fill className="object-cover" />
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Services */}
+            {services.length > 0 && (
+              <section id="services" className="scroll-mt-24">
+                <h2 className="text-lg font-bold text-gray-900 mb-4">Services &amp; offers</h2>
+                <div className="space-y-3">
+                  {services.map((svc) => (
+                    <div key={svc.id} className="flex items-start justify-between gap-4 p-4 rounded-xl border border-gray-100 bg-gray-50">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-gray-900 text-sm">{svc.name}</h3>
+                        {svc.description && (
+                          <p className="text-sm text-gray-500 mt-0.5">{svc.description}</p>
+                        )}
+                      </div>
+                      {svc.price && (
+                        <span className="flex-shrink-0 text-sm font-semibold text-gray-900 bg-white border border-gray-200 px-3 py-1 rounded-lg">
+                          {svc.price}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Opening hours */}
+            {Object.keys(openingHours).length > 0 && (
+              <section id="hours" className="scroll-mt-24">
+                <h2 className="text-lg font-bold text-gray-900 mb-4">Opening hours</h2>
+                <div className="rounded-xl border border-gray-100 overflow-hidden">
+                  {Object.entries(openingHours).map(([day, h]: [string, any], i) => (
+                    <div
+                      key={day}
+                      className={`flex items-center justify-between px-4 py-3 ${
+                        i % 2 === 0 ? "bg-gray-50" : "bg-white"
+                      }`}
+                    >
+                      <span className="text-sm font-medium text-gray-700 w-28">
+                        {DAY_LABELS[day] ?? day}
+                      </span>
+                      {h?.closed ? (
+                        <span className="text-sm text-gray-400">Closed</span>
+                      ) : (
+                        <span className="text-sm text-gray-800 font-medium">
+                          {h?.open} – {h?.close}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Contact */}
+            <section id="contact" className="scroll-mt-24">
+              <h2 className="text-lg font-bold text-gray-900 mb-4">Contact</h2>
+              <div className="grid sm:grid-cols-2 gap-4">
+                {business.phone && (
+                  <a
+                    href={`tel:${business.phone}`}
+                    className="flex items-center gap-3 p-4 rounded-xl border border-gray-100 bg-gray-50 hover:bg-gray-100 transition-colors group"
+                  >
+                    <div className="w-9 h-9 rounded-lg bg-white border border-gray-200 flex items-center justify-center flex-shrink-0">
+                      <svg className="w-4 h-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-400">Phone</p>
+                      <p className="text-sm font-semibold text-gray-900 group-hover:text-primary-700 transition-colors">{business.phone}</p>
+                    </div>
+                  </a>
+                )}
+
+                {business.email && (
+                  <a
+                    href={`mailto:${business.email}`}
+                    className="flex items-center gap-3 p-4 rounded-xl border border-gray-100 bg-gray-50 hover:bg-gray-100 transition-colors group"
+                  >
+                    <div className="w-9 h-9 rounded-lg bg-white border border-gray-200 flex items-center justify-center flex-shrink-0">
+                      <svg className="w-4 h-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+                      </svg>
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs text-gray-400">Email</p>
+                      <p className="text-sm font-semibold text-gray-900 group-hover:text-primary-700 transition-colors truncate">{business.email}</p>
+                    </div>
+                  </a>
+                )}
+              </div>
+
+              {/* CTA links */}
+              {(business.website || business.bookingLink) && (
+                <div className="flex flex-col sm:flex-row gap-3 mt-4">
                   {business.website && (
                     <a
                       href={business.website}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="px-6 py-3 bg-black text-white rounded-lg font-medium hover:bg-gray-800 transition-colors text-center"
+                      className="flex-1 text-center px-5 py-3 rounded-xl bg-gray-900 text-white text-sm font-semibold hover:bg-gray-800 transition-colors"
                     >
-                      Besøk nettside
+                      Visit website
                     </a>
                   )}
                   {business.bookingLink && (
@@ -242,20 +416,72 @@ export default async function BusinessProfilePage({
                       href={business.bookingLink}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="px-6 py-3 border border-gray-300 text-gray-900 rounded-lg font-medium hover:bg-gray-50 transition-colors text-center"
+                      className="flex-1 text-center px-5 py-3 rounded-xl border border-gray-200 text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors"
                     >
-                      Bestill nå
+                      Book now
                     </a>
                   )}
+                </div>
+              )}
+            </section>
+
+            {/* Location */}
+            {(business.address || business.city) && (
+              <section id="location" className="scroll-mt-24">
+                <h2 className="text-lg font-bold text-gray-900 mb-4">Location</h2>
+                <div className="flex items-start gap-3 p-4 rounded-xl border border-gray-100 bg-gray-50">
+                  <svg className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+                  </svg>
+                  <div>
+                    {business.address && <p className="text-sm font-medium text-gray-900">{business.address}</p>}
+                    {(business.city || business.postalCode) && (
+                      <p className="text-sm text-gray-500">
+                        {[business.postalCode, business.city].filter(Boolean).join(" ")}
+                      </p>
+                    )}
+                    {business.mapLink && (
+                      <a
+                        href={business.mapLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 mt-2 text-sm font-medium text-primary-700 hover:text-primary-800 transition-colors"
+                      >
+                        Open in Maps
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                        </svg>
+                      </a>
+                    )}
+                  </div>
                 </div>
               </section>
             )}
 
-            {/* Reviews Section */}
-            <section id="anmeldelser" className="scroll-mt-24">
-              <h2 className="text-xl font-bold mb-6">Anmeldelser</h2>
+            {/* Reviews */}
+            <section id="reviews" className="scroll-mt-24">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-bold text-gray-900">Reviews</h2>
+                <span className="text-sm text-gray-400">
+                  {business.reviews.length} {business.reviews.length === 1 ? "review" : "reviews"}
+                </span>
+              </div>
+
+              {session?.user && session.user.id !== business.userId && (
+                <div className="mb-6">
+                  <ReviewForm businessId={business.id} />
+                </div>
+              )}
+
+              {!session?.user && (
+                <div className="mb-6 p-4 rounded-xl border border-gray-100 bg-gray-50 text-sm text-gray-500">
+                  <a href="/login" className="font-medium text-gray-900 underline">Sign in</a> to leave a review.
+                </div>
+              )}
+
               <ReviewList reviews={business.reviews} />
             </section>
+
           </div>
         </div>
       </main>
