@@ -12,6 +12,7 @@ interface BusinessCardProps {
   coverImage?: string | null;
   rating?: number | null;
   reviewCount?: number;
+  branchCount?: number;
   highlight?: string; // search query for text highlighting
 }
 
@@ -64,6 +65,7 @@ export default function BusinessCard({
   coverImage,
   rating,
   reviewCount = 0,
+  branchCount = 0,
   highlight,
 }: BusinessCardProps) {
   const initials = name.slice(0, 2).toUpperCase();
@@ -144,21 +146,32 @@ export default function BusinessCard({
           </p>
         )}
 
-        {/* Footer: rating + arrow */}
+        {/* Footer: rating + branch count + arrow */}
         <div className="flex items-center justify-between mt-auto pt-2 border-t border-gray-50">
-          {rating != null && rating > 0 ? (
-            <div className="flex items-center gap-1.5">
-              <Stars rating={rating} />
-              <span className="text-xs text-gray-500">
-                {rating.toFixed(1)}
-                {reviewCount > 0 && (
-                  <span className="text-gray-400 ml-0.5">({reviewCount})</span>
-                )}
+          <div className="flex items-center gap-3 min-w-0">
+            {rating != null && rating > 0 ? (
+              <div className="flex items-center gap-1.5">
+                <Stars rating={rating} />
+                <span className="text-xs text-gray-500">
+                  {rating.toFixed(1)}
+                  {reviewCount > 0 && (
+                    <span className="text-gray-400 ml-0.5">({reviewCount})</span>
+                  )}
+                </span>
+              </div>
+            ) : (
+              <span className="text-xs text-gray-400 italic">No reviews yet</span>
+            )}
+            {branchCount > 1 && (
+              <span className="flex items-center gap-1 text-[11px] text-gray-400">
+                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" />
+                </svg>
+                {branchCount}
               </span>
-            </div>
-          ) : (
-            <span className="text-xs text-gray-400 italic">No reviews yet</span>
-          )}
+            )}
+          </div>
 
           <svg
             className="w-4 h-4 text-gray-300 group-hover:text-primary-600 group-hover:translate-x-0.5 transition-all flex-shrink-0"

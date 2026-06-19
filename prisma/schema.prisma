@@ -101,6 +101,7 @@ model Business {
   favorites    Favorite[]
   reviews      Review[]
   subscription Subscription?
+  branches     Branch[]
 
   @@index([categoryId])
   @@index([latitude, longitude])
@@ -165,6 +166,29 @@ model Subscription {
   business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
 
   @@map("subscriptions")
+}
+
+model Branch {
+  id           String   @id @default(cuid())
+  businessId   String
+  name         String
+  address      String?
+  city         String?
+  postalCode   String?
+  country      String   @default("NO")
+  phone        String?
+  email        String?
+  latitude     Float?
+  longitude    Float?
+  openingHours Json?
+  isMainBranch Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@index([businessId])
+  @@map("branches")
 }
 
 enum UserRole {

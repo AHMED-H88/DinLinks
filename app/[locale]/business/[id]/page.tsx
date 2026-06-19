@@ -9,6 +9,7 @@ import FavoriteButton from "@/components/FavoriteButton";
 import ReviewList from "@/components/ReviewList";
 import ReviewForm from "@/components/ReviewForm";
 import type { ServiceItem } from "@/components/BusinessForm";
+import BranchesSection from "@/components/BranchesSection";
 
 export const dynamic = "force-dynamic";
 
@@ -57,16 +58,17 @@ export async function generateMetadata({
 export default async function BusinessProfilePage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ id: string; locale: string }>;
 }) {
   const session = await auth();
-  const { id }  = await params;
+  const { id, locale } = await params;
 
   const business = await prisma.business.findUnique({
     where: { id },
     include: {
       category: true,
-      reviews: { orderBy: { createdAt: "desc" }, take: 20 },
+      reviews:  { orderBy: { createdAt: "desc" }, take: 20 },
+      branches: { orderBy: [{ isMainBranch: "desc" }, { name: "asc" }] },
       _count:   { select: { favorites: true } },
     },
   });
@@ -99,14 +101,18 @@ export default async function BusinessProfilePage({
     ...business.images,
   ];
 
+  const isNo = locale === "no";
+  const branches = business.branches ?? [];
+
   const navItems = [
-    { id: "about",    label: "About" },
-    ...(allImages.length   > 0 ? [{ id: "photos",   label: "Photos" }]         : []),
-    ...(services.length    > 0 ? [{ id: "services",  label: "Services" }]       : []),
-    ...(Object.keys(openingHours).length > 0 ? [{ id: "hours", label: "Opening hours" }] : []),
-    { id: "contact",  label: "Contact" },
-    ...(business.address   ? [{ id: "location", label: "Location" }]            : []),
-    { id: "reviews",  label: "Reviews" },
+    { id: "about",    label: isNo ? "Om bedriften"  : "About" },
+    ...(allImages.length   > 0 ? [{ id: "photos",   label: isNo ? "Bilder"        : "Photos" }]          : []),
+    ...(services.length    > 0 ? [{ id: "services",  label: isNo ? "Tjenester"     : "Services" }]        : []),
+    ...(Object.keys(openingHours).length > 0 ? [{ id: "hours", label: isNo ? "Åpningstider" : "Opening hours" }] : []),
+    { id: "contact",  label: isNo ? "Kontakt"       : "Contact" },
+    ...(business.address   ? [{ id: "location", label: isNo ? "Beliggenhet"   : "Location" }]             : []),
+    ...(branches.length    > 0 ? [{ id: "branches", label: isNo ? "Filialer"      : "Branches" }]         : []),
+    { id: "reviews",  label: isNo ? "Anmeldelser"   : "Reviews" },
   ];
 
   // ── JSON-LD — LocalBusiness structured data ───────────────────────────────
@@ -199,7 +205,7 @@ export default async function BusinessProfilePage({
                   <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none">
                     <path d="M10 3L5 8.5 2 5.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
-                  Verified
+                  {isNo ? "Verifisert" : "Verified"}
                 </span>
               </div>
               <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500">
@@ -218,10 +224,22 @@ export default async function BusinessProfilePage({
                     </span>
                   </>
                 )}
+                {branches.length > 0 && (
+                  <>
+                    <span className="text-gray-300">·</span>
+                    <span className="flex items-center gap-1">
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                          d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" />
+                      </svg>
+                      {branches.length} {isNo ? (branches.length === 1 ? "filial" : "filialer") : (branches.length === 1 ? "branch" : "branches")}
+                    </span>
+                  </>
+                )}
                 {business._count.favorites > 0 && (
                   <>
                     <span className="text-gray-300">·</span>
-                    <span>{business._count.favorites} favourites</span>
+                    <span>{business._count.favorites} {isNo ? "favoritter" : "favourites"}</span>
                   </>
                 )}
               </div>
@@ -456,6 +474,11 @@ export default async function BusinessProfilePage({
                   </div>
                 </div>
               </section>
+            )}
+
+            {/* Branches */}
+            {branches.length > 0 && (
+              <BranchesSection branches={branches as any} locale={locale} />
             )}
 
             {/* Reviews */}

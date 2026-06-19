@@ -57,7 +57,7 @@ export default async function HomePage() {
       where: { status: "APPROVED" },
       orderBy: { views: "desc" },
       take: 6,
-      include: { category: true, reviews: { select: { rating: true } } },
+      include: { category: true, reviews: { select: { rating: true } }, _count: { select: { branches: true } } },
     }),
     prisma.business.count(),
     prisma.business.count({ where: { status: "APPROVED" } }),
@@ -198,6 +198,7 @@ export default async function HomePage() {
                       coverImage={b.coverImage}
                       rating={rating}
                       reviewCount={b.reviews.length}
+                      branchCount={b._count.branches}
                     />
                   );
                 })}

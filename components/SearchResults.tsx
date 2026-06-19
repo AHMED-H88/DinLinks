@@ -50,6 +50,7 @@ export default async function SearchResults({ searchParams }: SearchResultsProps
     include: {
       category: true,
       reviews:  { select: { rating: true } },
+      _count:   { select: { branches: true } },
     },
     orderBy,
     take: 48,
@@ -113,6 +114,7 @@ export default async function SearchResults({ searchParams }: SearchResultsProps
               coverImage={b.coverImage}
               rating={rating}
               reviewCount={b.reviews.length}
+              branchCount={b._count.branches}
               highlight={q}
             />
           );

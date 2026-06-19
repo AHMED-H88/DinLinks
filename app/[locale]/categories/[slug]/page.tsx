@@ -77,7 +77,7 @@ export default async function CategoryDetailPage({
 
     prisma.business.findMany({
       where:   { categoryId: category.id, status: "APPROVED" },
-      include: { reviews: { select: { rating: true } } },
+      include: { reviews: { select: { rating: true } }, _count: { select: { branches: true } } },
       orderBy: buildOrderBy(sort),
       skip:  (page - 1) * PAGE_SIZE,
       take:  PAGE_SIZE,
@@ -173,6 +173,7 @@ export default async function CategoryDetailPage({
                       coverImage={b.coverImage}
                       rating={avgRating(b.reviews)}
                       reviewCount={b.reviews.length}
+                      branchCount={b._count.branches}
                     />
                   ))}
                 </div>
