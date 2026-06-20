@@ -21,14 +21,19 @@ export default function ProfileGallery({
   labelNext,
 }: ProfileGalleryProps) {
   const [lightbox, setLightbox] = useState<number | null>(null);
+  // Track which original indices failed to load
+  const [failed, setFailed] = useState<Set<number>>(new Set());
+
+  // Filter out broken images
+  const validImages = images.filter((_, i) => !failed.has(i));
 
   const prev = useCallback(() => {
-    setLightbox((i) => (i === null ? null : (i - 1 + images.length) % images.length));
-  }, [images.length]);
+    setLightbox((i) => (i === null ? null : (i - 1 + validImages.length) % validImages.length));
+  }, [validImages.length]);
 
   const next = useCallback(() => {
-    setLightbox((i) => (i === null ? null : (i + 1) % images.length));
-  }, [images.length]);
+    setLightbox((i) => (i === null ? null : (i + 1) % validImages.length));
+  }, [validImages.length]);
 
   const close = useCallback(() => setLightbox(null), []);
 
@@ -44,12 +49,12 @@ export default function ProfileGallery({
     return () => window.removeEventListener("keydown", handler);
   }, [lightbox, close, prev, next]);
 
-  if (images.length === 0) return null;
+  if (validImages.length === 0) return null;
 
   // Layout: first image large, rest in grid (up to 5 total shown before overflow indicator)
   const MAX_VISIBLE = 5;
-  const visible   = images.slice(0, MAX_VISIBLE);
-  const remaining = images.length - MAX_VISIBLE;
+  const visible   = validImages.slice(0, MAX_VISIBLE);
+  const remaining = validImages.length - MAX_VISIBLE;
 
   return (
     <section id="photos" className="scroll-mt-24">
@@ -57,54 +62,62 @@ export default function ProfileGallery({
       <div className="flex items-center gap-3 mb-4">
         <h2 className="text-lg font-bold text-gray-900">{labelPhotos}</h2>
         <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full">
-          {images.length}
+          {validImages.length}
         </span>
       </div>
 
       {/* Grid */}
-      {images.length === 1 ? (
+      {validImages.length === 1 ? (
         <button
           type="button"
           onClick={() => setLightbox(0)}
           className="w-full relative aspect-[16/7] rounded-2xl overflow-hidden bg-gray-100 group block"
         >
           <Image
-            src={images[0]}
+            src={validImages[0]}
             alt={`${businessName} — photo 1`}
             fill
             className="object-cover group-hover:scale-[1.02] transition-transform duration-300"
+            onError={() => {
+              const origIdx = images.indexOf(validImages[0]);
+              setFailed((prev) => new Set(prev).add(origIdx));
+            }}
           />
         </button>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-          {visible.map((img, idx) => (
-            <button
-              key={idx}
-              type="button"
-              onClick={() => setLightbox(idx)}
-              className={`relative overflow-hidden rounded-xl bg-gray-100 group ${
-                idx === 0 ? "col-span-2 sm:col-span-2 aspect-[4/3]" : "aspect-square"
-              }`}
-            >
-              <Image
-                src={img}
-                alt={`${businessName} — photo ${idx + 1}`}
-                fill
-                className="object-cover group-hover:scale-[1.03] transition-transform duration-300"
-              />
-              {/* Overflow indicator on last visible tile */}
-              {idx === MAX_VISIBLE - 1 && remaining > 0 && (
-                <div className="absolute inset-0 bg-gray-900/60 flex items-center justify-center">
-                  <span className="text-white font-bold text-xl">+{remaining}</span>
-                </div>
-              )}
-            </button>
-          ))}
+          {visible.map((img, idx) => {
+            const origIdx = images.indexOf(img);
+            return (
+              <button
+                key={origIdx}
+                type="button"
+                onClick={() => setLightbox(idx)}
+                className={`relative overflow-hidden rounded-xl bg-gray-100 group ${
+                  idx === 0 ? "col-span-2 sm:col-span-2 aspect-[4/3]" : "aspect-square"
+                }`}
+              >
+                <Image
+                  src={img}
+                  alt={`${businessName} — photo ${idx + 1}`}
+                  fill
+                  className="object-cover group-hover:scale-[1.03] transition-transform duration-300"
+                  onError={() => setFailed((prev) => new Set(prev).add(origIdx))}
+                />
+                {/* Overflow indicator on last visible tile */}
+                {idx === MAX_VISIBLE - 1 && remaining > 0 && (
+                  <div className="absolute inset-0 bg-gray-900/60 flex items-center justify-center">
+                    <span className="text-white font-bold text-xl">+{remaining}</span>
+                  </div>
+                )}
+              </button>
+            );
+          })}
         </div>
       )}
 
       {/* Lightbox */}
-      {lightbox !== null && (
+      {lightbox !== null && validImages[lightbox] && (
         <div
           className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
           onClick={close}
@@ -123,11 +136,11 @@ export default function ProfileGallery({
 
           {/* Counter */}
           <div className="absolute top-4 left-1/2 -translate-x-1/2 text-white/70 text-sm font-medium">
-            {lightbox + 1} / {images.length}
+            {lightbox + 1} / {validImages.length}
           </div>
 
           {/* Prev */}
-          {images.length > 1 && (
+          {validImages.length > 1 && (
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); prev(); }}
@@ -146,16 +159,21 @@ export default function ProfileGallery({
             onClick={(e) => e.stopPropagation()}
           >
             <Image
-              src={images[lightbox]}
+              src={validImages[lightbox]}
               alt={`${businessName} — photo ${lightbox + 1}`}
               fill
               className="object-contain"
               sizes="(max-width: 768px) 100vw, 80vw"
+              onError={() => {
+                const origIdx = images.indexOf(validImages[lightbox!]);
+                setFailed((prev) => new Set(prev).add(origIdx));
+                close();
+              }}
             />
           </div>
 
           {/* Next */}
-          {images.length > 1 && (
+          {validImages.length > 1 && (
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); next(); }}

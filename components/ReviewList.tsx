@@ -8,11 +8,19 @@ interface Review {
 
 interface ReviewListProps {
   reviews: Review[];
+  locale?: string;
 }
 
-export default function ReviewList({ reviews }: ReviewListProps) {
+export default function ReviewList({ reviews, locale = "en" }: ReviewListProps) {
+  const isNo = locale === "no";
+  const dateLocale = isNo ? "nb-NO" : "en-GB";
+
   if (reviews.length === 0) {
-    return <p className="text-gray-600">Ingen anmeldelser ennå</p>;
+    return (
+      <p className="text-gray-600">
+        {isNo ? "Ingen anmeldelser ennå" : "No reviews yet"}
+      </p>
+    );
   }
 
   return (
@@ -36,7 +44,7 @@ export default function ReviewList({ reviews }: ReviewListProps) {
               </div>
               <p className="text-sm text-gray-600 leading-relaxed mb-2">{review.comment}</p>
               <p className="text-xs text-gray-500">
-                {new Date(review.createdAt).toLocaleDateString('nb-NO')}
+                {new Date(review.createdAt).toLocaleDateString(dateLocale)}
               </p>
             </div>
           </div>
