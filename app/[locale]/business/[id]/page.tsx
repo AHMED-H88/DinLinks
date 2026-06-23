@@ -14,6 +14,7 @@ import ProfileGallery from "@/components/ProfileGallery";
 import ProfileShareButton from "@/components/ProfileShareButton";
 import type { ServiceItem } from "@/components/BusinessForm";
 import type { Branch } from "@/components/BranchManager";
+import { getTranslations } from "next-intl/server";
 
 export const dynamic = "force-dynamic";
 
@@ -21,14 +22,6 @@ const SITE_URL = process.env.NEXTAUTH_URL ?? "https://dinlinks.no";
 
 // ─── Day label maps ───────────────────────────────────────────────────────────
 
-const DAYS_EN: Record<string, string> = {
-  monday: "Monday", tuesday: "Tuesday", wednesday: "Wednesday",
-  thursday: "Thursday", friday: "Friday", saturday: "Saturday", sunday: "Sunday",
-};
-const DAYS_NO: Record<string, string> = {
-  monday: "Mandag", tuesday: "Tirsdag", wednesday: "Onsdag",
-  thursday: "Torsdag", friday: "Fredag", saturday: "Lørdag", sunday: "Søndag",
-};
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -56,7 +49,9 @@ export async function generateMetadata({
   params: Promise<{ id: string; locale: string }>;
 }): Promise<Metadata> {
   const { id, locale } = await params;
+  const t = await getTranslations({ locale, namespace: "profile" });
   const isNo = locale === "no";
+  const dateLocale = locale === "no" ? "nb-NO" : "en-GB";
 
   const b = await prisma.business.findUnique({
     where:   { id, status: "APPROVED" },
@@ -106,8 +101,18 @@ export default async function BusinessProfilePage({
 }) {
   const session        = await auth();
   const { id, locale } = await params;
+  const t = await getTranslations({ locale, namespace: "profile" });
+
+  const DAY_LABELS: Record<string, string> = {
+    monday:    t("days.monday"),
+    tuesday:   t("days.tuesday"),
+    wednesday: t("days.wednesday"),
+    thursday:  t("days.thursday"),
+    friday:    t("days.friday"),
+    saturday:  t("days.saturday"),
+    sunday:    t("days.sunday"),
+  };
   const isNo           = locale === "no";
-  const DAY_LABELS     = isNo ? DAYS_NO : DAYS_EN;
 
   // ── Data ──────────────────────────────────────────────────────────────────
   const business = await prisma.business.findUnique({
@@ -269,7 +274,7 @@ export default async function BusinessProfilePage({
                       <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none">
                         <path d="M10 3L5 8.5 2 5.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
-                      {isNo ? "Verifisert" : "Verified"}
+                      {t("hero.verified")}
                     </span>
 
                     {/* Open / Closed */}
@@ -280,7 +285,7 @@ export default async function BusinessProfilePage({
                           : "bg-red-500/20 text-red-200 border-red-400/30"
                       }`}>
                         <span className={`w-1.5 h-1.5 rounded-full ${openNow ? "bg-emerald-400 animate-pulse" : "bg-red-400"}`} />
-                        {openNow ? (isNo ? "Åpent nå" : "Open now") : (isNo ? "Stengt nå" : "Closed now")}
+                        {openNow ? (t("hero.openNow")) : (t("hero.closedNow"))}
                       </span>
                     )}
                   </div>
@@ -348,7 +353,7 @@ export default async function BusinessProfilePage({
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                       d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
                   </svg>
-                  {isNo ? "Book nå" : "Book now"}
+                  {t("actions.bookNow")}
                 </a>
               )}
 
@@ -362,7 +367,7 @@ export default async function BusinessProfilePage({
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                       d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
                   </svg>
-                  {isNo ? "Ring" : "Call"}
+                  {t("actions.call")}
                 </a>
               )}
 
@@ -378,7 +383,7 @@ export default async function BusinessProfilePage({
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                       d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253M3 12a8.959 8.959 0 01.284-2.253" />
                   </svg>
-                  {isNo ? "Nettsted" : "Website"}
+                  {t("actions.website")}
                 </a>
               )}
 
@@ -400,7 +405,7 @@ export default async function BusinessProfilePage({
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                       d="M9 6.75V15m6-6v8.25m.503 3.498l4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 00-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0z" />
                   </svg>
-                  {isNo ? "Veibeskrivelse" : "Directions"}
+                  {t("actions.directions")}
                 </a>
               )}
 
@@ -408,8 +413,8 @@ export default async function BusinessProfilePage({
               <ProfileShareButton
                 title={business.name ?? "DinLinks"}
                 url={profileUrl}
-                label={isNo ? "Del" : "Share"}
-                labelCopied={isNo ? "Kopiert!" : "Copied!"}
+                label={t("actions.share")}
+                labelCopied={t("actions.copied")}
               />
 
               {/* Favourite — mobile */}
@@ -433,7 +438,7 @@ export default async function BusinessProfilePage({
 
               {/* ── Om bedriften ──────────────────────────────────────── */}
               <section id="about" className="scroll-mt-24">
-                <SectionHeading>{isNo ? "Om bedriften" : "About"}</SectionHeading>
+                <SectionHeading>{t("sections.about")}</SectionHeading>
                 {business.description ? (
                   <div className="text-gray-700 leading-relaxed text-[0.9375rem] space-y-3">
                     {business.description.split("\n").map((p, i) =>
@@ -442,7 +447,7 @@ export default async function BusinessProfilePage({
                   </div>
                 ) : (
                   <EmptyState>
-                    {isNo ? "Ingen beskrivelse lagt til ennå." : "No description provided yet."}
+                    {t("about.empty")}
                   </EmptyState>
                 )}
               </section>
@@ -452,17 +457,13 @@ export default async function BusinessProfilePage({
                 <ProfileGallery
                   images={galleryImages}
                   businessName={business.name ?? ""}
-                  labelPhotos={isNo ? "Bilder" : "Photos"}
-                  labelClose={isNo ? "Lukk" : "Close"}
-                  labelPrev={isNo ? "Forrige" : "Previous"}
-                  labelNext={isNo ? "Neste" : "Next"}
                 />
               )}
 
               {/* ── Tjenester ─────────────────────────────────────────── */}
               {services.length > 0 && (
                 <section id="services" className="scroll-mt-24">
-                  <SectionHeading>{isNo ? "Tjenester" : "Services"}</SectionHeading>
+                  <SectionHeading>{t("sections.services")}</SectionHeading>
                   <div className="grid sm:grid-cols-2 gap-3">
                     {services.map((svc) => (
                       <div
@@ -496,7 +497,7 @@ export default async function BusinessProfilePage({
                 <div className="flex items-start justify-between gap-4 mb-5">
                   <div>
                     <SectionHeading className="mb-0">
-                      {isNo ? "Anmeldelser" : "Reviews"}
+                      {t("sections.reviews")}
                     </SectionHeading>
                     {avgRating !== null && (
                       <div className="flex items-center gap-2 mt-1.5">
@@ -513,7 +514,7 @@ export default async function BusinessProfilePage({
                         </div>
                         <span className="text-sm font-bold text-gray-900">{avgRating.toFixed(1)}</span>
                         <span className="text-sm text-gray-400">
-                          · {business.reviews.length} {isNo ? "anmeldelser" : "reviews"}
+                          · {business.reviews.length} {t("reviews.reviewPlural")}
                         </span>
                       </div>
                     )}
@@ -522,16 +523,16 @@ export default async function BusinessProfilePage({
 
                 {session?.user && session.user.id !== business.userId && (
                   <div className="mb-8">
-                    <ReviewForm businessId={business.id} locale={locale} />
+                    <ReviewForm businessId={business.id} />
                   </div>
                 )}
 
                 {!session?.user && (
                   <div className="mb-6 p-4 rounded-xl border border-gray-200 bg-white text-sm text-gray-500 shadow-subtle">
                     <a href={`/${locale}/login`} className="font-semibold text-primary-600 hover:text-primary-700">
-                      {isNo ? "Logg inn" : "Sign in"}
+                      {t("reviews.signIn")}
                     </a>{" "}
-                    {isNo ? "for å skrive en anmeldelse." : "to leave a review."}
+                    {t("reviews.signInToReview")}
                   </div>
                 )}
 
@@ -542,10 +543,10 @@ export default async function BusinessProfilePage({
                         d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.562.562 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
                     </svg>
                     <p className="text-sm font-medium text-gray-500">
-                      {isNo ? "Ingen anmeldelser ennå" : "No reviews yet"}
+                      {t("reviews.noReviews")}
                     </p>
                     <p className="text-xs text-gray-400 mt-1">
-                      {isNo ? "Vær den første til å dele din erfaring." : "Be the first to share your experience."}
+                      {t("reviews.beFirst")}
                     </p>
                   </div>
                 ) : (
@@ -556,7 +557,7 @@ export default async function BusinessProfilePage({
               {/* ── Lignende bedrifter ────────────────────────────────── */}
               {similarBusinesses.length > 0 && (
                 <section id="similar" className="scroll-mt-24">
-                  <SectionHeading>{isNo ? "Lignende bedrifter" : "Similar businesses"}</SectionHeading>
+                  <SectionHeading>{t("sections.similar")}</SectionHeading>
                   <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {similarBusinesses.map((sb) => {
                       const sbRating = avgRatingOf(sb.reviews);
@@ -622,12 +623,12 @@ export default async function BusinessProfilePage({
 
               {/* ── Contact card ────────────────────────────────────── */}
               <div id="contact" className="scroll-mt-24 rounded-2xl border border-gray-200 bg-white shadow-subtle overflow-hidden">
-                <CardHeader>{isNo ? "Kontakt" : "Contact"}</CardHeader>
+                <CardHeader>{t("sidebar.contact")}</CardHeader>
                 <div className="divide-y divide-gray-100">
                   {business.phone && (
                     <ContactRow
                       href={`tel:${business.phone}`}
-                      label={isNo ? "Telefon" : "Phone"}
+                      label={t("sidebar.phone")}
                       value={business.phone}
                       icon={
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75}
@@ -638,7 +639,7 @@ export default async function BusinessProfilePage({
                   {business.email && (
                     <ContactRow
                       href={`mailto:${business.email}`}
-                      label={isNo ? "E-post" : "Email"}
+                      label={t("sidebar.email")}
                       value={business.email}
                       truncate
                       icon={
@@ -651,7 +652,7 @@ export default async function BusinessProfilePage({
                     <ContactRow
                       href={business.website}
                       external
-                      label={isNo ? "Nettsted" : "Website"}
+                      label={t("actions.website")}
                       value={business.website.replace(/^https?:\/\//, "").replace(/\/$/, "")}
                       truncate
                       icon={
@@ -670,7 +671,7 @@ export default async function BusinessProfilePage({
                         rel="noopener noreferrer"
                         className="block w-full text-center px-4 py-2.5 rounded-xl bg-primary-600 text-white text-sm font-semibold hover:bg-primary-700 transition-colors"
                       >
-                        {isNo ? "Book nå" : "Book now"}
+                        {t("actions.bookNow")}
                       </a>
                     )}
                     {business.website && (
@@ -680,7 +681,7 @@ export default async function BusinessProfilePage({
                         rel="noopener noreferrer"
                         className="block w-full text-center px-4 py-2.5 rounded-xl border border-gray-200 text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors"
                       >
-                        {isNo ? "Besøk nettsted" : "Visit website"}
+                        {t("sidebar.visitWebsite")}
                       </a>
                     )}
                   </div>
@@ -691,7 +692,7 @@ export default async function BusinessProfilePage({
               {hasHours && (
                 <div id="hours" className="scroll-mt-24 rounded-2xl border border-gray-200 bg-white shadow-subtle overflow-hidden">
                   <div className="px-4 py-3.5 border-b border-gray-100 flex items-center justify-between">
-                    <CardHeaderText>{isNo ? "Åpningstider" : "Opening hours"}</CardHeaderText>
+                    <CardHeaderText>{t("sidebar.openingHours")}</CardHeaderText>
                     {openNow !== null && (
                       <span className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full border ${
                         openNow
@@ -699,7 +700,7 @@ export default async function BusinessProfilePage({
                           : "bg-red-50 text-red-600 border-red-200"
                       }`}>
                         <span className={`w-1.5 h-1.5 rounded-full ${openNow ? "bg-emerald-400 animate-pulse" : "bg-red-400"}`} />
-                        {openNow ? (isNo ? "Åpent" : "Open") : (isNo ? "Stengt" : "Closed")}
+                        {openNow ? (t("sidebar.open")) : (t("sidebar.closed"))}
                       </span>
                     )}
                   </div>
@@ -711,7 +712,7 @@ export default async function BusinessProfilePage({
                       >
                         <span className="text-xs font-medium text-gray-600">{DAY_LABELS[day] ?? day}</span>
                         {h?.closed ? (
-                          <span className="text-xs text-gray-400">{isNo ? "Stengt" : "Closed"}</span>
+                          <span className="text-xs text-gray-400">{t("sidebar.closed")}</span>
                         ) : (
                           <span className="text-xs text-gray-800 font-semibold tabular-nums">
                             {h?.open} – {h?.close}
@@ -726,7 +727,7 @@ export default async function BusinessProfilePage({
               {/* ── Beliggenhet card ─────────────────────────────────── */}
               {(business.address || business.city) && (
                 <div id="location" className="scroll-mt-24 rounded-2xl border border-gray-200 bg-white shadow-subtle overflow-hidden">
-                  <CardHeader>{isNo ? "Beliggenhet" : "Location"}</CardHeader>
+                  <CardHeader>{t("sidebar.location")}</CardHeader>
                   <a
                     href={
                       business.latitude && business.longitude
@@ -757,7 +758,7 @@ export default async function BusinessProfilePage({
                         </p>
                       )}
                       <span className="inline-flex items-center gap-1 mt-2 text-xs font-medium text-primary-600">
-                        {isNo ? "Åpne i kart" : "Open in Maps"}
+                        {t("sidebar.openInMaps")}
                         <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
                         </svg>
@@ -769,7 +770,7 @@ export default async function BusinessProfilePage({
 
               {/* ── Om denne profilen card ───────────────────────────── */}
               <div id="trust" className="scroll-mt-24 rounded-2xl border border-gray-200 bg-white shadow-subtle overflow-hidden">
-                <CardHeader>{isNo ? "Om denne profilen" : "Profile info"}</CardHeader>
+                <CardHeader>{t("sidebar.profileInfo")}</CardHeader>
                 <div className="divide-y divide-gray-100">
 
                   <TrustRow
@@ -779,8 +780,8 @@ export default async function BusinessProfilePage({
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                         d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z" />
                     }
-                    label={isNo ? "Verifisert bedrift" : "Verified business"}
-                    sub={isNo ? "Godkjent av DinLinks" : "Approved by DinLinks"}
+                    label={t("sidebar.verifiedBusiness")}
+                    sub={t("sidebar.approvedBy")}
                   />
 
                   <TrustRow
@@ -790,8 +791,8 @@ export default async function BusinessProfilePage({
                     icon={
                       <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                     }
-                    label={`${business.reviews.length} ${isNo ? "anmeldelser" : "reviews"}${avgRating !== null ? ` · ${avgRating.toFixed(1)}/5` : ""}`}
-                    sub={isNo ? "Ekte kundevurderinger" : "Genuine customer ratings"}
+                    label={`${business.reviews.length} ${t("reviews.reviewPlural")}${avgRating !== null ? ` · ${avgRating.toFixed(1)}/5` : ""}`}
+                    sub={t("sidebar.genuineRatings")}
                   />
 
                   <TrustRow
@@ -802,7 +803,7 @@ export default async function BusinessProfilePage({
                         d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     }
                     label={(business.views ?? 0).toLocaleString(isNo ? "nb-NO" : "en-GB")}
-                    sub={isNo ? "Profilvisninger" : "Profile views"}
+                    sub={t("sidebar.profileViews")}
                   />
 
                   <TrustRow
@@ -816,7 +817,7 @@ export default async function BusinessProfilePage({
                       isNo ? "nb-NO" : "en-GB",
                       { day: "numeric", month: "short", year: "numeric" }
                     )}
-                    sub={isNo ? "Sist oppdatert" : "Last updated"}
+                    sub={t("sidebar.lastUpdated")}
                   />
 
                 </div>
