@@ -78,5 +78,102 @@
     "contact": "Kontakt",
     "rights": "Alle rettigheter reservert.",
     "builtIn": "Bygget i Norge 🇳🇴"
+  },
+  "profile": {
+    "meta": {
+      "categoryFallback": "Bedrift",
+      "locationFallback": "Norge",
+      "inPreposition": "i",
+      "descriptionFallback": "{name} er en verifisert bedrift på DinLinks. Finn kontaktinfo, åpningstider og anmeldelser.",
+      "notFound": "Bedrift ikke funnet | DinLinks"
+    },
+    "hero": {
+      "verified": "Verifisert",
+      "openNow": "Åpent nå",
+      "closedNow": "Stengt nå",
+      "branchSingular": "filial",
+      "branchPlural": "filialer"
+    },
+    "actions": {
+      "bookNow": "Book nå",
+      "call": "Ring",
+      "website": "Nettsted",
+      "directions": "Veibeskrivelse",
+      "share": "Del",
+      "copied": "Kopiert!"
+    },
+    "sections": {
+      "about": "Om bedriften",
+      "photos": "Bilder",
+      "services": "Tjenester",
+      "branches": "Filialer",
+      "reviews": "Anmeldelser",
+      "similar": "Lignende bedrifter"
+    },
+    "about": {
+      "empty": "Ingen beskrivelse lagt til ennå."
+    },
+    "gallery": {
+      "close": "Lukk",
+      "previous": "Forrige",
+      "next": "Neste",
+      "rateStar": "Gi {star} av 5 stjerner"
+    },
+    "reviews": {
+      "signIn": "Logg inn",
+      "signInToReview": "for å skrive en anmeldelse.",
+      "noReviews": "Ingen anmeldelser ennå",
+      "beFirst": "Vær den første til å dele din erfaring.",
+      "reviewPlural": "anmeldelser",
+      "reviewSingular": "anmeldelse"
+    },
+    "reviewForm": {
+      "title": "Skriv en anmeldelse",
+      "yourRating": "Din vurdering",
+      "yourExperience": "Din opplevelse",
+      "placeholder": "Del erfaringen din med denne bedriften...",
+      "submit": "Send anmeldelse",
+      "submitting": "Sender...",
+      "successTitle": "Anmeldelse sendt!",
+      "successBody": "Takk for at du delte erfaringen din.",
+      "writeAnother": "Skriv en ny anmeldelse",
+      "errorRating": "Velg en vurdering.",
+      "errorComment": "Kommentaren må være minst 10 tegn.",
+      "errorGeneric": "Noe gikk galt. Prøv igjen.",
+      "ratingPoor": "Dårlig",
+      "ratingFair": "OK",
+      "ratingGood": "Bra",
+      "ratingVeryGood": "Meget bra",
+      "ratingExcellent": "Utmerket",
+      "rateStar": "Gi {star} av 5 stjerner"
+    },
+    "sidebar": {
+      "contact": "Kontakt",
+      "phone": "Telefon",
+      "email": "E-post",
+      "website": "Nettsted",
+      "bookNow": "Book nå",
+      "visitWebsite": "Besøk nettsted",
+      "openingHours": "Åpningstider",
+      "open": "Åpent",
+      "closed": "Stengt",
+      "location": "Beliggenhet",
+      "openInMaps": "Åpne i kart",
+      "profileInfo": "Om denne profilen",
+      "verifiedBusiness": "Verifisert bedrift",
+      "approvedBy": "Godkjent av DinLinks",
+      "genuineRatings": "Ekte kundevurderinger",
+      "profileViews": "Profilvisninger",
+      "lastUpdated": "Sist oppdatert"
+    },
+    "days": {
+      "monday": "Mandag",
+      "tuesday": "Tirsdag",
+      "wednesday": "Onsdag",
+      "thursday": "Torsdag",
+      "friday": "Fredag",
+      "saturday": "Lørdag",
+      "sunday": "Søndag"
+    }
   }
 }

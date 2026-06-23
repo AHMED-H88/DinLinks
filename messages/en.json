@@ -78,5 +78,102 @@
     "contact": "Contact",
     "rights": "All rights reserved.",
     "builtIn": "Built in Norway 🇳🇴"
+  },
+  "profile": {
+    "meta": {
+      "categoryFallback": "Business",
+      "locationFallback": "Norway",
+      "inPreposition": "in",
+      "descriptionFallback": "{name} is a verified business on DinLinks. Find contact details, opening hours, and reviews.",
+      "notFound": "Business not found | DinLinks"
+    },
+    "hero": {
+      "verified": "Verified",
+      "openNow": "Open now",
+      "closedNow": "Closed now",
+      "branchSingular": "branch",
+      "branchPlural": "branches"
+    },
+    "actions": {
+      "bookNow": "Book now",
+      "call": "Call",
+      "website": "Website",
+      "directions": "Directions",
+      "share": "Share",
+      "copied": "Copied!"
+    },
+    "sections": {
+      "about": "About",
+      "photos": "Photos",
+      "services": "Services",
+      "branches": "Branches",
+      "reviews": "Reviews",
+      "similar": "Similar businesses"
+    },
+    "about": {
+      "empty": "No description provided yet."
+    },
+    "gallery": {
+      "close": "Close",
+      "previous": "Previous",
+      "next": "Next",
+      "rateStar": "Rate {star} out of 5"
+    },
+    "reviews": {
+      "signIn": "Sign in",
+      "signInToReview": "to leave a review.",
+      "noReviews": "No reviews yet",
+      "beFirst": "Be the first to share your experience.",
+      "reviewPlural": "reviews",
+      "reviewSingular": "review"
+    },
+    "reviewForm": {
+      "title": "Write a review",
+      "yourRating": "Your rating",
+      "yourExperience": "Your experience",
+      "placeholder": "Share details about your experience with this business...",
+      "submit": "Submit review",
+      "submitting": "Submitting...",
+      "successTitle": "Review submitted!",
+      "successBody": "Thank you for sharing your experience.",
+      "writeAnother": "Write another review",
+      "errorRating": "Please select a rating.",
+      "errorComment": "Comment must be at least 10 characters.",
+      "errorGeneric": "Something went wrong. Please try again.",
+      "ratingPoor": "Poor",
+      "ratingFair": "Fair",
+      "ratingGood": "Good",
+      "ratingVeryGood": "Very good",
+      "ratingExcellent": "Excellent",
+      "rateStar": "Rate {star} out of 5"
+    },
+    "sidebar": {
+      "contact": "Contact",
+      "phone": "Phone",
+      "email": "Email",
+      "website": "Website",
+      "bookNow": "Book now",
+      "visitWebsite": "Visit website",
+      "openingHours": "Opening hours",
+      "open": "Open",
+      "closed": "Closed",
+      "location": "Location",
+      "openInMaps": "Open in Maps",
+      "profileInfo": "Profile info",
+      "verifiedBusiness": "Verified business",
+      "approvedBy": "Approved by DinLinks",
+      "genuineRatings": "Genuine customer ratings",
+      "profileViews": "Profile views",
+      "lastUpdated": "Last updated"
+    },
+    "days": {
+      "monday": "Monday",
+      "tuesday": "Tuesday",
+      "wednesday": "Wednesday",
+      "thursday": "Thursday",
+      "friday": "Friday",
+      "saturday": "Saturday",
+      "sunday": "Sunday"
+    }
   }
 }
