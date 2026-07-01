@@ -161,8 +161,10 @@
     "twitterDescription": "Find verified local businesses in Norway."
   },
   "search": {
-    "metaTitle": "Search: {query} · DinLinks",
+    "metaTitle": "Search: {query} | DinLinks",
     "metaDefault": "Search businesses | DinLinks",
+    "metaDescription": "Search Norwegian businesses by name, category, or city. Find verified local businesses with accurate opening hours and contact information.",
+    "inPreposition": "in",
     "heading": "Search results",
     "find": "Find businesses",
     "discover": "Discover verified businesses across Norway.",

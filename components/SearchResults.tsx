@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import BusinessCard from "@/components/BusinessCard";
+import { getTranslations } from "next-intl/server";
 
 interface SearchResultsProps {
   searchParams: {
@@ -16,6 +17,7 @@ function avgRating(reviews: { rating: number }[]): number | null {
 }
 
 export default async function SearchResults({ searchParams }: SearchResultsProps) {
+  const t = await getTranslations("searchResults");
   const { q, category, city, sort = "popular" } = searchParams;
 
   // ── Build where clause ────────────────────────────────────────────────────
@@ -68,19 +70,17 @@ export default async function SearchResults({ searchParams }: SearchResultsProps
           </svg>
         </div>
         <h3 className="text-base font-semibold text-gray-900 mb-2">
-          {hasFilters ? "No businesses match your search" : "No businesses yet"}
+          {hasFilters ? t("noResults") : t("noBusinesses")}
         </h3>
         <p className="text-sm text-gray-500 max-w-sm mx-auto">
-          {hasFilters
-            ? "Try adjusting your filters or search with different keywords."
-            : "Check back soon — businesses are being added regularly."}
+          {hasFilters ? t("adjustFilters") : t("checkBack")}
         </p>
         {hasFilters && (
           <a
             href="/search"
             className="inline-flex items-center gap-1.5 mt-5 text-sm font-medium text-primary-700 hover:text-primary-800 transition-colors"
           >
-            Clear all filters →
+            {t("clearFilters")}
           </a>
         )}
       </div>
@@ -92,9 +92,9 @@ export default async function SearchResults({ searchParams }: SearchResultsProps
       {/* Result count */}
       <p className="text-sm text-gray-500 mb-5">
         <span className="font-semibold text-gray-900">{businesses.length}</span>{" "}
-        {businesses.length === 1 ? "business" : "businesses"} found
-        {q    && <> for <span className="font-medium text-gray-700">&quot;{q}&quot;</span></>}
-        {city && <> in <span className="font-medium text-gray-700">{city}</span></>}
+        {businesses.length === 1 ? t("businessSingular") : t("businessPlural")} {t("found")}
+        {q    && <> {t("for")} <span className="font-medium text-gray-700">&quot;{q}&quot;</span></>}
+        {city && <> {t("in")} <span className="font-medium text-gray-700">{city}</span></>}
       </p>
 
       {/* Grid */}

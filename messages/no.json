@@ -161,8 +161,10 @@
     "twitterDescription": "Finn verifiserte lokale bedrifter i Norge."
   },
   "search": {
-    "metaTitle": "Søk: {query} · DinLinks",
+    "metaTitle": "Søk: {query} | DinLinks",
     "metaDefault": "Søk bedrifter | DinLinks",
+    "metaDescription": "Søk etter norske bedrifter etter navn, kategori eller by. Finn verifiserte lokale bedrifter med nøyaktige åpningstider og kontaktinformasjon.",
+    "inPreposition": "i",
     "heading": "Søkeresultater",
     "find": "Finn bedrifter",
     "discover": "Oppdag verifiserte bedrifter over hele Norge.",
