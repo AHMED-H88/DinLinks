@@ -661,7 +661,7 @@
       "copied": "Copied!"
     },
     "sections": {
-      "about": "About",
+      "about": "About this business",
       "photos": "Photos",
       "services": "Services",
       "branches": "Branches",
@@ -717,10 +717,10 @@
       "closed": "Closed",
       "location": "Location",
       "openInMaps": "Open in Maps",
-      "profileInfo": "Profile info",
+      "profileInfo": "About this profile",
       "verifiedBusiness": "Verified business",
-      "approvedBy": "Approved by DinLinks",
-      "genuineRatings": "Genuine customer ratings",
+      "approvedBy": "Reviewed and approved by DinLinks",
+      "genuineRatings": "Ratings from customers",
       "profileViews": "Profile views",
       "lastUpdated": "Last updated"
     },
