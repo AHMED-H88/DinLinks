@@ -1,11 +1,13 @@
 import Image from "next/image";
 import { Link } from "@/i18n/routing";
+import { useTranslations } from "next-intl";
 
 interface BusinessCardProps {
   id: string;
   name: string;
   description: string;
   category: string;
+  categorySlug?: string;
   city: string;
   verified?: boolean;
   logo?: string | null;
@@ -59,6 +61,7 @@ export default function BusinessCard({
   name,
   description,
   category,
+  categorySlug,
   city,
   verified = false,
   logo,
@@ -68,6 +71,10 @@ export default function BusinessCard({
   branchCount = 0,
   highlight,
 }: BusinessCardProps) {
+  const t = useTranslations("businessCard");
+  const tCat = useTranslations("categories");
+  const categoryLabel =
+    categorySlug && tCat.has(categorySlug) ? tCat(categorySlug) : category;
   const initials = name.slice(0, 2).toUpperCase();
 
   return (
@@ -105,7 +112,7 @@ export default function BusinessCard({
               <svg className="w-2.5 h-2.5" viewBox="0 0 12 12" fill="none">
                 <path d="M10 3L5 8.5 2 5.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
-              Verified
+              {t("verified")}
             </span>
           </div>
         )}
@@ -121,7 +128,7 @@ export default function BusinessCard({
         {/* Category + city */}
         <div className="flex items-center gap-1.5 flex-wrap">
           {category && (
-            <span className="text-xs text-gray-500 font-medium">{category}</span>
+            <span className="text-xs text-gray-500 font-medium">{categoryLabel}</span>
           )}
           {city && (
             <>
@@ -160,7 +167,7 @@ export default function BusinessCard({
                 </span>
               </div>
             ) : (
-              <span className="text-xs text-gray-400 italic">No reviews yet</span>
+              <span className="text-xs text-gray-400 italic">{t("noReviews")}</span>
             )}
             {branchCount > 1 && (
               <span className="flex items-center gap-1 text-[11px] text-gray-400">

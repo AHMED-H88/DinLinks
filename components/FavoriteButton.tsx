@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 interface FavoriteButtonProps {
   businessId: string;
@@ -10,6 +11,7 @@ interface FavoriteButtonProps {
 
 export default function FavoriteButton({ businessId, initialIsFavorite }: FavoriteButtonProps) {
   const router = useRouter();
+  const t = useTranslations("favoriteButton");
   const [isFavorite, setIsFavorite] = useState(initialIsFavorite);
   const [loading, setLoading] = useState(false);
 
@@ -39,7 +41,7 @@ export default function FavoriteButton({ businessId, initialIsFavorite }: Favori
       disabled={loading}
       className={`btn btn-sm ${isFavorite ? "btn-primary" : "btn-outline"} min-w-[120px]`}
     >
-      {isFavorite ? "❤️ Lagret" : "🤍 Lagre"}
+      {isFavorite ? `❤️ ${t("saved")}` : `🤍 ${t("save")}`}
     </button>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -45,14 +46,14 @@ const EMPTY_FORM: BranchFormState = {
 };
 
 const DAYS = [
-  { key: "monday",    en: "Monday",    no: "Mandag" },
-  { key: "tuesday",   en: "Tuesday",   no: "Tirsdag" },
-  { key: "wednesday", en: "Wednesday", no: "Onsdag" },
-  { key: "thursday",  en: "Thursday",  no: "Torsdag" },
-  { key: "friday",    en: "Friday",    no: "Fredag" },
-  { key: "saturday",  en: "Saturday",  no: "Lørdag" },
-  { key: "sunday",    en: "Sunday",    no: "Søndag" },
-];
+  "monday",
+  "tuesday",
+  "wednesday",
+  "thursday",
+  "friday",
+  "saturday",
+  "sunday",
+] as const;
 
 // ─── Spinner ──────────────────────────────────────────────────────────────────
 
@@ -83,6 +84,8 @@ interface HoursEditorProps {
 }
 
 function HoursEditor({ value, onChange, locale }: HoursEditorProps) {
+  const tDays = useTranslations("profile.days");
+  const tBranches = useTranslations("branches");
   const hours = value ?? {};
 
   function update(day: string, field: string, val: string | boolean) {
@@ -92,12 +95,11 @@ function HoursEditor({ value, onChange, locale }: HoursEditorProps) {
 
   return (
     <div className="space-y-2">
-      {DAYS.map(({ key, en, no }) => {
+      {DAYS.map((key) => {
         const h = hours[key] ?? { open: "09:00", close: "17:00", closed: false };
-        const label = locale === "no" ? no : en;
         return (
           <div key={key} className="flex items-center gap-3 text-sm">
-            <span className="w-24 text-gray-600 font-medium">{label}</span>
+            <span className="w-24 text-gray-600 font-medium">{tDays(key)}</span>
             <label className="flex items-center gap-1.5 cursor-pointer">
               <input
                 type="checkbox"
@@ -106,7 +108,7 @@ function HoursEditor({ value, onChange, locale }: HoursEditorProps) {
                 className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
               />
               <span className="text-gray-500 text-xs">
-                {locale === "no" ? "Stengt" : "Closed"}
+                {tBranches("closed")}
               </span>
             </label>
             {!h.closed && (
@@ -152,7 +154,7 @@ function BranchFormModal({
   onClose,
   onSaved,
 }: BranchFormModalProps) {
-  const isNo = locale === "no";
+  const t = useTranslations("branches");
   const isEdit = !!initial;
 
   const [form, setForm] = useState<BranchFormState>(
@@ -184,7 +186,7 @@ function BranchFormModal({
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!form.name.trim()) {
-      setError(isNo ? "Navn er påkrevd" : "Name is required");
+      setError(t("nameRequired"));
       return;
     }
     setSaving(true);
@@ -211,12 +213,12 @@ function BranchFormModal({
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error ?? "Request failed");
+        throw new Error(data.error ?? t("requestFailed"));
       }
       const saved: Branch = await res.json();
       onSaved(saved);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown error");
+      setError(err instanceof Error ? err.message : t("errorUnknown"));
     } finally {
       setSaving(false);
     }
@@ -232,8 +234,8 @@ function BranchFormModal({
         <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-gray-100">
           <h2 className="text-base font-semibold text-gray-900">
             {isEdit
-              ? (isNo ? "Rediger filial" : "Edit branch")
-              : (isNo ? "Legg til filial" : "Add branch")}
+              ? t("edit")
+              : t("add")}
           </h2>
           <button
             type="button"
@@ -257,13 +259,13 @@ function BranchFormModal({
           {/* Name */}
           <div>
             <label className="block text-xs font-semibold text-gray-600 mb-1.5">
-              {isNo ? "Navn på filial *" : "Branch name *"}
+              {t("name")} *
             </label>
             <input
               type="text"
               value={form.name}
               onChange={(e) => field("name", e.target.value)}
-              placeholder={isNo ? "f.eks. Filial Oslo Sentrum" : "e.g. Oslo City Centre"}
+              placeholder={t("namePlaceholder")}
               className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
               required
             />
@@ -272,13 +274,13 @@ function BranchFormModal({
           {/* Address */}
           <div>
             <label className="block text-xs font-semibold text-gray-600 mb-1.5">
-              {isNo ? "Adresse" : "Address"}
+              {t("address")}
             </label>
             <input
               type="text"
               value={form.address}
               onChange={(e) => field("address", e.target.value)}
-              placeholder={isNo ? "Gateadresse" : "Street address"}
+              placeholder={t("addressPlaceholder")}
               className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
             />
           </div>
@@ -287,19 +289,19 @@ function BranchFormModal({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-semibold text-gray-600 mb-1.5">
-                {isNo ? "By" : "City"}
+                {t("city")}
               </label>
               <input
                 type="text"
                 value={form.city}
                 onChange={(e) => field("city", e.target.value)}
-                placeholder={isNo ? "Oslo" : "Oslo"}
+                placeholder={t("cityPlaceholder")}
                 className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
               />
             </div>
             <div>
               <label className="block text-xs font-semibold text-gray-600 mb-1.5">
-                {isNo ? "Postnummer" : "Postal code"}
+                {t("postalCode")}
               </label>
               <input
                 type="text"
@@ -315,7 +317,7 @@ function BranchFormModal({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-semibold text-gray-600 mb-1.5">
-                {isNo ? "Telefon" : "Phone"}
+                {t("phone")}
               </label>
               <input
                 type="tel"
@@ -327,7 +329,7 @@ function BranchFormModal({
             </div>
             <div>
               <label className="block text-xs font-semibold text-gray-600 mb-1.5">
-                {isNo ? "E-post" : "Email"}
+                {t("email")}
               </label>
               <input
                 type="email"
@@ -349,12 +351,10 @@ function BranchFormModal({
             />
             <div>
               <span className="text-sm font-medium text-gray-800">
-                {isNo ? "Sett som hovedfilial" : "Set as main branch"}
+                {t("setMain")}
               </span>
               <p className="text-xs text-gray-400 mt-0.5">
-                {isNo
-                  ? "Kun én filial kan være hovedfilialen."
-                  : "Only one branch can be the main branch."}
+                {t("setMainDesc")}
               </p>
             </div>
           </label>
@@ -374,7 +374,7 @@ function BranchFormModal({
               >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
-              {isNo ? "Åpningstider" : "Opening hours"}
+              {t("openingHours")}
             </button>
 
             {showHours && (
@@ -395,7 +395,7 @@ function BranchFormModal({
               onClick={onClose}
               className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
             >
-              {isNo ? "Avbryt" : "Cancel"}
+              {t("cancel")}
             </button>
             <button
               type="submit"
@@ -404,8 +404,8 @@ function BranchFormModal({
             >
               {saving && <Spinner />}
               {saving
-                ? (isNo ? "Lagrer…" : "Saving…")
-                : (isEdit ? (isNo ? "Lagre endringer" : "Save changes") : (isNo ? "Legg til filial" : "Add branch"))}
+                ? t("saving")
+                : (isEdit ? t("save") : t("add"))}
             </button>
           </div>
         </form>
@@ -424,7 +424,7 @@ interface DeleteModalProps {
 }
 
 function DeleteModal({ locale, branch, onClose, onDelete }: DeleteModalProps) {
-  const isNo = locale === "no";
+  const t = useTranslations("branches");
   const [deleting, setDeleting] = useState(false);
   const [error, setError]       = useState("");
 
@@ -439,7 +439,7 @@ function DeleteModal({ locale, branch, onClose, onDelete }: DeleteModalProps) {
       }
       onDelete();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown error");
+      setError(err instanceof Error ? err.message : t("errorUnknown"));
       setDeleting(false);
     }
   }
@@ -451,12 +451,10 @@ function DeleteModal({ locale, branch, onClose, onDelete }: DeleteModalProps) {
     >
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6">
         <h3 className="text-base font-semibold text-gray-900 mb-2">
-          {isNo ? "Slett filial?" : "Delete branch?"}
+          {t("confirmDelete")}
         </h3>
         <p className="text-sm text-gray-500 mb-4">
-          {isNo
-            ? `"${branch.name}" vil bli slettet permanent.`
-            : `"${branch.name}" will be permanently deleted.`}
+          {`"${branch.name}" ${t("deleteWarning")}`}
         </p>
         {error && (
           <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mb-4">
@@ -469,7 +467,7 @@ function DeleteModal({ locale, branch, onClose, onDelete }: DeleteModalProps) {
             onClick={onClose}
             className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
           >
-            {isNo ? "Avbryt" : "Cancel"}
+            {t("cancel")}
           </button>
           <button
             type="button"
@@ -478,7 +476,7 @@ function DeleteModal({ locale, branch, onClose, onDelete }: DeleteModalProps) {
             className="flex-1 px-4 py-2.5 rounded-xl bg-red-600 text-white text-sm font-semibold hover:bg-red-700 transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
           >
             {deleting && <Spinner />}
-            {isNo ? "Slett" : "Delete"}
+            {t("deleteAction")}
           </button>
         </div>
       </div>
@@ -499,7 +497,7 @@ export default function BranchManager({
   businessId,
   initialBranches,
 }: BranchManagerProps) {
-  const isNo = locale === "no";
+  const t = useTranslations("branches");
 
   const [branches, setBranches]       = useState<Branch[]>(initialBranches);
   const [showForm, setShowForm]       = useState(false);
@@ -545,14 +543,14 @@ export default function BranchManager({
       <div className="flex items-center justify-between mb-5">
         <div>
           <h2 className="text-lg font-semibold text-gray-900">
-            {isNo ? "Filialer" : "Branches"}
+            {t("title")}
           </h2>
           <p className="text-sm text-gray-500 mt-0.5">
             {branches.length === 0
-              ? (isNo ? "Ingen filialer lagt til ennå." : "No branches added yet.")
+              ? t("noBranches")
               : branches.length === 1
-                ? (isNo ? "1 filial" : "1 branch")
-                : (isNo ? `${branches.length} filialer` : `${branches.length} branches`)}
+                ? `1 ${t("branchSingular")}`
+                : `${branches.length} ${t("branchPlural")}`}
           </p>
         </div>
         <button
@@ -563,7 +561,7 @@ export default function BranchManager({
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
-          {isNo ? "Legg til filial" : "Add branch"}
+          {t("add")}
         </button>
       </div>
 
@@ -575,12 +573,10 @@ export default function BranchManager({
               d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" />
           </svg>
           <p className="text-sm text-gray-400 font-medium">
-            {isNo ? "Ingen filialer ennå" : "No branches yet"}
+            {t("noBranchesYet")}
           </p>
           <p className="text-xs text-gray-400 mt-1">
-            {isNo
-              ? "Legg til den første filialen for å vise plasseringer på profilen din."
-              : "Add your first branch to show locations on your public profile."}
+            {t("addFirstBranch")}
           </p>
         </div>
       ) : (
@@ -614,7 +610,7 @@ export default function BranchManager({
                       <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none">
                         <path d="M10 3L5 8.5 2 5.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                       </svg>
-                      {isNo ? "Hovedfilial" : "Main branch"}
+                      {t("main")}
                     </span>
                   )}
                 </div>
@@ -655,7 +651,7 @@ export default function BranchManager({
                   type="button"
                   onClick={() => { setEditTarget(branch); setShowForm(true); }}
                   className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
-                  title={isNo ? "Rediger" : "Edit"}
+                  title={t("editAction")}
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75}
@@ -666,7 +662,7 @@ export default function BranchManager({
                   type="button"
                   onClick={() => setDeleteTarget(branch)}
                   className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
-                  title={isNo ? "Slett" : "Delete"}
+                  title={t("deleteAction")}
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75}

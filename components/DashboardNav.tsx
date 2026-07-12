@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { auth, signOut } from "@/lib/auth";
+import { getTranslations } from "next-intl/server";
 
 export default async function DashboardNav() {
   const session = await auth();
+  const t = await getTranslations("nav");
 
   return (
     <nav className="bg-white border-b border-gray-200">
@@ -21,7 +23,7 @@ export default async function DashboardNav() {
               }}
             >
               <button type="submit" className="btn btn-outline">
-                Sign Out
+                {t("signOut")}
               </button>
             </form>
           </div>

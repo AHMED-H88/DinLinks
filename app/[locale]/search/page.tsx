@@ -6,26 +6,31 @@ import SearchBar from "@/components/SearchBar";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { prisma } from "@/lib/prisma";
+import { getTranslations } from "next-intl/server";
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
+  params,
   searchParams,
 }: {
+  params: { locale: string };
   searchParams: { q?: string; category?: string; city?: string };
 }): Promise<Metadata> {
+  const t = await getTranslations({ locale: params.locale, namespace: "search" });
+
   const parts: string[] = [];
   if (searchParams.q)        parts.push(`"${searchParams.q}"`);
   if (searchParams.category) parts.push(searchParams.category);
-  if (searchParams.city)     parts.push(`in ${searchParams.city}`);
+  if (searchParams.city)     parts.push(`${t("inPreposition")} ${searchParams.city}`);
 
   const title = parts.length
-    ? `Search: ${parts.join(" · ")} | DinLinks`
-    : "Search businesses | DinLinks";
+    ? t("metaTitle", { query: parts.join(" · ") })
+    : t("metaDefault");
 
   return {
     title,
-    description: "Search Norwegian businesses by name, category, or city. Find verified local businesses with accurate opening hours and contact information.",
+    description: t("metaDescription"),
     alternates: { canonical: "/search" },
   };
 }
@@ -35,6 +40,8 @@ export default async function SearchPage({
 }: {
   searchParams: { q?: string; category?: string; city?: string; sort?: string };
 }) {
+  const t = await getTranslations("search");
+
   // Fetch filters data in parallel
   const [categories, cityGroups] = await Promise.all([
     prisma.category.findMany({ orderBy: { name: "asc" } }),
@@ -61,12 +68,12 @@ export default async function SearchPage({
       <div className="bg-white border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <h1 className="text-2xl font-bold text-gray-900 mb-1 tracking-tight">
-            {hasSearch ? "Search results" : "Find businesses"}
+            {hasSearch ? t("heading") : t("find")}
           </h1>
           <p className="text-sm text-gray-500 mb-6">
-            Discover verified businesses across Norway.
+            {t("discover")}
           </p>
-          <SearchBar placeholder="Business name, service, or category…" />
+          <SearchBar placeholder={t("placeholder")} />
         </div>
       </div>
 

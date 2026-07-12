@@ -3,9 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "@/i18n/routing";
 import { Link } from "@/i18n/routing";
+import { useTranslations } from "next-intl";
 
 export default function SignupPage() {
   const router = useRouter();
+  const t = useTranslations("auth.signup");
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -20,12 +22,12 @@ export default function SignupPage() {
     setError("");
 
     if (formData.password !== formData.confirmPassword) {
-      setError("Passordene stemmer ikke overens");
+      setError(t("errorPasswordMismatch"));
       return;
     }
 
     if (formData.password.length < 6) {
-      setError("Passordet må være minst 6 tegn");
+      setError(t("errorPasswordLength"));
       return;
     }
 
@@ -45,12 +47,12 @@ export default function SignupPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || "En feil oppstod");
+        setError(data.error || t("errorGeneric"));
       } else {
         router.push("/login?registered=true");
       }
     } catch (err) {
-      setError("En feil oppstod. Vennligst prøv igjen.");
+      setError(t("errorGeneric"));
     } finally {
       setLoading(false);
     }
@@ -66,8 +68,8 @@ export default function SignupPage() {
               DinLinks
             </h1>
           </Link>
-          <h2 className="text-2xl font-semibold text-gray-900 mb-2">Opprett konto</h2>
-          <p className="text-gray-600">Registrer din bedrift på DinLinks</p>
+          <h2 className="text-2xl font-semibold text-gray-900 mb-2">{t("title")}</h2>
+          <p className="text-gray-600">{t("subtitle")}</p>
         </div>
 
         {/* Signup Card */}
@@ -87,7 +89,7 @@ export default function SignupPage() {
             <div className="space-y-5">
               <div>
                 <label htmlFor="name" className="label">
-                  Bedriftsnavn
+                  {t("businessName")}
                 </label>
                 <input
                   id="name"
@@ -95,7 +97,7 @@ export default function SignupPage() {
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   className="input"
-                  placeholder="Ditt bedriftsnavn"
+                  placeholder={t("businessNamePlaceholder")}
                   required
                   autoComplete="organization"
                 />
@@ -103,7 +105,7 @@ export default function SignupPage() {
 
               <div>
                 <label htmlFor="email" className="label">
-                  E-postadresse
+                  {t("email")}
                 </label>
                 <input
                   id="email"
@@ -111,7 +113,7 @@ export default function SignupPage() {
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   className="input"
-                  placeholder="din@epost.no"
+                  placeholder={t("emailPlaceholder")}
                   required
                   autoComplete="email"
                 />
@@ -119,7 +121,7 @@ export default function SignupPage() {
 
               <div>
                 <label htmlFor="password" className="label">
-                  Passord
+                  {t("password")}
                 </label>
                 <input
                   id="password"
@@ -127,7 +129,7 @@ export default function SignupPage() {
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   className="input"
-                  placeholder="Minst 6 tegn"
+                  placeholder={t("passwordPlaceholder")}
                   required
                   autoComplete="new-password"
                 />
@@ -135,7 +137,7 @@ export default function SignupPage() {
 
               <div>
                 <label htmlFor="confirmPassword" className="label">
-                  Bekreft passord
+                  {t("confirmPassword")}
                 </label>
                 <input
                   id="confirmPassword"
@@ -143,7 +145,7 @@ export default function SignupPage() {
                   value={formData.confirmPassword}
                   onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                   className="input"
-                  placeholder="Gjenta passord"
+                  placeholder={t("confirmPasswordPlaceholder")}
                   required
                   autoComplete="new-password"
                 />
@@ -161,22 +163,22 @@ export default function SignupPage() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                   </svg>
-                  Oppretter konto...
+                  {t("submitting")}
                 </span>
               ) : (
-                "Opprett konto"
+                t("submit")
               )}
             </button>
           </form>
 
           <div className="mt-8 pt-6 border-t border-gray-200/60">
             <p className="text-center text-sm text-gray-600">
-              Har du allerede en konto?{" "}
+              {t("hasAccount")}{" "}
               <Link
                 href="/login"
                 className="text-primary-600 hover:text-primary-700 font-semibold transition-colors inline-flex items-center gap-1 group"
               >
-                Logg inn
+                {t("signIn")}
                 <svg className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
@@ -187,7 +189,7 @@ export default function SignupPage() {
 
         {/* Footer */}
         <p className="text-center text-sm text-gray-500 mt-8">
-          Ved å registrere deg godtar du våre vilkår og personvernregler
+          {t("terms")}
         </p>
       </div>
     </div>

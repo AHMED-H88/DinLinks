@@ -1,4 +1,5 @@
 import { Link } from "@/i18n/routing";
+import { useTranslations } from "next-intl";
 
 interface Category {
   id: string;
@@ -13,6 +14,7 @@ interface CategoryListProps {
 }
 
 export default function CategoryList({ categories }: CategoryListProps) {
+  const t = useTranslations("categoryList");
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
       {categories.map((category) => (
@@ -31,7 +33,7 @@ export default function CategoryList({ categories }: CategoryListProps) {
               {category.name}
             </h3>
             {category.count !== undefined && (
-              <p className="text-xs text-gray-400 mt-0.5">{category.count} businesses</p>
+              <p className="text-xs text-gray-400 mt-0.5">{category.count} {t("businessPlural")}</p>
             )}
           </div>
         </Link>

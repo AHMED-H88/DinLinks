@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Link } from "@/i18n/routing";
+import { getTranslations } from "next-intl/server";
+import { useTranslations } from "next-intl";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BusinessForm from "@/components/BusinessForm";
@@ -17,7 +19,8 @@ export default async function DashboardPage({
 }) {
   const session = await auth();
   const { locale } = await params;
-  const isNo = locale === "no";
+  const t = await getTranslations({ locale, namespace: "dashboard" });
+  const tCat = await getTranslations({ locale, namespace: "categories" });
 
   if (!session?.user) {
     redirect("/login");
@@ -40,7 +43,7 @@ export default async function DashboardPage({
   const stats = business
     ? [
         {
-          label: isNo ? "Profilvisninger" : "Profile views",
+          label: t("profileViews"),
           value: business.views ?? 0,
           icon: (
             <path
@@ -52,7 +55,7 @@ export default async function DashboardPage({
           ),
         },
         {
-          label: isNo ? "Favoritter" : "Favourites",
+          label: t("favorites"),
           value: business._count.favorites,
           icon: (
             <path
@@ -64,7 +67,7 @@ export default async function DashboardPage({
           ),
         },
         {
-          label: isNo ? "Anmeldelser" : "Reviews",
+          label: t("reviews"),
           value: business._count.reviews,
           icon: (
             <path
@@ -76,7 +79,7 @@ export default async function DashboardPage({
           ),
         },
         {
-          label: isNo ? "Filialer" : "Branches",
+          label: t("branches"),
           value: business.branches?.length ?? 0,
           icon: (
             <path
@@ -99,9 +102,9 @@ export default async function DashboardPage({
         {/* ── Welcome bar ─────────────────────────────────────────────── */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Dashboard</h1>
+            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">{t("title")}</h1>
             <p className="text-gray-500 text-sm mt-0.5">
-              Welcome back,{" "}
+              {t("welcomeBack")}{" "}
               <span className="font-medium text-gray-700">
                 {session!.user!.name ?? session!.user!.email}
               </span>
@@ -117,7 +120,7 @@ export default async function DashboardPage({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75}
                   d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
               </svg>
-              View public profile
+              {t("viewPublicProfile")}
             </Link>
           )}
         </div>
@@ -149,12 +152,10 @@ export default async function DashboardPage({
             <div className="card p-6 sm:p-8">
               <div className="mb-6">
                 <h2 className="text-lg font-semibold text-gray-900">
-                  {business ? "Edit business profile" : "Create your business profile"}
+                  {business ? t("editProfile") : t("createProfile")}
                 </h2>
                 <p className="text-sm text-gray-500 mt-0.5">
-                  {business
-                    ? "Changes are saved immediately. If you were rejected, saving will re-submit for review."
-                    : "Fill in your details and submit for admin approval. It only takes a few minutes."}
+                  {business ? t("editSubtitle") : t("createSubtitle")}
                 </p>
               </div>
 
@@ -212,14 +213,14 @@ export default async function DashboardPage({
             {/* Getting started tips (only for new users) */}
             {!business && (
               <div className="card p-5">
-                <h3 className="font-semibold text-gray-900 mb-3 text-sm">Getting started</h3>
+                <h3 className="font-semibold text-gray-900 mb-3 text-sm">{t("gettingStarted")}</h3>
                 <div className="space-y-3">
                   {[
-                    { step: "1", text: "Enter your business name and category" },
-                    { step: "2", text: "Upload a logo for a professional look" },
-                    { step: "3", text: "Add contact details and opening hours" },
-                    { step: "4", text: "List your services and offers" },
-                    { step: "5", text: "Save — an admin will review and approve" },
+                    { step: "1", text: t("step1") },
+                    { step: "2", text: t("step2") },
+                    { step: "3", text: t("step3") },
+                    { step: "4", text: t("step4") },
+                    { step: "5", text: t("step5") },
                   ].map(({ step, text }) => (
                     <div key={step} className="flex items-start gap-2.5">
                       <span className="w-5 h-5 rounded-full bg-primary-50 text-primary-700 text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -235,24 +236,24 @@ export default async function DashboardPage({
             {/* Quick info card for existing businesses */}
             {business && (
               <div className="card p-5 space-y-3">
-                <h3 className="font-semibold text-gray-900 text-sm">Profile info</h3>
+                <h3 className="font-semibold text-gray-900 text-sm">{t("profileInfo")}</h3>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-500">Status</span>
+                    <span className="text-gray-500">{t("statusLabel")}</span>
                     <StatusPill status={business.status} />
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500">Category</span>
-                    <span className="font-medium text-gray-800 text-right">{business.category?.name ?? "—"}</span>
+                    <span className="text-gray-500">{t("category")}</span>
+                    <span className="font-medium text-gray-800 text-right">{business.category ? (tCat.has(business.category.slug) ? tCat(business.category.slug) : business.category.name) : "—"}</span>
                   </div>
                   {business.city && (
                     <div className="flex justify-between">
-                      <span className="text-gray-500">City</span>
+                      <span className="text-gray-500">{t("city")}</span>
                       <span className="font-medium text-gray-800">{business.city}</span>
                     </div>
                   )}
                   <div className="flex justify-between">
-                    <span className="text-gray-500">Photos</span>
+                    <span className="text-gray-500">{t("photos")}</span>
                     <span className="font-medium text-gray-800">{business.images.length}</span>
                   </div>
                 </div>
@@ -268,9 +269,10 @@ export default async function DashboardPage({
 }
 
 function StatusPill({ status }: { status: string }) {
+  const t = useTranslations("dashboard");
   if (status === "APPROVED")
-    return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700">✓ Approved</span>;
+    return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700">{t("approved")}</span>;
   if (status === "PENDING")
-    return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">⏳ Pending</span>;
-  return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">✕ Rejected</span>;
+    return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">{t("pending")}</span>;
+  return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">{t("rejected")}</span>;
 }

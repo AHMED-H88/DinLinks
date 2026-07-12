@@ -1,7 +1,9 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { useTranslations } from "next-intl";
 
 export default function ContactPage() {
+  const t = useTranslations("contact");
   return (
     <div className="min-h-screen bg-white">
       <Header />
@@ -11,10 +13,10 @@ export default function ContactPage() {
         <section className="bg-gradient-to-b from-primary-50 to-white py-20 md:py-28">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 tracking-tight">
-              Kontakt oss
+              {t("title")}
             </h1>
             <p className="text-xl text-gray-600 leading-relaxed max-w-3xl mx-auto">
-              Har du spørsmål eller tilbakemeldinger? Vi hører gjerne fra deg!
+              {t("subtitle")}
             </p>
           </div>
         </section>
@@ -25,7 +27,7 @@ export default function ContactPage() {
             {/* Contact Info */}
             <div>
               <h2 className="text-3xl font-bold text-gray-900 mb-8 tracking-tight">
-                Kontaktinformasjon
+                {t("info.heading")}
               </h2>
               <div className="space-y-6">
                 <div className="flex items-start gap-4">
@@ -35,7 +37,7 @@ export default function ContactPage() {
                     </svg>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900 mb-1">E-post</h3>
+                    <h3 className="font-semibold text-gray-900 mb-1">{t("info.email")}</h3>
                     <a href="mailto:support@dinlinks.no" className="text-primary-600 hover:text-primary-700 transition-colors">
                       support@dinlinks.no
                     </a>
@@ -50,10 +52,10 @@ export default function ContactPage() {
                     </svg>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900 mb-1">Adresse</h3>
+                    <h3 className="font-semibold text-gray-900 mb-1">{t("info.address")}</h3>
                     <p className="text-gray-600">
-                      DinLinks AS<br />
-                      Oslo, Norge
+                      {t("info.company")}<br />
+                      {t("info.location")}
                     </p>
                   </div>
                 </div>
@@ -65,10 +67,10 @@ export default function ContactPage() {
                     </svg>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900 mb-1">Åpningstider</h3>
+                    <h3 className="font-semibold text-gray-900 mb-1">{t("info.hours")}</h3>
                     <p className="text-gray-600">
-                      Mandag - fredag: 09:00 - 17:00<br />
-                      Lørdag - søndag: Stengt
+                      {t("info.weekdays")}<br />
+                      {t("info.weekend")}
                     </p>
                   </div>
                 </div>
@@ -78,67 +80,67 @@ export default function ContactPage() {
             {/* Contact Form */}
             <div className="card p-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-6 tracking-tight">
-                Send oss en melding
+                {t("form.heading")}
               </h2>
               <form className="space-y-6">
                 <div>
                   <label htmlFor="name" className="label">
-                    Navn
+                    {t("form.name")}
                   </label>
                   <input
                     type="text"
                     id="name"
                     name="name"
                     className="input"
-                    placeholder="Ditt navn"
+                    placeholder={t("form.namePlaceholder")}
                     required
                   />
                 </div>
 
                 <div>
                   <label htmlFor="email" className="label">
-                    E-post
+                    {t("form.email")}
                   </label>
                   <input
                     type="email"
                     id="email"
                     name="email"
                     className="input"
-                    placeholder="din@epost.no"
+                    placeholder={t("form.emailPlaceholder")}
                     required
                   />
                 </div>
 
                 <div>
                   <label htmlFor="subject" className="label">
-                    Emne
+                    {t("form.subject")}
                   </label>
                   <input
                     type="text"
                     id="subject"
                     name="subject"
                     className="input"
-                    placeholder="Hva gjelder henvendelsen?"
+                    placeholder={t("form.subjectPlaceholder")}
                     required
                   />
                 </div>
 
                 <div>
                   <label htmlFor="message" className="label">
-                    Melding
+                    {t("form.message")}
                   </label>
                   <textarea
                     id="message"
                     name="message"
                     rows={5}
                     className="input resize-none"
-                    placeholder="Skriv din melding her..."
+                    placeholder={t("form.messagePlaceholder")}
                     required
                   />
                 </div>
 
                 <button type="submit" className="w-full btn btn-primary btn-lg">
-                  Send melding
+                  {t("form.submit")}
                 </button>
               </form>
             </div>
@@ -149,42 +151,42 @@ export default function ContactPage() {
         <section className="bg-gray-50 py-16 md:py-20">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-4xl font-bold text-gray-900 mb-12 text-center tracking-tight">
-              Ofte stilte spørsmål
+              {t("faq.heading")}
             </h2>
             <div className="space-y-6">
               <div className="card p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  Hvordan registrerer jeg min bedrift?
+                  {t("faq.q1")}
                 </h3>
                 <p className="text-gray-600">
-                  Klikk på "Registrer deg" øverst på siden, fyll ut skjemaet med bedriftsinformasjon, og vent på godkjenning fra vårt team.
+                  {t("faq.a1")}
                 </p>
               </div>
 
               <div className="card p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  Er det gratis å registrere bedriften min?
+                  {t("faq.q2")}
                 </h3>
                 <p className="text-gray-600">
-                  Ja, grunnleggende registrering er gratis. Vi tilbyr også premium-pakker med ekstra funksjoner og synlighet.
+                  {t("faq.a2")}
                 </p>
               </div>
 
               <div className="card p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  Hvor lang tid tar det før bedriften min blir godkjent?
+                  {t("faq.q3")}
                 </h3>
                 <p className="text-gray-600">
-                  Vi behandler alle søknader innen 1-2 virkedager. Du vil motta en e-post når bedriften din er godkjent.
+                  {t("faq.a3")}
                 </p>
               </div>
 
               <div className="card p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  Kan jeg redigere bedriftsprofilen min etter publisering?
+                  {t("faq.q4")}
                 </h3>
                 <p className="text-gray-600">
-                  Ja, du kan når som helst logge inn på dashboardet ditt og oppdatere bedriftsinformasjonen din.
+                  {t("faq.a4")}
                 </p>
               </div>
             </div>

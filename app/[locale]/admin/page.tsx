@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getTranslations } from "next-intl/server";
 import AdminNav from "@/components/AdminNav";
 import BusinessTable from "@/components/BusinessTable";
 
@@ -8,6 +9,7 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
   const session = await auth();
+  const t = await getTranslations("admin");
 
   if (!session?.user || session.user.role !== "ADMIN") {
     redirect("/login");
@@ -52,22 +54,22 @@ export default async function AdminPage() {
 
         {/* ── Page header ──────────────────────────────────────────────── */}
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Business management</h1>
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">{t("title")}</h1>
           <p className="text-sm text-gray-500 mt-0.5">
-            Review, approve, and manage all business listings.
+            {t("subtitle")}
           </p>
         </div>
 
         {/* ── Stats row ────────────────────────────────────────────────── */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
           <StatCard
-            label="Total"
+            label={t("total")}
             value={stats.total}
             color="text-gray-900"
             bg="bg-white"
           />
           <StatCard
-            label="Pending review"
+            label={t("pending")}
             value={stats.pending}
             color="text-amber-600"
             bg="bg-amber-50"
@@ -75,14 +77,14 @@ export default async function AdminPage() {
             urgent={stats.pending > 0}
           />
           <StatCard
-            label="Approved"
+            label={t("approved")}
             value={stats.approved}
             color="text-green-600"
             bg="bg-green-50"
             border="border-green-100"
           />
           <StatCard
-            label="Rejected"
+            label={t("rejected")}
             value={stats.rejected}
             color="text-red-500"
             bg="bg-red-50"
