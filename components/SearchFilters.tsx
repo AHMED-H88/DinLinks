@@ -4,6 +4,7 @@ import { useRouter } from "@/i18n/routing";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { formatCity } from "@/lib/format";
 
 interface Category { id: string; name: string; slug: string }
 interface CityCount { city: string; count: number }
@@ -126,7 +127,7 @@ export default function SearchFilters({ categories, cities }: SearchFiltersProps
                     : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                 }`}
               >
-                <span>{city}</span>
+                <span>{formatCity(city)}</span>
                 <span className="text-xs text-gray-400">{count}</span>
               </button>
             ))}

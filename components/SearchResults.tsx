@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import BusinessCard from "@/components/BusinessCard";
 import { getTranslations } from "next-intl/server";
+import { formatCity } from "@/lib/format";
 
 interface SearchResultsProps {
   searchParams: {
@@ -94,7 +95,7 @@ export default async function SearchResults({ searchParams }: SearchResultsProps
         <span className="font-semibold text-gray-900">{businesses.length}</span>{" "}
         {businesses.length === 1 ? t("businessSingular") : t("businessPlural")} {t("found")}
         {q    && <> {t("for")} <span className="font-medium text-gray-700">&quot;{q}&quot;</span></>}
-        {city && <> {t("in")} <span className="font-medium text-gray-700">{city}</span></>}
+        {city && <> {t("in")} <span className="font-medium text-gray-700">{formatCity(city)}</span></>}
       </p>
 
       {/* Grid */}

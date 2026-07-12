@@ -64,10 +64,12 @@ export default async function HomePage() {
     prisma.business.count({ where: { status: "APPROVED" } }),
   ]);
 
+  // Items 1 & 2 are real Supabase counts (no "+" — the number is exact).
+  // Item 3 is a non-numerical trust statement, not a fabricated metric.
   const stats = [
-    { value: businessCount > 0 ? `${businessCount.toLocaleString()}+` : t("statsCount1"), label: t("statsBusinesses") },
-    { value: approvedCount > 0 ? `${approvedCount.toLocaleString()}+` : t("statsCount2"),  label: t("statsVerified") },
-    { value: t("statsCount3"), label: t("statsUsers") },
+    { value: businessCount.toLocaleString(),  label: t("statsBusinesses") },
+    { value: approvedCount.toLocaleString(),  label: t("statsVerified") },
+    { value: t("statsFreeTitle"),             label: t("statsFreeSubtitle") },
   ];
 
   const categoriesWithCount = categories.map((c) => ({

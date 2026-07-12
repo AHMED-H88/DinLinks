@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { Link } from "@/i18n/routing";
 import { getTranslations } from "next-intl/server";
 import { useTranslations } from "next-intl";
+import { formatCity } from "@/lib/format";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BusinessCard from "@/components/BusinessCard";
@@ -149,7 +150,7 @@ export default async function CategoryDetailPage({
                   <span className="font-medium text-gray-700">{total}</span>{" "}
                   {total === 1 ? t("verifiedBusinessSingular") : t("verifiedBusinessPlural")}
                   {cities.length > 0 && (
-                    <> · {cities.slice(0, 4).join(", ")}{cities.length > 4 ? ` ${t("andMore")}` : ""}</>
+                    <> · {cities.slice(0, 4).map(formatCity).join(", ")}{cities.length > 4 ? ` ${t("andMore")}` : ""}</>
                   )}
                 </p>
               </div>
