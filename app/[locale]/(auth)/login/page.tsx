@@ -4,9 +4,11 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "@/i18n/routing";
 import { Link } from "@/i18n/routing";
+import { useTranslations } from "next-intl";
 
 export default function LoginPage() {
   const router = useRouter();
+  const t = useTranslations("auth.login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -25,13 +27,13 @@ export default function LoginPage() {
       });
 
       if (result?.error) {
-        setError("Invalid email or password");
+        setError(t("errorInvalid"));
       } else {
         router.push("/dashboard");
         router.refresh();
       }
     } catch (err) {
-      setError("An error occurred. Please try again.");
+      setError(t("errorGeneric"));
     } finally {
       setLoading(false);
     }
@@ -47,8 +49,8 @@ export default function LoginPage() {
               DinLinks
             </h1>
           </Link>
-          <h2 className="text-2xl font-semibold text-gray-900 mb-2">Velkommen tilbake</h2>
-          <p className="text-gray-600">Logg inn for å fortsette</p>
+          <h2 className="text-2xl font-semibold text-gray-900 mb-2">{t("title")}</h2>
+          <p className="text-gray-600">{t("subtitle")}</p>
         </div>
 
         {/* Premium Login Card */}
@@ -68,7 +70,7 @@ export default function LoginPage() {
             <div className="space-y-6">
               <div>
                 <label htmlFor="email" className="label">
-                  E-postadresse
+                  {t("email")}
                 </label>
                 <input
                   id="email"
@@ -76,7 +78,7 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="input input-lg"
-                  placeholder="din@epost.no"
+                  placeholder={t("emailPlaceholder")}
                   required
                   autoComplete="email"
                 />
@@ -84,7 +86,7 @@ export default function LoginPage() {
 
               <div>
                 <label htmlFor="password" className="label">
-                  Passord
+                  {t("password")}
                 </label>
                 <input
                   id="password"
@@ -110,22 +112,22 @@ export default function LoginPage() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                   </svg>
-                  Logger inn...
+                  {t("submitting")}
                 </span>
               ) : (
-                "Logg inn"
+                t("submit")
               )}
             </button>
           </form>
 
           <div className="mt-8 pt-8 border-t border-gray-200">
             <p className="text-center text-sm text-gray-600">
-              Har du ikke en konto?{" "}
+              {t("noAccount")}{" "}
               <Link
                 href="/signup"
                 className="text-primary-600 hover:text-primary-700 font-medium transition-colors"
               >
-                Registrer deg
+                {t("signUp")}
               </Link>
             </p>
           </div>
@@ -133,7 +135,7 @@ export default function LoginPage() {
 
         {/* Footer */}
         <p className="text-center text-xs text-gray-500 mt-8">
-          Ved å logge inn godtar du våre vilkår og personvernregler
+          {t("terms")}
         </p>
       </div>
     </div>

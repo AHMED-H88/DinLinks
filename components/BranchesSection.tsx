@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import type { Branch } from "@/components/BranchManager";
+import { normalizeDayKey } from "@/lib/days";
 
 function HoursTable({
   hours,
@@ -20,7 +21,7 @@ function HoursTable({
             i % 2 === 0 ? "bg-gray-50" : "bg-white"
           }`}
         >
-          <span className="font-medium text-gray-600 w-22">{labels[day] ?? day}</span>
+          <span className="font-medium text-gray-600 w-22">{(() => { const k = normalizeDayKey(day); return k ? labels[k] : day; })()}</span>
           {h?.closed ? (
             <span className="text-gray-400">{closedLabel}</span>
           ) : (

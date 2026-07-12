@@ -24,6 +24,7 @@ export default function SearchFilters({ categories, cities }: SearchFiltersProps
   const router       = useRouter();
   const searchParams = useSearchParams();
   const t            = useTranslations("searchFilters");
+  const tCat         = useTranslations("categories");
 
   const currentCategory = searchParams.get("category") ?? "";
   const currentCity     = searchParams.get("city")     ?? "";
@@ -91,7 +92,7 @@ export default function SearchFilters({ categories, cities }: SearchFiltersProps
                   : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
               }`}
             >
-              {cat.name}
+              {tCat.has(cat.slug) ? tCat(cat.slug) : cat.name}
             </button>
           ))}
         </div>

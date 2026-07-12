@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { Link } from "@/i18n/routing";
+import { useTranslations } from "next-intl";
 
 interface CategoryItem {
   id: string;
@@ -12,6 +13,7 @@ interface CategoryItem {
 }
 
 export default function CategoriesClient({ categories }: { categories: CategoryItem[] }) {
+  const t = useTranslations("categoriesClient");
   const [query, setQuery] = useState("");
 
   const filtered = useMemo(() => {
@@ -33,7 +35,7 @@ export default function CategoriesClient({ categories }: { categories: CategoryI
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search categories…"
+          placeholder={t("searchPlaceholder")}
           className="input pl-10 py-2.5 text-sm"
         />
         {query && (
@@ -52,10 +54,10 @@ export default function CategoriesClient({ categories }: { categories: CategoryI
       {filtered.length === 0 ? (
         <div className="text-center py-16">
           <div className="text-4xl mb-3">🔍</div>
-          <h3 className="text-base font-semibold text-gray-900 mb-1">No categories found</h3>
-          <p className="text-sm text-gray-500">Try a different search term.</p>
+          <h3 className="text-base font-semibold text-gray-900 mb-1">{t("noCategories")}</h3>
+          <p className="text-sm text-gray-500">{t("tryDifferent")}</p>
           <button onClick={() => setQuery("")} className="mt-4 text-sm text-primary-700 hover:underline">
-            Clear search
+            {t("clearSearch")}
           </button>
         </div>
       ) : (
@@ -74,7 +76,7 @@ export default function CategoriesClient({ categories }: { categories: CategoryI
                   {cat.name}
                 </h2>
                 <p className="text-xs text-gray-400 mt-0.5">
-                  {cat.count} {cat.count === 1 ? "business" : "businesses"}
+                  {cat.count} {cat.count === 1 ? t("businessSingular") : t("businessPlural")}
                 </p>
               </div>
             </Link>

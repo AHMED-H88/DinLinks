@@ -24,6 +24,8 @@
     "statsCount1": "10 000+",
     "statsCount2": "8 000+",
     "statsCount3": "50 000+",
+    "businessSingular": "bedrift",
+    "businessPlural": "bedrifter",
     "featuredLabel": "Utvalgte",
     "featuredTitle": "Populære bedrifter",
     "viewAll": "Se alle",
@@ -101,7 +103,10 @@
     "cityPlaceholder":  "Oslo",
     "postalPlaceholder": "0150",
     "phonePlaceholder": "+47 123 45 678",
-    "emailPlaceholder": "filial@bedrift.no"
+    "emailPlaceholder": "filial@bedrift.no",
+    "nameRequired": "Navn er påkrevd",
+    "errorUnknown": "Noe gikk galt. Prøv igjen.",
+    "requestFailed": "Forespørselen mislyktes. Prøv igjen."
   },
   "footer": {
     "tagline": "Norges bedriftskatalog med verifiserte profiler. Finn lokale bedrifter med nøyaktig og oppdatert informasjon.",
@@ -170,7 +175,20 @@
     "discover": "Oppdag verifiserte bedrifter over hele Norge.",
     "placeholder": "Bedriftsnavn, tjeneste eller kategori…"
   },
+  "categories": {
+    "administrasjon": "Administrasjon",
+    "helse": "Helse",
+    "handverk": "Håndverk",
+    "annet": "Annet",
+    "restaurant": "Restaurant",
+    "cafe": "Kafé",
+    "shopping": "Shopping",
+    "tjenester": "Tjenester"
+  },
   "categoriesPage": {
+    "metaTitle": "Bla gjennom kategorier | DinLinks",
+    "metaDescription": "Utforsk alle bedriftskategorier på DinLinks — fra restauranter og butikker til helse og bil. Finn akkurat det du trenger.",
+    "ogDescription": "Utforsk alle bedriftskategorier på DinLinks.",
     "title": "Bla gjennom",
     "allCategories": "Alle kategorier",
     "home": "Hjem",
@@ -178,12 +196,19 @@
     "verifiedBusinesses": "verifiserte bedrifter"
   },
   "categoryPage": {
+    "metaNotFound": "Ikke funnet | DinLinks",
+    "metaTitle": "{category}-bedrifter i Norge | DinLinks",
+    "metaDescription": "Se {count} verifiserte {category}-bedrifter på DinLinks. Finn kontaktinfo, åpningstider og anmeldelser.",
+    "ogTitle": "{category}-bedrifter | DinLinks",
+    "ogDescription": "{count} verifiserte {category}-bedrifter.",
     "home": "Hjem",
     "categories": "Kategorier",
     "verified": "verifisert",
+    "verifiedBusinessSingular": "verifisert bedrift",
+    "verifiedBusinessPlural": "verifiserte bedrifter",
     "businessSingular": "bedrift",
     "businessPlural": "bedrifter",
-    "andMore": "og mer",
+    "andMore": "og flere",
     "noBusinesses": "Ingen {category}-bedrifter ennå",
     "beFirst": "Vær den første til å registrere bedriften din i denne kategorien og nå kunder som leter etter {category}-tjenester.",
     "listYourBusiness": "Registrer bedriften din",
@@ -234,6 +259,35 @@
     "noReviews": "Ingen anmeldelser ennå"
   },
   "businessForm": {
+    "sections": {
+      "basics": "Grunnleggende informasjon",
+      "media": "Media",
+      "location": "Beliggenhet",
+      "contact": "Kontaktinformasjon",
+      "hours": "Åpningstider",
+      "services": "Tjenester og tilbud"
+    },
+    "subtitles": {
+      "basics": "Bedriftsnavn, kategori og beskrivelse.",
+      "media": "Logo, forsidebilde og bildegalleri.",
+      "location": "Her finner kundene deg.",
+      "contact": "Slik når kundene deg."
+    },
+    "errors": {
+      "nameRequired": "Bedriftsnavn er påkrevd.",
+      "generic": "Noe gikk galt. Prøv igjen.",
+      "network": "Nettverksfeil — sjekk tilkoblingen og prøv igjen.",
+      "logoUpload": "Opplasting av logo mislyktes",
+      "coverUpload": "Opplasting av forsidebilde mislyktes",
+      "imageUpload": "Bildeopplasting mislyktes"
+    },
+    "success": {
+      "updated": "Profilen er oppdatert.",
+      "created": "Profil opprettet! Den publiseres når en administrator har godkjent den."
+    },
+    "uploading": "Laster opp…",
+    "savingState": "Lagrer…",
+    "photoGallery": "Bildegalleri",
     "tabs": {
       "basicInfo": "Grunnleggende info",
       "media": "Media",
@@ -270,7 +324,9 @@
       "website": "Nettsted",
       "bookingUrl": "Bestillings-URL",
       "openingHours": "Åpningstider",
-      "services": "Tjenester"
+      "services": "Tjenester",
+      "serviceName": "Tjenestenavn",
+      "price": "Pris"
     },
     "placeholders": {
       "name": "f.eks. Oslo Auto Repair",
@@ -552,6 +608,7 @@
   },
   "privacy": {
     "title": "Personvernerklæring",
+    "lastUpdated": "Sist oppdatert:",
     "intro": {
       "heading": "1. Innledning",
       "p1": "Denne personvernerklæringen beskriver hvordan DinLinks («vi», «oss» eller «vår») samler inn, bruker og beskytter dine personopplysninger når du bruker vår plattform.",
@@ -592,6 +649,7 @@
   },
   "terms": {
     "title": "Vilkår og betingelser",
+    "lastUpdated": "Sist oppdatert:",
     "acceptance": {
       "heading": "1. Aksept av vilkår",
       "text": "Ved å bruke DinLinks («tjenesten») godtar du å være bundet av disse vilkårene og betingelsene. Hvis du ikke godtar disse vilkårene, vennligst ikke bruk tjenesten."

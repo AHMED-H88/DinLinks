@@ -2,13 +2,14 @@
 
 import { useRouter } from "@/i18n/routing";
 import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 const OPTIONS = [
-  { value: "popular",  label: "Most popular"  },
-  { value: "reviewed", label: "Most reviewed"  },
-  { value: "newest",   label: "Newest"         },
-  { value: "alpha",    label: "A → Z"          },
-];
+  { value: "popular",  labelKey: "mostPopular"  },
+  { value: "reviewed", labelKey: "mostReviewed" },
+  { value: "newest",   labelKey: "newest"       },
+  { value: "alpha",    labelKey: "alphabetical" },
+] as const;
 
 interface CategorySortBarProps {
   currentSort: string;
@@ -18,6 +19,7 @@ interface CategorySortBarProps {
 export default function CategorySortBar({ currentSort, slug }: CategorySortBarProps) {
   const router       = useRouter();
   const searchParams = useSearchParams();
+  const t            = useTranslations("categorySortBar");
 
   function handleChange(value: string) {
     const params = new URLSearchParams(searchParams.toString());
@@ -29,14 +31,14 @@ export default function CategorySortBar({ currentSort, slug }: CategorySortBarPr
 
   return (
     <div className="flex items-center gap-2">
-      <span className="text-xs text-gray-400 font-medium whitespace-nowrap">Sort by</span>
+      <span className="text-xs text-gray-400 font-medium whitespace-nowrap">{t("sortBy")}</span>
       <select
         value={currentSort}
         onChange={(e) => handleChange(e.target.value)}
         className="input py-1.5 px-3 text-sm pr-8 cursor-pointer"
       >
-        {OPTIONS.map(({ value, label }) => (
-          <option key={value} value={value}>{label}</option>
+        {OPTIONS.map(({ value, labelKey }) => (
+          <option key={value} value={value}>{t(labelKey)}</option>
         ))}
       </select>
     </div>

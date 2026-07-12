@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { Link } from "@/i18n/routing";
+import { getTranslations } from "next-intl/server";
+import { useTranslations } from "next-intl";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BusinessCard from "@/components/BusinessCard";
@@ -16,22 +18,26 @@ const PAGE_SIZE = 12;
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ slug: string; locale: string }>;
 }): Promise<Metadata> {
-  const { slug } = await params;
+  const { slug, locale } = await params;
+  const t = await getTranslations({ locale, namespace: "categoryPage" });
+  const tCat = await getTranslations({ locale, namespace: "categories" });
   const category = await prisma.category.findUnique({ where: { slug } });
-  if (!category) return { title: "Not found | DinLinks" };
+  if (!category) return { title: t("metaNotFound") };
 
   const count = await prisma.business.count({
     where: { categoryId: category.id, status: "APPROVED" },
   });
 
+  const catName = tCat.has(category.slug) ? tCat(category.slug) : category.name;
+
   return {
-    title: `${category.name} businesses in Norway | DinLinks`,
-    description: `Browse ${count} verified ${category.name.toLowerCase()} businesses on DinLinks. Find contact details, opening hours, and reviews.`,
+    title: t("metaTitle", { category: catName }),
+    description: t("metaDescription", { count, category: catName.toLowerCase() }),
     openGraph: {
-      title: `${category.name} businesses | DinLinks`,
-      description: `${count} verified ${category.name.toLowerCase()} businesses.`,
+      title: t("ogTitle", { category: catName }),
+      description: t("ogDescription", { count, category: catName.toLowerCase() }),
       type: "website",
     },
     alternates: {
@@ -66,11 +72,15 @@ export default async function CategoryDetailPage({
   searchParams: { sort?: string; page?: string };
 }) {
   const { slug } = await params;
+  const t         = await getTranslations("categoryPage");
+  const tCat      = await getTranslations("categories");
   const sort      = searchParams.sort ?? "popular";
   const page      = Math.max(1, parseInt(searchParams.page ?? "1", 10));
 
   const category = await prisma.category.findUnique({ where: { slug } });
   if (!category) notFound();
+
+  const catName = tCat.has(category.slug) ? tCat(category.slug) : category.name;
 
   const [total, businesses, cityGroups] = await Promise.all([
     prisma.business.count({ where: { categoryId: category.id, status: "APPROVED" } }),
@@ -125,21 +135,21 @@ export default async function CategoryDetailPage({
           <div className="max-w-7xl mx-auto">
             {/* Breadcrumb */}
             <nav className="flex items-center gap-1.5 text-xs text-gray-400 mb-5">
-              <Link href="/"          className="hover:text-gray-600 transition-colors">Home</Link>
+              <Link href="/"          className="hover:text-gray-600 transition-colors">{t("home")}</Link>
               <span>/</span>
-              <Link href="/categories" className="hover:text-gray-600 transition-colors">Categories</Link>
+              <Link href="/categories" className="hover:text-gray-600 transition-colors">{t("categories")}</Link>
               <span>/</span>
-              <span className="text-gray-700 font-medium">{category.name}</span>
+              <span className="text-gray-700 font-medium">{catName}</span>
             </nav>
 
             <div className="flex flex-col sm:flex-row sm:items-end gap-4">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900 tracking-tight">{category.name}</h1>
+                <h1 className="text-3xl font-bold text-gray-900 tracking-tight">{catName}</h1>
                 <p className="text-sm text-gray-500 mt-1">
-                  <span className="font-medium text-gray-700">{total}</span> verified{" "}
-                  {total === 1 ? "business" : "businesses"}
+                  <span className="font-medium text-gray-700">{total}</span>{" "}
+                  {total === 1 ? t("verifiedBusinessSingular") : t("verifiedBusinessPlural")}
                   {cities.length > 0 && (
-                    <> · {cities.slice(0, 4).join(", ")}{cities.length > 4 ? " and more" : ""}</>
+                    <> · {cities.slice(0, 4).join(", ")}{cities.length > 4 ? ` ${t("andMore")}` : ""}</>
                   )}
                 </p>
               </div>
@@ -156,7 +166,7 @@ export default async function CategoryDetailPage({
         <section className="py-10 px-4">
           <div className="max-w-7xl mx-auto">
             {businesses.length === 0 ? (
-              <EmptyCategory name={category.name} />
+              <EmptyCategory name={catName} />
             ) : (
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-10">
@@ -166,7 +176,8 @@ export default async function CategoryDetailPage({
                       id={b.id}
                       name={b.name ?? ""}
                       description={b.description ?? ""}
-                      category={category.name}
+                      category={catName}
+                      categorySlug={category.slug}
                       city={b.city ?? ""}
                       verified={b.status === "APPROVED"}
                       logo={b.logo}
@@ -201,20 +212,21 @@ export default async function CategoryDetailPage({
 // ── Sub-components ────────────────────────────────────────────────────────────
 
 function EmptyCategory({ name }: { name: string }) {
+  const t = useTranslations("categoryPage");
   return (
     <div className="text-center py-20">
       <div className="text-4xl mb-4">🏢</div>
       <h3 className="text-base font-semibold text-gray-900 mb-2">
-        No {name.toLowerCase()} businesses yet
+        {t("noBusinesses", { category: name.toLowerCase() })}
       </h3>
       <p className="text-sm text-gray-500 mb-6 max-w-sm mx-auto">
-        Be the first to list your business in this category and reach customers looking for {name.toLowerCase()} services.
+        {t("beFirst", { category: name.toLowerCase() })}
       </p>
       <Link
         href="/dashboard"
         className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gray-900 text-white text-sm font-semibold hover:bg-gray-800 transition-colors"
       >
-        List your business
+        {t("listYourBusiness")}
       </Link>
     </div>
   );

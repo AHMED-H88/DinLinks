@@ -1,7 +1,11 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { useTranslations, useLocale } from "next-intl";
 
 export default function PrivacyPage() {
+  const t = useTranslations("privacy");
+  const locale = useLocale();
+  const dateLocale = locale === "no" ? "nb-NO" : "en-GB";
   return (
     <div className="min-h-screen bg-white">
       <Header />
@@ -9,122 +13,122 @@ export default function PrivacyPage() {
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
         <div className="mb-12">
           <h1 className="text-5xl font-bold text-gray-900 mb-4 tracking-tight">
-            Personvernerklæring
+            {t("title")}
           </h1>
           <p className="text-lg text-gray-600">
-            Sist oppdatert: {new Date().toLocaleDateString("nb-NO")}
+            {t("lastUpdated")} {new Date().toLocaleDateString(dateLocale)}
           </p>
         </div>
 
         <div className="prose prose-lg max-w-none">
           <section className="mb-10">
             <h2 className="text-3xl font-bold text-gray-900 mb-4 tracking-tight">
-              1. Innledning
+              {t("intro.heading")}
             </h2>
             <p className="text-gray-600 leading-relaxed mb-4">
-              Denne personvernerklæringen beskriver hvordan DinLinks ("vi", "oss" eller "vår") samler inn, bruker og beskytter dine personopplysninger når du bruker vår plattform.
+              {t("intro.p1")}
             </p>
             <p className="text-gray-600 leading-relaxed">
-              Vi er forpliktet til å beskytte personvernet ditt og behandler alle personopplysninger i samsvar med gjeldende personvernlovgivning, inkludert GDPR.
+              {t("intro.p2")}
             </p>
           </section>
 
           <section className="mb-10">
             <h2 className="text-3xl font-bold text-gray-900 mb-4 tracking-tight">
-              2. Informasjon vi samler inn
+              {t("dataCollection.heading")}
             </h2>
             <p className="text-gray-600 leading-relaxed mb-4">
-              Vi samler inn følgende typer informasjon:
+              {t("dataCollection.intro")}
             </p>
             <ul className="space-y-2 text-gray-600">
               <li className="flex items-start gap-2">
                 <span className="text-primary-500 mt-1">•</span>
-                <span>Kontaktinformasjon (navn, e-post, telefonnummer)</span>
+                <span>{t("dataCollection.item1")}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-primary-500 mt-1">•</span>
-                <span>Bedriftsinformasjon (for bedriftskontoer)</span>
+                <span>{t("dataCollection.item2")}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-primary-500 mt-1">•</span>
-                <span>Bruksdata og preferanser</span>
+                <span>{t("dataCollection.item3")}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-primary-500 mt-1">•</span>
-                <span>Teknisk informasjon (IP-adresse, nettlesertype)</span>
+                <span>{t("dataCollection.item4")}</span>
               </li>
             </ul>
           </section>
 
           <section className="mb-10">
             <h2 className="text-3xl font-bold text-gray-900 mb-4 tracking-tight">
-              3. Hvordan vi bruker informasjonen
+              {t("dataUse.heading")}
             </h2>
             <p className="text-gray-600 leading-relaxed mb-4">
-              Vi bruker dine personopplysninger til:
+              {t("dataUse.intro")}
             </p>
             <ul className="space-y-2 text-gray-600">
               <li className="flex items-start gap-2">
                 <span className="text-primary-500 mt-1">•</span>
-                <span>Å tilby og forbedre våre tjenester</span>
+                <span>{t("dataUse.item1")}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-primary-500 mt-1">•</span>
-                <span>Å kommunisere med deg om din konto og tjenester</span>
+                <span>{t("dataUse.item2")}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-primary-500 mt-1">•</span>
-                <span>Å personalisere din opplevelse</span>
+                <span>{t("dataUse.item3")}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-primary-500 mt-1">•</span>
-                <span>Å sikre plattformens sikkerhet og forebygge svindel</span>
+                <span>{t("dataUse.item4")}</span>
               </li>
             </ul>
           </section>
 
           <section className="mb-10">
             <h2 className="text-3xl font-bold text-gray-900 mb-4 tracking-tight">
-              4. Deling av informasjon
+              {t("dataSharing.heading")}
             </h2>
             <p className="text-gray-600 leading-relaxed">
-              Vi selger ikke dine personopplysninger. Vi kan dele informasjon med tjenesteleverandører som hjelper oss med å drive plattformen, men kun i den grad det er nødvendig for å levere våre tjenester.
+              {t("dataSharing.text")}
             </p>
           </section>
 
           <section className="mb-10">
             <h2 className="text-3xl font-bold text-gray-900 mb-4 tracking-tight">
-              5. Dine rettigheter
+              {t("rights.heading")}
             </h2>
             <p className="text-gray-600 leading-relaxed mb-4">
-              Du har rett til å:
+              {t("rights.intro")}
             </p>
             <ul className="space-y-2 text-gray-600">
               <li className="flex items-start gap-2">
                 <span className="text-primary-500 mt-1">•</span>
-                <span>Få tilgang til dine personopplysninger</span>
+                <span>{t("rights.item1")}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-primary-500 mt-1">•</span>
-                <span>Rette unøyaktige opplysninger</span>
+                <span>{t("rights.item2")}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-primary-500 mt-1">•</span>
-                <span>Slette dine personopplysninger</span>
+                <span>{t("rights.item3")}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-primary-500 mt-1">•</span>
-                <span>Trekke tilbake samtykke</span>
+                <span>{t("rights.item4")}</span>
               </li>
             </ul>
           </section>
 
           <section className="mb-10">
             <h2 className="text-3xl font-bold text-gray-900 mb-4 tracking-tight">
-              6. Kontakt oss
+              {t("contact.heading")}
             </h2>
             <p className="text-gray-600 leading-relaxed">
-              Hvis du har spørsmål om denne personvernerklæringen, vennligst kontakt oss på{" "}
+              {t("contact.text")}{" "}
               <a href="mailto:privacy@dinlinks.no" className="text-primary-600 hover:text-primary-700 font-medium">
                 privacy@dinlinks.no
               </a>

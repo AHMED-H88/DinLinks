@@ -15,20 +15,28 @@ import ProfileShareButton from "@/components/ProfileShareButton";
 import type { ServiceItem } from "@/components/BusinessForm";
 import type { Branch } from "@/components/BranchManager";
 import { getTranslations } from "next-intl/server";
+import { normalizeDayKey } from "@/lib/days";
 
 export const dynamic = "force-dynamic";
 
 const SITE_URL = process.env.NEXTAUTH_URL ?? "https://dinlinks.no";
 
-// ─── Day label maps ───────────────────────────────────────────────────────────
-
-
 // ─── Helpers ─────────────────────────────────────────────────────────────────
+
+/** Index openingHours by canonical English day key, tolerating Norwegian keys. */
+function normalizeOpeningHours(openingHours: Record<string, any>): Record<string, any> {
+  const out: Record<string, any> = {};
+  for (const [raw, value] of Object.entries(openingHours)) {
+    const key = normalizeDayKey(raw);
+    if (key) out[key] = value;
+  }
+  return out;
+}
 
 function isOpenNow(openingHours: Record<string, any>): boolean {
   const now  = new Date(new Date().toLocaleString("en-US", { timeZone: "Europe/Oslo" }));
   const day  = ["sunday","monday","tuesday","wednesday","thursday","friday","saturday"][now.getDay()];
-  const h    = openingHours[day];
+  const h    = normalizeOpeningHours(openingHours)[day];
   if (!h || h.closed) return false;
   const [oh, om] = (h.open  ?? "00:00").split(":").map(Number);
   const [ch, cm] = (h.close ?? "00:00").split(":").map(Number);
@@ -96,6 +104,7 @@ export default async function BusinessProfilePage({
   const session        = await auth();
   const { id, locale } = await params;
   const t = await getTranslations({ locale, namespace: "profile" });
+  const tCat = await getTranslations({ locale, namespace: "categories" });
 
   const DAY_LABELS: Record<string, string> = {
     monday:    t("days.monday"),
@@ -287,7 +296,7 @@ export default async function BusinessProfilePage({
                   {/* Meta row */}
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                     {business.category && (
-                      <span className="text-sm text-white/80 font-medium">{business.category.name}</span>
+                      <span className="text-sm text-white/80 font-medium">{tCat.has(business.category.slug) ? tCat(business.category.slug) : business.category.name}</span>
                     )}
                     {business.city && (
                       <span className="flex items-center gap-1 text-sm text-white/60">
@@ -699,12 +708,14 @@ export default async function BusinessProfilePage({
                     )}
                   </div>
                   <div>
-                    {Object.entries(openingHours).map(([day, h]: [string, any], i) => (
+                    {Object.entries(openingHours).map(([day, h]: [string, any], i) => {
+                      const dayKey = normalizeDayKey(day);
+                      return (
                       <div
                         key={day}
                         className={`flex items-center justify-between px-4 py-2.5 ${i % 2 === 0 ? "bg-gray-50/60" : "bg-white"}`}
                       >
-                        <span className="text-xs font-medium text-gray-600">{DAY_LABELS[day] ?? day}</span>
+                        <span className="text-xs font-medium text-gray-600">{dayKey ? DAY_LABELS[dayKey] : day}</span>
                         {h?.closed ? (
                           <span className="text-xs text-gray-400">{t("sidebar.closed")}</span>
                         ) : (
@@ -713,7 +724,8 @@ export default async function BusinessProfilePage({
                           </span>
                         )}
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               )}

@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -40,6 +41,7 @@ interface Business {
 interface Category {
   id: string;
   name: string;
+  slug?: string;
 }
 
 interface BusinessFormProps {
@@ -59,16 +61,6 @@ const DAYS = [
   "sunday",
 ] as const;
 
-const DAY_LABELS: Record<string, string> = {
-  monday: "Monday",
-  tuesday: "Tuesday",
-  wednesday: "Wednesday",
-  thursday: "Thursday",
-  friday: "Friday",
-  saturday: "Saturday",
-  sunday: "Sunday",
-};
-
 const defaultOpeningHours = {
   monday:    { open: "09:00", close: "17:00", closed: false },
   tuesday:   { open: "09:00", close: "17:00", closed: false },
@@ -80,12 +72,12 @@ const defaultOpeningHours = {
 };
 
 const SECTIONS = [
-  { id: "basics",   label: "Basic info" },
-  { id: "media",    label: "Media" },
-  { id: "location", label: "Location" },
-  { id: "contact",  label: "Contact" },
-  { id: "hours",    label: "Opening hours" },
-  { id: "services", label: "Services" },
+  { id: "basics",   labelKey: "basicInfo" },
+  { id: "media",    labelKey: "media" },
+  { id: "location", labelKey: "location" },
+  { id: "contact",  labelKey: "contact" },
+  { id: "hours",    labelKey: "openingHours" },
+  { id: "services", labelKey: "services" },
 ] as const;
 
 // ─── Storage helpers ──────────────────────────────────────────────────────────
@@ -162,6 +154,8 @@ function Spinner({ small }: { small?: boolean }) {
 
 export default function BusinessForm({ business, categories }: BusinessFormProps) {
   const router  = useRouter();
+  const t       = useTranslations("businessForm");
+  const tCat    = useTranslations("categories");
   const isEdit  = !!business;
 
   // Stable UUID for new businesses — used as the storage folder path before
@@ -251,7 +245,7 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
       // Delete the old logo from storage after the new one is confirmed uploaded
       if (previousUrl) deleteStorageFile(previousUrl);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Logo upload failed");
+      setError(err instanceof Error ? err.message : t("errors.logoUpload"));
     } finally {
       setLogoUploading(false);
       if (logoInputRef.current) logoInputRef.current.value = "";
@@ -271,7 +265,7 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
       setCoverImage(url);
       if (previousUrl) deleteStorageFile(previousUrl);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Cover upload failed");
+      setError(err instanceof Error ? err.message : t("errors.coverUpload"));
     } finally {
       setCoverUploading(false);
       if (coverInputRef.current) coverInputRef.current.value = "";
@@ -290,7 +284,7 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
       );
       setImages((prev) => [...prev, ...urls]);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Image upload failed");
+      setError(err instanceof Error ? err.message : t("errors.imageUpload"));
     } finally {
       setImageUploading(false);
       if (imagesInputRef.current) imagesInputRef.current.value = "";
@@ -310,7 +304,7 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
     setSuccess("");
 
     if (!name.trim()) {
-      setError("Business name is required.");
+      setError(t("errors.nameRequired"));
       document.getElementById("basics")?.scrollIntoView({ behavior: "smooth" });
       return;
     }
@@ -346,18 +340,16 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error ?? "Something went wrong. Please try again.");
+        setError(data.error ?? t("errors.generic"));
       } else {
         setSuccess(
-          isEdit
-            ? "Profile updated successfully."
-            : "Profile created! It will go live once an admin approves it."
+          isEdit ? t("success.updated") : t("success.created")
         );
         router.refresh();
         window.scrollTo({ top: 0, behavior: "smooth" });
       }
     } catch {
-      setError("Network error — please check your connection and try again.");
+      setError(t("errors.network"));
     } finally {
       setLoading(false);
     }
@@ -383,7 +375,7 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
                   : "text-gray-500 hover:text-gray-800 hover:bg-gray-50"
               }`}
             >
-              {s.label}
+              {t(`tabs.${s.labelKey}`)}
             </button>
           ))}
         </div>
@@ -398,44 +390,44 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
         <section>
           <SectionHeading
             id="basics"
-            title="Basic information"
-            subtitle="Your business name, category, and description."
+            title={t("sections.basics")}
+            subtitle={t("subtitles.basics")}
           />
           <div className="space-y-5">
             <div>
-              <FieldLabel required>Business name</FieldLabel>
+              <FieldLabel required>{t("labels.name")}</FieldLabel>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="input"
-                placeholder="e.g. Oslo Auto Repair"
+                placeholder={t("placeholders.name")}
                 required
               />
             </div>
 
             <div>
-              <FieldLabel>Category</FieldLabel>
+              <FieldLabel>{t("labels.category")}</FieldLabel>
               <select
                 value={categoryId}
                 onChange={(e) => setCategoryId(e.target.value)}
                 className="input"
               >
-                <option value="">Select a category</option>
+                <option value="">{t("placeholders.selectCategory")}</option>
                 {categories.map((c) => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
+                  <option key={c.id} value={c.id}>{c.slug && tCat.has(c.slug) ? tCat(c.slug) : c.name}</option>
                 ))}
               </select>
             </div>
 
             <div>
-              <FieldLabel>Description</FieldLabel>
+              <FieldLabel>{t("labels.description")}</FieldLabel>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 className="input min-h-[120px] resize-y"
                 rows={4}
-                placeholder="Tell customers what your business offers, your story, and what makes you unique..."
+                placeholder={t("placeholders.description")}
               />
               <p className="text-xs text-gray-400 mt-1">{description.length} / 1000</p>
             </div>
@@ -446,14 +438,14 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
         <section>
           <SectionHeading
             id="media"
-            title="Media"
-            subtitle="Logo, cover image, and photo gallery."
+            title={t("sections.media")}
+            subtitle={t("subtitles.media")}
           />
           <div className="space-y-8">
             {/* Logo */}
             <div>
-              <FieldLabel>Logo</FieldLabel>
-              <p className="text-xs text-gray-400 mb-3">Square image, 400×400 px recommended · max 2 MB · JPG, PNG, WebP</p>
+              <FieldLabel>{t("labels.logo")}</FieldLabel>
+              <p className="text-xs text-gray-400 mb-3">{t("hints.logo")}</p>
               <div className="flex items-center gap-5">
                 {/* Preview */}
                 <div className="w-20 h-20 rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 flex items-center justify-center flex-shrink-0 overflow-hidden">
@@ -481,9 +473,9 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
                     className="btn btn-secondary btn-sm disabled:opacity-50"
                   >
                     {logoUploading ? (
-                      <span className="flex items-center gap-2"><Spinner small /> Uploading…</span>
+                      <span className="flex items-center gap-2"><Spinner small /> {t("uploading")}</span>
                     ) : (
-                      logo ? "Change logo" : "Upload logo"
+                      logo ? t("actions.changeLogo") : t("actions.uploadLogo")
                     )}
                   </button>
                   {logo && (
@@ -492,7 +484,7 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
                       onClick={() => { const old = logo; setLogo(""); deleteStorageFile(old); }}
                       className="text-xs text-red-500 hover:text-red-700 transition-colors text-left"
                     >
-                      Remove
+                      {t("actions.removeLogo")}
                     </button>
                   )}
                 </div>
@@ -501,8 +493,8 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
 
             {/* Cover image */}
             <div>
-              <FieldLabel>Cover image</FieldLabel>
-              <p className="text-xs text-gray-400 mb-3">Banner shown at the top of your public profile · 1200×400 px recommended · max 5 MB</p>
+              <FieldLabel>{t("labels.cover")}</FieldLabel>
+              <p className="text-xs text-gray-400 mb-3">{t("hints.cover")}</p>
               <div className="space-y-3">
                 <div className="w-full h-36 rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 flex items-center justify-center overflow-hidden">
                   {coverImage ? (
@@ -512,7 +504,7 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
                       <svg className="w-8 h-8 text-gray-300 mx-auto mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
                       </svg>
-                      <span className="text-xs text-gray-400">No cover image</span>
+                      <span className="text-xs text-gray-400">{t("actions.noCoverImage")}</span>
                     </div>
                   )}
                 </div>
@@ -531,9 +523,9 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
                     className="btn btn-secondary btn-sm disabled:opacity-50"
                   >
                     {coverUploading ? (
-                      <span className="flex items-center gap-2"><Spinner small /> Uploading…</span>
+                      <span className="flex items-center gap-2"><Spinner small /> {t("uploading")}</span>
                     ) : (
-                      coverImage ? "Change cover" : "Upload cover"
+                      coverImage ? t("actions.changeCover") : t("actions.uploadCover")
                     )}
                   </button>
                   {coverImage && (
@@ -542,7 +534,7 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
                       onClick={() => { const old = coverImage; setCoverImage(""); deleteStorageFile(old); }}
                       className="text-xs text-red-500 hover:text-red-700 transition-colors"
                     >
-                      Remove
+                      {t("actions.removeCover")}
                     </button>
                   )}
                 </div>
@@ -551,8 +543,8 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
 
             {/* Gallery */}
             <div>
-              <FieldLabel>Photo gallery</FieldLabel>
-              <p className="text-xs text-gray-400 mb-3">Additional photos of your premises, products, or team · max 5 MB each</p>
+              <FieldLabel>{t("photoGallery")}</FieldLabel>
+              <p className="text-xs text-gray-400 mb-3">{t("hints.photos")}</p>
               <input
                 ref={imagesInputRef}
                 type="file"
@@ -568,13 +560,13 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
                 className="btn btn-secondary btn-sm disabled:opacity-50"
               >
                 {imageUploading ? (
-                  <span className="flex items-center gap-2"><Spinner small /> Uploading…</span>
+                  <span className="flex items-center gap-2"><Spinner small /> {t("uploading")}</span>
                 ) : (
                   <span className="flex items-center gap-2">
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                     </svg>
-                    Add photos
+                    {t("actions.addPhotos")}
                   </span>
                 )}
               </button>
@@ -610,46 +602,46 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
         <section>
           <SectionHeading
             id="location"
-            title="Location"
-            subtitle="Where customers can find you."
+            title={t("sections.location")}
+            subtitle={t("subtitles.location")}
           />
           <div className="space-y-5">
             <div>
-              <FieldLabel>Street address</FieldLabel>
+              <FieldLabel>{t("labels.address")}</FieldLabel>
               <input
                 type="text"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
                 className="input"
-                placeholder="e.g. Karl Johans gate 1"
+                placeholder={t("placeholders.address")}
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <FieldLabel>City</FieldLabel>
+                <FieldLabel>{t("labels.city")}</FieldLabel>
                 <input
                   type="text"
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
                   className="input"
-                  placeholder="Oslo"
+                  placeholder={t("placeholders.city")}
                 />
               </div>
               <div>
-                <FieldLabel>Postal code</FieldLabel>
+                <FieldLabel>{t("labels.postalCode")}</FieldLabel>
                 <input
                   type="text"
                   value={postalCode}
                   onChange={(e) => setPostalCode(e.target.value)}
                   className="input"
-                  placeholder="0154"
+                  placeholder={t("placeholders.postalCode")}
                 />
               </div>
             </div>
 
             <div>
-              <FieldLabel>Google Maps link</FieldLabel>
+              <FieldLabel>{t("labels.mapsUrl")}</FieldLabel>
               <input
                 type="url"
                 value={mapLink}
@@ -657,7 +649,7 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
                 className="input"
                 placeholder="https://maps.google.com/..."
               />
-              <p className="text-xs text-gray-400 mt-1">Paste the share URL from Google Maps so customers can get directions.</p>
+              <p className="text-xs text-gray-400 mt-1">{t("placeholders.mapsUrlHint")}</p>
             </div>
 
             <details className="group">
@@ -665,29 +657,29 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
                 <svg className="w-3.5 h-3.5 transition-transform group-open:rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
-                GPS coordinates (optional)
+                {t("labels.gpsCoordinates")}
               </summary>
               <div className="grid grid-cols-2 gap-4 mt-3">
                 <div>
-                  <FieldLabel>Latitude</FieldLabel>
+                  <FieldLabel>{t("labels.latitude")}</FieldLabel>
                   <input
                     type="number"
                     step="any"
                     value={latitude ?? ""}
                     onChange={(e) => setLatitude(parseFloat(e.target.value) || null)}
                     className="input"
-                    placeholder="59.9139"
+                    placeholder={t("placeholders.latitude")}
                   />
                 </div>
                 <div>
-                  <FieldLabel>Longitude</FieldLabel>
+                  <FieldLabel>{t("labels.longitude")}</FieldLabel>
                   <input
                     type="number"
                     step="any"
                     value={longitude ?? ""}
                     onChange={(e) => setLongitude(parseFloat(e.target.value) || null)}
                     className="input"
-                    placeholder="10.7522"
+                    placeholder={t("placeholders.longitude")}
                   />
                 </div>
               </div>
@@ -699,52 +691,52 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
         <section>
           <SectionHeading
             id="contact"
-            title="Contact information"
-            subtitle="How customers can reach you."
+            title={t("sections.contact")}
+            subtitle={t("subtitles.contact")}
           />
           <div className="space-y-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
-                <FieldLabel>Phone</FieldLabel>
+                <FieldLabel>{t("labels.phone")}</FieldLabel>
                 <input
                   type="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   className="input"
-                  placeholder="+47 123 45 678"
+                  placeholder={t("placeholders.phone")}
                 />
               </div>
               <div>
-                <FieldLabel>Email</FieldLabel>
+                <FieldLabel>{t("labels.email")}</FieldLabel>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="input"
-                  placeholder="contact@business.no"
+                  placeholder={t("placeholders.email")}
                 />
               </div>
             </div>
 
             <div>
-              <FieldLabel>Website</FieldLabel>
+              <FieldLabel>{t("labels.website")}</FieldLabel>
               <input
                 type="url"
                 value={website}
                 onChange={(e) => setWebsite(e.target.value)}
                 className="input"
-                placeholder="https://www.yourbusiness.no"
+                placeholder={t("placeholders.website")}
               />
             </div>
 
             <div>
-              <FieldLabel>Booking link</FieldLabel>
+              <FieldLabel>{t("labels.bookingUrl")}</FieldLabel>
               <input
                 type="url"
                 value={bookingLink}
                 onChange={(e) => setBookingLink(e.target.value)}
                 className="input"
-                placeholder="https://booking.yourbusiness.no"
+                placeholder={t("placeholders.bookingUrl")}
               />
               <p className="text-xs text-gray-400 mt-1">A direct link for customers to book appointments or reservations.</p>
             </div>
@@ -755,8 +747,8 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
         <section>
           <SectionHeading
             id="hours"
-            title="Opening hours"
-            subtitle="Set your weekly schedule. Toggle 'Closed' for days you're not open."
+            title={t("sections.hours")}
+            subtitle={t("hints.openingHours")}
           />
           <div className="space-y-2">
             {DAYS.map((day) => {
@@ -770,7 +762,7 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
                 >
                   {/* Day name */}
                   <span className={`w-28 text-sm font-semibold flex-shrink-0 ${h.closed ? "text-gray-400" : "text-gray-800"}`}>
-                    {DAY_LABELS[day]}
+                    {t(`days.${day}`)}
                   </span>
 
                   {/* Closed toggle */}
@@ -782,7 +774,7 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
                       <div className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${h.closed ? "" : "translate-x-4"}`} />
                     </div>
                     <span className={`text-xs font-medium ${h.closed ? "text-gray-400" : "text-primary-700"}`}>
-                      {h.closed ? "Closed" : "Open"}
+                      {h.closed ? t("openState.closed") : t("openState.open")}
                     </span>
                   </label>
 
@@ -805,7 +797,7 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
                     </div>
                   )}
                   {h.closed && (
-                    <span className="text-sm text-gray-400 italic">Not available</span>
+                    <span className="text-sm text-gray-400 italic">{t("openState.notAvailable")}</span>
                   )}
                 </div>
               );
@@ -817,8 +809,8 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
         <section>
           <SectionHeading
             id="services"
-            title="Services &amp; offers"
-            subtitle="List what you offer. Customers will see these on your profile."
+            title={t("sections.services")}
+            subtitle={t("hints.services")}
           />
           <div className="space-y-3">
             {services.length === 0 && (
@@ -826,7 +818,7 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
                 <svg className="w-8 h-8 mx-auto mb-2 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
-                <p className="text-sm">No services yet. Add your first one below.</p>
+                <p className="text-sm">{t("noServices")}</p>
               </div>
             )}
 
@@ -839,34 +831,34 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
                   <div className="flex-1 space-y-3">
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       <div className="sm:col-span-2">
-                        <FieldLabel>Service name</FieldLabel>
+                        <FieldLabel>{t("labels.serviceName")}</FieldLabel>
                         <input
                           type="text"
                           value={svc.name}
                           onChange={(e) => updateService(svc.id, "name", e.target.value)}
                           className="input text-sm"
-                          placeholder="e.g. Oil change"
+                          placeholder={t("placeholders.serviceName")}
                         />
                       </div>
                       <div>
-                        <FieldLabel>Price</FieldLabel>
+                        <FieldLabel>{t("labels.price")}</FieldLabel>
                         <input
                           type="text"
                           value={svc.price}
                           onChange={(e) => updateService(svc.id, "price", e.target.value)}
                           className="input text-sm"
-                          placeholder="e.g. 499 kr"
+                          placeholder={t("placeholders.servicePrice")}
                         />
                       </div>
                     </div>
                     <div>
-                      <FieldLabel>Description</FieldLabel>
+                      <FieldLabel>{t("labels.description")}</FieldLabel>
                       <input
                         type="text"
                         value={svc.description}
                         onChange={(e) => updateService(svc.id, "description", e.target.value)}
                         className="input text-sm"
-                        placeholder="Short description of this service (optional)"
+                        placeholder={t("placeholders.serviceDescription")}
                       />
                     </div>
                   </div>
@@ -874,7 +866,7 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
                     type="button"
                     onClick={() => removeService(svc.id)}
                     className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all opacity-0 group-hover:opacity-100 flex-shrink-0"
-                    title="Remove service"
+                    title={t("actions.removeService")}
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -892,7 +884,7 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
-              Add service
+              {t("actions.addService")}
             </button>
           </div>
         </section>
@@ -906,12 +898,12 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
           >
             {loading ? (
               <span className="flex items-center justify-center gap-2">
-                <Spinner small /> Saving…
+                <Spinner small /> {t("savingState")}
               </span>
             ) : isEdit ? (
-              "Save changes"
+              t("actions.save")
             ) : (
-              "Create profile"
+              t("actions.create")
             )}
           </button>
 
@@ -925,7 +917,7 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
               </svg>
-              Preview profile
+              {t("actions.preview")}
             </a>
           )}
         </div>
@@ -976,6 +968,7 @@ function StatusBanners({
 }
 
 function ApprovalBanner({ status }: { status: "PENDING" | "APPROVED" | "REJECTED" }) {
+  const t = useTranslations("businessForm");
   if (status === "APPROVED") {
     return (
       <div className="flex items-center gap-3 p-4 rounded-xl bg-green-50 border border-green-200 text-green-800 text-sm">
@@ -983,8 +976,8 @@ function ApprovalBanner({ status }: { status: "PENDING" | "APPROVED" | "REJECTED
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
         </svg>
         <div>
-          <span className="font-semibold">Profile approved</span>
-          <span className="text-green-700 ml-2">— Your business is live and visible to the public.</span>
+          <span className="font-semibold">{t("status.approved")}</span>
+          <span className="text-green-700 ml-2">— {t("status.approvedDesc")}</span>
         </div>
       </div>
     );
@@ -997,8 +990,8 @@ function ApprovalBanner({ status }: { status: "PENDING" | "APPROVED" | "REJECTED
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
         <div>
-          <span className="font-semibold">Pending review</span>
-          <span className="text-amber-700 ml-2">— An admin will review your profile shortly. You can continue editing while you wait.</span>
+          <span className="font-semibold">{t("status.pending")}</span>
+          <span className="text-amber-700 ml-2">— {t("status.pendingDesc")}</span>
         </div>
       </div>
     );
@@ -1011,8 +1004,8 @@ function ApprovalBanner({ status }: { status: "PENDING" | "APPROVED" | "REJECTED
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
         <div>
-          <span className="font-semibold">Profile rejected</span>
-          <span className="text-red-600 ml-2">— Please update your information and save again to re-submit for review.</span>
+          <span className="font-semibold">{t("status.rejected")}</span>
+          <span className="text-red-600 ml-2">— {t("status.rejectedDesc")}</span>
         </div>
       </div>
     );

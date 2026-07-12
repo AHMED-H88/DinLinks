@@ -1,22 +1,29 @@
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { Link } from "@/i18n/routing";
+import { getTranslations } from "next-intl/server";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CategoriesClient from "@/components/CategoriesClient";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Browse Categories | DinLinks",
-  description:
-    "Explore all business categories on DinLinks — from restaurants and retail to health and automotive. Find exactly what you need.",
-  openGraph: {
-    title: "Browse Categories | DinLinks",
-    description: "Explore all business categories on DinLinks.",
-    type: "website",
-  },
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: string };
+}): Promise<Metadata> {
+  const t = await getTranslations({ locale: params.locale, namespace: "categoriesPage" });
+  return {
+    title: t("metaTitle"),
+    description: t("metaDescription"),
+    openGraph: {
+      title: t("metaTitle"),
+      description: t("ogDescription"),
+      type: "website",
+    },
+  };
+}
 
 // Category icon map — used to give each category a visual cue
 const CATEGORY_ICONS: Record<string, string> = {
@@ -47,6 +54,8 @@ function getCategoryIcon(slug: string): string {
 }
 
 export default async function CategoriesPage() {
+  const t = await getTranslations("categoriesPage");
+  const tCat = await getTranslations("categories");
   const categories = await prisma.category.findMany({
     orderBy: { name: "asc" },
     include: {
@@ -62,7 +71,7 @@ export default async function CategoriesPage() {
 
   const categoriesWithMeta = categories.map((c) => ({
     id:    c.id,
-    name:  c.name,
+    name:  tCat.has(c.slug) ? tCat(c.slug) : c.name,
     slug:  c.slug,
     icon:  c.icon ?? getCategoryIcon(c.slug),
     count: c._count.businesses,
@@ -78,13 +87,13 @@ export default async function CategoriesPage() {
         {/* Hero */}
         <section className="bg-white border-b border-gray-100 py-12 px-4">
           <div className="max-w-5xl mx-auto text-center">
-            <p className="text-xs font-semibold text-primary-700 uppercase tracking-widest mb-3">Browse</p>
+            <p className="text-xs font-semibold text-primary-700 uppercase tracking-widest mb-3">{t("title")}</p>
             <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 tracking-tight mb-3">
-              All categories
+              {t("allCategories")}
             </h1>
             <p className="text-base text-gray-500 max-w-xl mx-auto">
-              {categoriesWithMeta.length} categories ·{" "}
-              <span className="font-medium text-gray-700">{totalBusinesses}</span> verified businesses
+              {categoriesWithMeta.length} {t("categoriesLabel")} ·{" "}
+              <span className="font-medium text-gray-700">{totalBusinesses}</span> {t("verifiedBusinesses")}
             </p>
           </div>
         </section>

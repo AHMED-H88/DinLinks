@@ -1,8 +1,10 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Link } from "@/i18n/routing";
+import { useTranslations } from "next-intl";
 
 export default function AboutPage() {
+  const t = useTranslations("about");
   return (
     <div className="min-h-screen bg-white">
       <Header />
@@ -12,10 +14,10 @@ export default function AboutPage() {
         <section className="bg-gradient-to-b from-primary-50 to-white py-20 md:py-28">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 tracking-tight">
-              Om DinLinks
+              {t("title")}
             </h1>
             <p className="text-xl text-gray-600 leading-relaxed max-w-3xl mx-auto">
-              Vi kobler lokale bedrifter med kunder på en enkel, moderne og effektiv måte.
+              {t("subtitle")}
             </p>
           </div>
         </section>
@@ -25,19 +27,19 @@ export default function AboutPage() {
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
               <h2 className="text-4xl font-bold text-gray-900 mb-6 tracking-tight">
-                Vår visjon
+                {t("vision.heading")}
               </h2>
               <p className="text-lg text-gray-600 leading-relaxed mb-6">
-                DinLinks ble grunnlagt med en enkel visjon: å gjøre det lettere for folk å finne og kontakte lokale bedrifter i sitt område.
+                {t("vision.p1")}
               </p>
               <p className="text-lg text-gray-600 leading-relaxed">
-                Vi tror på å støtte lokale bedrifter og hjelpe dem med å vokse ved å gi dem en moderne, profesjonell plattform for å nå sine kunder.
+                {t("vision.p2")}
               </p>
             </div>
             <div className="bg-gradient-to-br from-primary-100 to-primary-200 rounded-2xl h-80 flex items-center justify-center">
               <div className="text-center">
                 <div className="text-6xl mb-4">🎯</div>
-                <p className="text-xl font-semibold text-primary-900">Koble bedrifter med kunder</p>
+                <p className="text-xl font-semibold text-primary-900">{t("tagline")}</p>
               </div>
             </div>
           </div>
@@ -47,34 +49,34 @@ export default function AboutPage() {
         <section className="bg-gray-50 py-16 md:py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-4xl font-bold text-gray-900 mb-12 text-center tracking-tight">
-              Hvorfor velge DinLinks?
+              {t("why.heading")}
             </h2>
             <div className="grid md:grid-cols-3 gap-8">
               <div className="card p-8">
                 <div className="text-4xl mb-4">🔍</div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                  Enkel søk
+                  {t("why.search.title")}
                 </h3>
                 <p className="text-gray-600">
-                  Finn lokale bedrifter raskt og enkelt med vårt intuitive søkesystem.
+                  {t("why.search.desc")}
                 </p>
               </div>
               <div className="card p-8">
                 <div className="text-4xl mb-4">✨</div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                  Moderne plattform
+                  {t("why.platform.title")}
                 </h3>
                 <p className="text-gray-600">
-                  En profesjonell og brukervennlig plattform bygget med de nyeste teknologiene.
+                  {t("why.platform.desc")}
                 </p>
               </div>
               <div className="card p-8">
                 <div className="text-4xl mb-4">🤝</div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                  Støtte lokale bedrifter
+                  {t("why.support.title")}
                 </h3>
                 <p className="text-gray-600">
-                  Hjelp lokale bedrifter å vokse ved å gjøre dem mer synlige i ditt område.
+                  {t("why.support.desc")}
                 </p>
               </div>
             </div>
@@ -85,17 +87,17 @@ export default function AboutPage() {
         <section className="py-20 md:py-28">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 tracking-tight">
-              Klar til å komme i gang?
+              {t("cta.heading")}
             </h2>
             <p className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto">
-              Enten du er en kunde som leter etter lokale tjenester, eller en bedrift som ønsker å nå flere kunder.
+              {t("cta.subtitle")}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/search" className="btn btn-primary btn-lg">
-                Søk bedrifter
+                {t("cta.search")}
               </Link>
               <Link href="/signup" className="btn btn-outline btn-lg">
-                Registrer bedrift
+                {t("cta.register")}
               </Link>
             </div>
           </div>

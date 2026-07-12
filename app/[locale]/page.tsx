@@ -15,37 +15,38 @@ const whyItems = [
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75}
         d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.745 3.745 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z" />
     ),
-    title: "Verified businesses",
-    desc: "Every listing is reviewed and approved by our team before going live.",
+    titleKey: "feature1Title",
+    descKey: "feature1Desc",
   },
   {
     icon: (
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75}
         d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
     ),
-    title: "Always up to date",
-    desc: "Business owners keep their own opening hours and contact info current.",
+    titleKey: "feature2Title",
+    descKey: "feature2Desc",
   },
   {
     icon: (
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75}
         d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
     ),
-    title: "Easy to find",
-    desc: "Search by name, category, or city. Filter to narrow down exactly what you need.",
+    titleKey: "feature3Title",
+    descKey: "feature3Desc",
   },
   {
     icon: (
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75}
         d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
     ),
-    title: "Free for everyone",
-    desc: "Finding local businesses on DinLinks is always free — no account needed.",
+    titleKey: "feature4Title",
+    descKey: "feature4Desc",
   },
 ];
 
 export default async function HomePage() {
   const t = await getTranslations("home");
+  const tCat = await getTranslations("categories");
 
   // Real data from Supabase
   const [categories, featuredBusinesses, businessCount, approvedCount] = await Promise.all([
@@ -64,14 +65,14 @@ export default async function HomePage() {
   ]);
 
   const stats = [
-    { value: businessCount > 0 ? `${businessCount.toLocaleString()}+` : "10 000+", label: t("statsBusinesses") },
-    { value: approvedCount > 0 ? `${approvedCount.toLocaleString()}+` : "8 000+",  label: t("statsVerified") },
-    { value: "50 000+", label: t("statsUsers") },
+    { value: businessCount > 0 ? `${businessCount.toLocaleString()}+` : t("statsCount1"), label: t("statsBusinesses") },
+    { value: approvedCount > 0 ? `${approvedCount.toLocaleString()}+` : t("statsCount2"),  label: t("statsVerified") },
+    { value: t("statsCount3"), label: t("statsUsers") },
   ];
 
   const categoriesWithCount = categories.map((c) => ({
     id: c.id,
-    name: c.name,
+    name: tCat.has(c.slug) ? tCat(c.slug) : c.name,
     slug: c.slug,
     count: c._count.businesses,
   }));
@@ -98,8 +99,8 @@ export default async function HomePage() {
 
             {/* Headline */}
             <h1 className="text-4xl sm:text-5xl md:text-[3.5rem] font-bold text-gray-900 mb-5 tracking-tight leading-tight">
-              Find trusted local businesses
-              <span className="block text-primary-700">in one clean place.</span>
+              {t("heroTitle")}
+              <span className="block text-primary-700">{t("heroTitleAccent")}</span>
             </h1>
 
             <p className="text-lg sm:text-xl text-gray-500 mb-10 max-w-2xl mx-auto leading-relaxed font-light">
@@ -112,7 +113,7 @@ export default async function HomePage() {
                 href="/search"
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl bg-gray-900 text-white font-semibold text-base hover:bg-gray-800 active:scale-[0.98] transition-all shadow-medium"
               >
-                Explore businesses
+                {t("exploreBusinesses")}
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                 </svg>
@@ -121,7 +122,7 @@ export default async function HomePage() {
                 href="/signup"
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl bg-white text-gray-700 font-semibold text-base border border-gray-200 hover:border-gray-300 hover:bg-gray-50 active:scale-[0.98] transition-all shadow-subtle"
               >
-                List your business
+                {t("listYourBusiness")}
               </Link>
             </div>
 
@@ -192,6 +193,7 @@ export default async function HomePage() {
                       name={b.name ?? ""}
                       description={b.description ?? ""}
                       category={b.category?.name ?? ""}
+                      categorySlug={b.category?.slug}
                       city={b.city ?? ""}
                       verified={b.status === "APPROVED"}
                       logo={b.logo}
@@ -232,7 +234,7 @@ export default async function HomePage() {
                   <h3 className="text-sm font-semibold text-gray-900 group-hover:text-primary-700 transition-colors">
                     {cat.name}
                   </h3>
-                  <p className="text-xs text-gray-400">{cat.count} businesses</p>
+                  <p className="text-xs text-gray-400">{cat.count} {cat.count === 1 ? t("businessSingular") : t("businessPlural")}</p>
                 </Link>
               ))}
             </div>
@@ -241,7 +243,7 @@ export default async function HomePage() {
                 href="/categories"
                 className="inline-flex items-center gap-1.5 text-sm font-medium text-primary-700 hover:text-primary-800 transition-colors"
               >
-                Browse all categories
+                {t("browseAllCategories")}
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
@@ -280,23 +282,23 @@ export default async function HomePage() {
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12">
               <p className="text-xs font-semibold text-primary-700 uppercase tracking-widest mb-2">
-                Why DinLinks
+                {t("whyLabel")}
               </p>
               <h2 className="text-3xl font-bold text-gray-900 tracking-tight">
-                Built for trust and simplicity
+                {t("whyTitle")}
               </h2>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {whyItems.map((item) => (
-                <div key={item.title} className="card p-6 flex flex-col gap-4">
+                <div key={item.titleKey} className="card p-6 flex flex-col gap-4">
                   <div className="w-10 h-10 rounded-xl bg-primary-50 flex items-center justify-center flex-shrink-0">
                     <svg className="w-5 h-5 text-primary-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       {item.icon}
                     </svg>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900 mb-1">{item.title}</h3>
-                    <p className="text-sm text-gray-500 leading-relaxed">{item.desc}</p>
+                    <h3 className="font-semibold text-gray-900 mb-1">{t(item.titleKey as any)}</h3>
+                    <p className="text-sm text-gray-500 leading-relaxed">{t(item.descKey as any)}</p>
                   </div>
                 </div>
               ))}
@@ -310,7 +312,7 @@ export default async function HomePage() {
             <div className="grid md:grid-cols-2 gap-10 items-center">
               <div>
                 <p className="text-xs font-semibold text-primary-400 uppercase tracking-widest mb-3">
-                  For business owners
+                  {t("forOwners")}
                 </p>
                 <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 tracking-tight">
                   {t("ctaTitle")}
@@ -337,20 +339,14 @@ export default async function HomePage() {
 
               {/* Feature list */}
               <div className="space-y-4">
-                {[
-                  "Free to create your profile",
-                  "Admin approval ensures quality",
-                  "Add photos, hours, and contact info",
-                  "Customers can leave verified reviews",
-                  "Track profile views in your dashboard",
-                ].map((feature) => (
-                  <div key={feature} className="flex items-start gap-3">
+                {(["1", "2", "3", "4", "5"] as const).map((n) => (
+                  <div key={n} className="flex items-start gap-3">
                     <div className="w-5 h-5 rounded-full bg-primary-700 flex items-center justify-center flex-shrink-0 mt-0.5">
                       <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                       </svg>
                     </div>
-                    <span className="text-gray-300 text-sm">{feature}</span>
+                    <span className="text-gray-300 text-sm">{t(`ownerBenefit${n}` as any)}</span>
                   </div>
                 ))}
               </div>

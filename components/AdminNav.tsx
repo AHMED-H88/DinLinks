@@ -1,8 +1,10 @@
 import { Link } from "@/i18n/routing";
 import { auth, signOut } from "@/lib/auth";
+import { getTranslations } from "next-intl/server";
 
 export default async function AdminNav() {
   const session = await auth();
+  const t = await getTranslations("adminNav");
 
   return (
     <nav className="bg-white border-b border-gray-200 sticky top-0 z-40">
@@ -14,7 +16,7 @@ export default async function AdminNav() {
             <Link href="/" className="flex items-center gap-2">
               <span className="text-base font-bold text-gray-900">DinLinks</span>
               <span className="text-xs font-semibold px-1.5 py-0.5 rounded bg-gray-900 text-white tracking-wide">
-                ADMIN
+                {t("admin")}
               </span>
             </Link>
 
@@ -23,13 +25,13 @@ export default async function AdminNav() {
                 href="/admin"
                 className="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-all"
               >
-                Businesses
+                {t("businesses")}
               </Link>
               <Link
                 href="/admin/categories"
                 className="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-all"
               >
-                Categories
+                {t("categories")}
               </Link>
             </div>
           </div>
@@ -53,7 +55,7 @@ export default async function AdminNav() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                     d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                 </svg>
-                Sign out
+                {t("signOut")}
               </button>
             </form>
           </div>

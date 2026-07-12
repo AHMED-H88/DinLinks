@@ -4,13 +4,13 @@
     "categories": "Categories",
     "businesses": "Businesses",
     "about": "About",
-    "signIn": "Sign In",
-    "signOut": "Sign Out",
+    "signIn": "Sign in",
+    "signOut": "Sign out",
     "dashboard": "Dashboard",
-    "registerBusiness": "Register Business",
+    "registerBusiness": "Register business",
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
-    "language": "Lang"
+    "language": "Language"
   },
   "home": {
     "badge": "Norway's Business Directory",
@@ -24,6 +24,8 @@
     "statsCount1": "10 000+",
     "statsCount2": "8 000+",
     "statsCount3": "50 000+",
+    "businessSingular": "business",
+    "businessPlural": "businesses",
     "featuredLabel": "Featured",
     "featuredTitle": "Popular businesses",
     "viewAll": "View all",
@@ -101,7 +103,10 @@
     "cityPlaceholder":  "Oslo",
     "postalPlaceholder": "0150",
     "phonePlaceholder": "+47 123 45 678",
-    "emailPlaceholder": "branch@business.no"
+    "emailPlaceholder": "branch@business.no",
+    "nameRequired": "Name is required",
+    "errorUnknown": "Something went wrong. Please try again.",
+    "requestFailed": "The request failed. Please try again."
   },
   "footer": {
     "tagline": "Norway's business directory with verified profiles. Find local businesses with accurate and up-to-date information.",
@@ -170,7 +175,20 @@
     "discover": "Discover verified businesses across Norway.",
     "placeholder": "Business name, service, or category…"
   },
+  "categories": {
+    "administrasjon": "Administration",
+    "helse": "Health",
+    "handverk": "Crafts",
+    "annet": "Other",
+    "restaurant": "Restaurant",
+    "cafe": "Cafe",
+    "shopping": "Shopping",
+    "tjenester": "Services"
+  },
   "categoriesPage": {
+    "metaTitle": "Browse categories | DinLinks",
+    "metaDescription": "Explore all business categories on DinLinks — from restaurants and retail to health and automotive. Find exactly what you need.",
+    "ogDescription": "Explore all business categories on DinLinks.",
     "title": "Browse",
     "allCategories": "All categories",
     "home": "Home",
@@ -178,9 +196,16 @@
     "verifiedBusinesses": "verified businesses"
   },
   "categoryPage": {
+    "metaNotFound": "Not found | DinLinks",
+    "metaTitle": "{category} businesses in Norway | DinLinks",
+    "metaDescription": "Browse {count} verified {category} businesses on DinLinks. Find contact details, opening hours, and reviews.",
+    "ogTitle": "{category} businesses | DinLinks",
+    "ogDescription": "{count} verified {category} businesses.",
     "home": "Home",
     "categories": "Categories",
     "verified": "verified",
+    "verifiedBusinessSingular": "verified business",
+    "verifiedBusinessPlural": "verified businesses",
     "businessSingular": "business",
     "businessPlural": "businesses",
     "andMore": "and more",
@@ -234,6 +259,35 @@
     "noReviews": "No reviews yet"
   },
   "businessForm": {
+    "sections": {
+      "basics": "Basic information",
+      "media": "Media",
+      "location": "Location",
+      "contact": "Contact information",
+      "hours": "Opening hours",
+      "services": "Services & offers"
+    },
+    "subtitles": {
+      "basics": "Your business name, category, and description.",
+      "media": "Logo, cover image, and photo gallery.",
+      "location": "Where customers can find you.",
+      "contact": "How customers can reach you."
+    },
+    "errors": {
+      "nameRequired": "Business name is required.",
+      "generic": "Something went wrong. Please try again.",
+      "network": "Network error — please check your connection and try again.",
+      "logoUpload": "Logo upload failed",
+      "coverUpload": "Cover upload failed",
+      "imageUpload": "Image upload failed"
+    },
+    "success": {
+      "updated": "Profile updated successfully.",
+      "created": "Profile created! It will go live once an admin approves it."
+    },
+    "uploading": "Uploading…",
+    "savingState": "Saving…",
+    "photoGallery": "Photo gallery",
     "tabs": {
       "basicInfo": "Basic info",
       "media": "Media",
@@ -270,7 +324,9 @@
       "website": "Website",
       "bookingUrl": "Booking URL",
       "openingHours": "Opening hours",
-      "services": "Services"
+      "services": "Services",
+      "serviceName": "Service name",
+      "price": "Price"
     },
     "placeholders": {
       "name": "e.g. Oslo Auto Repair",
@@ -552,6 +608,7 @@
   },
   "privacy": {
     "title": "Privacy Policy",
+    "lastUpdated": "Last updated:",
     "intro": {
       "heading": "1. Introduction",
       "p1": "This privacy policy describes how DinLinks (\"we\", \"us\" or \"our\") collects, uses and protects your personal information when you use our platform.",
@@ -592,6 +649,7 @@
   },
   "terms": {
     "title": "Terms and Conditions",
+    "lastUpdated": "Last updated:",
     "acceptance": {
       "heading": "1. Acceptance of terms",
       "text": "By using DinLinks (\"the service\") you agree to be bound by these terms and conditions. If you do not accept these terms, please do not use the service."
