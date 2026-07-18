@@ -31,6 +31,10 @@ export default function SearchFilters({ categories, cities }: SearchFiltersProps
   const currentCity     = searchParams.get("city")     ?? "";
   const currentSort     = searchParams.get("sort")     ?? "popular";
   const [cityInput, setCityInput] = useState(currentCity);
+  // Mobile-only accordion state. Collapsed by default so the results are
+  // reachable without scrolling past the whole category list. Desktop ignores
+  // this entirely (the list is forced visible with `lg:block`).
+  const [catOpen, setCatOpen] = useState(false);
 
   function updateParam(updates: Record<string, string>) {
     const params = new URLSearchParams(searchParams.toString());
@@ -46,6 +50,17 @@ export default function SearchFilters({ categories, cities }: SearchFiltersProps
   }
 
   const hasFilters = currentCategory || currentCity;
+
+  /** Applies the category filter and collapses the mobile accordion. */
+  function selectCategory(slug: string) {
+    updateParam({ category: slug });
+    setCatOpen(false);
+  }
+
+  const selectedCategory = categories.find((c) => c.slug === currentCategory);
+  const selectedCategoryLabel = selectedCategory
+    ? (tCat.has(selectedCategory.slug) ? tCat(selectedCategory.slug) : selectedCategory.name)
+    : t("allCategories");
 
   return (
     <div className="space-y-4">
@@ -71,10 +86,39 @@ export default function SearchFilters({ categories, cities }: SearchFiltersProps
 
       {/* Category */}
       <div className="card p-4">
-        <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-3">{t("category")}</h3>
-        <div className="space-y-1 max-h-64 overflow-y-auto pr-1">
+        {/* Desktop heading — unchanged, hidden on mobile in favour of the toggle */}
+        <h3 className="hidden lg:block text-xs font-semibold text-gray-500 uppercase tracking-widest mb-3">{t("category")}</h3>
+
+        {/* Mobile accordion toggle */}
+        <button
+          type="button"
+          onClick={() => setCatOpen((open) => !open)}
+          aria-expanded={catOpen}
+          aria-controls="search-category-list"
+          className="lg:hidden w-full flex items-center justify-between gap-3 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+        >
+          <span className="text-xs font-semibold text-gray-500 uppercase tracking-widest">
+            {t("category")}
+          </span>
+          <span className="flex items-center gap-1.5 min-w-0">
+            <span className="text-sm font-medium text-gray-900 truncate">
+              {selectedCategoryLabel}
+            </span>
+            <svg
+              className={`w-4 h-4 text-gray-400 flex-shrink-0 transition-transform ${catOpen ? "rotate-180" : ""}`}
+              fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </span>
+        </button>
+
+        <div
+          id="search-category-list"
+          className={`space-y-1 max-h-64 overflow-y-auto pr-1 ${catOpen ? "block mt-3" : "hidden"} lg:block lg:mt-0`}
+        >
           <button
-            onClick={() => updateParam({ category: "" })}
+            onClick={() => selectCategory("")}
             className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all ${
               !currentCategory
                 ? "bg-primary-50 text-primary-700 font-semibold border border-primary-100"
@@ -86,7 +130,7 @@ export default function SearchFilters({ categories, cities }: SearchFiltersProps
           {categories.map((cat) => (
             <button
               key={cat.id}
-              onClick={() => updateParam({ category: cat.slug })}
+              onClick={() => selectCategory(cat.slug)}
               className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all ${
                 currentCategory === cat.slug
                   ? "bg-primary-50 text-primary-700 font-semibold border border-primary-100"
