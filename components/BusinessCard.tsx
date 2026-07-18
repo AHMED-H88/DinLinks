@@ -2,6 +2,7 @@ import Image from "next/image";
 import { Link } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
 import { formatCity } from "@/lib/format";
+import { safeImageUrl } from "@/lib/images";
 
 interface BusinessCardProps {
   id: string;
@@ -78,18 +79,27 @@ export default function BusinessCard({
     categorySlug && tCat.has(categorySlug) ? tCat(categorySlug) : category;
   const initials = name.slice(0, 2).toUpperCase();
 
+  // Drop URLs next/image can only fail on (malformed / non-allowed host), so
+  // the existing designed placeholders render instead of a broken request.
+  const coverSrc = safeImageUrl(coverImage);
+  const logoSrc  = safeImageUrl(logo);
+
   return (
     <Link
       href={`/business/${id}`}
+      // A results page renders up to 48 cards; prefetching each one floods the
+      // network with RSC payloads. Navigation still works normally on click.
+      prefetch={false}
       className="group card card-hover flex flex-col overflow-hidden"
     >
       {/* ── Cover image / colour band ─────────────────────────────────── */}
       <div className="relative h-32 bg-gradient-to-br from-gray-100 to-gray-200 flex-shrink-0 overflow-hidden">
-        {coverImage ? (
+        {coverSrc ? (
           <Image
-            src={coverImage}
+            src={coverSrc}
             alt=""
             fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
             className="object-cover group-hover:scale-[1.02] transition-transform duration-300"
           />
         ) : (
@@ -99,8 +109,8 @@ export default function BusinessCard({
 
         {/* Logo chip, bottom-left of cover */}
         <div className="absolute bottom-3 left-4 w-11 h-11 rounded-xl border-2 border-white shadow-medium bg-white overflow-hidden flex items-center justify-center">
-          {logo ? (
-            <Image src={logo} alt={name} width={44} height={44} className="w-full h-full object-cover" />
+          {logoSrc ? (
+            <Image src={logoSrc} alt={name} width={44} height={44} className="w-full h-full object-cover" />
           ) : (
             <span className="text-xs font-bold text-primary-700">{initials}</span>
           )}

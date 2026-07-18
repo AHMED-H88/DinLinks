@@ -10,7 +10,8 @@ import Footer from "@/components/Footer";
 import BusinessCard from "@/components/BusinessCard";
 import CategorySortBar from "@/components/CategorySortBar";
 
-export const dynamic = "force-dynamic";
+// No `force-dynamic`: this page reads `searchParams` (sort / page), which
+// already forces dynamic rendering. The flag was redundant.
 
 const PAGE_SIZE = 12;
 
