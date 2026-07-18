@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useSession, signOut } from "next-auth/react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { Link, usePathname, useRouter } from "@/i18n/routing";
 
 // ─── Language switcher ────────────────────────────────────────────────────────
@@ -18,20 +18,22 @@ function LanguageSwitcher({ mobile = false }: LanguageSwitcherProps) {
   const pathname = usePathname();
   const router   = useRouter();
 
-  // next-intl's usePathname returns the path WITHOUT the locale prefix
-  // We read the current locale from the html lang attribute via the router
-  const [current, setCurrent] = useState<Locale>(() => {
-    if (typeof document !== "undefined") {
-      return (document.documentElement.lang as Locale) ?? "no";
-    }
-    return "no";
-  });
+  // The active locale comes from next-intl itself, so the indicator always
+  // matches the locale the page was actually rendered in — on the server and
+  // on the client. (It previously read document.documentElement.lang inside a
+  // useState initialiser, which is undefined during SSR and therefore always
+  // fell back to "no", and never re-synced after navigation.)
+  const current = useLocale() as Locale;
 
   function switchTo(locale: Locale) {
     if (locale === current) return;
-    setCurrent(locale);
-    // next-intl router.replace keeps the current path, just changes locale
-    router.replace(pathname, { locale });
+    // The query string is read here, inside the click handler, rather than via
+    // useSearchParams(). Reading it during render would opt every page that
+    // renders the header out of static/ISR rendering; reading it on click has
+    // no effect on rendering at all. usePathname() is locale-agnostic, so the
+    // route is preserved and every existing search param carries over.
+    const query = typeof window !== "undefined" ? window.location.search : "";
+    router.replace(`${pathname}${query}` as any, { locale });
   }
 
   if (mobile) {
