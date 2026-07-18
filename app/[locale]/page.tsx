@@ -5,8 +5,12 @@ import Footer from "@/components/Footer";
 import SearchBar from "@/components/SearchBar";
 import BusinessCard from "@/components/BusinessCard";
 import { prisma } from "@/lib/prisma";
+import { getCategoriesWithCounts } from "@/lib/cached-data";
 
-export const dynamic = "force-dynamic";
+// Was `force-dynamic`. Nothing on this page is user-specific — the session is
+// read client-side in <Header> — so it is safe to render on an interval
+// instead of on every request.
+export const revalidate = 300; // 5 minutes
 
 // ─── Why DinLinks value props ─────────────────────────────────────────────────
 const whyItems = [
@@ -50,10 +54,7 @@ export default async function HomePage() {
 
   // Real data from Supabase
   const [categories, featuredBusinesses, businessCount, approvedCount] = await Promise.all([
-    prisma.category.findMany({
-      orderBy: { name: "asc" },
-      include: { _count: { select: { businesses: { where: { status: "APPROVED" } } } } },
-    }),
+    getCategoriesWithCounts(),
     prisma.business.findMany({
       where: { status: "APPROVED" },
       orderBy: { views: "desc" },
@@ -76,7 +77,7 @@ export default async function HomePage() {
     id: c.id,
     name: tCat.has(c.slug) ? tCat(c.slug) : c.name,
     slug: c.slug,
-    count: c._count.businesses,
+    count: c.count,
   }));
 
   return (

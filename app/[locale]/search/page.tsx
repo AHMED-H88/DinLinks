@@ -5,10 +5,12 @@ import SearchFilters from "@/components/SearchFilters";
 import SearchBar from "@/components/SearchBar";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { prisma } from "@/lib/prisma";
+import { getFilterCategories, getCityCounts } from "@/lib/cached-data";
 import { getTranslations } from "next-intl/server";
 
-export const dynamic = "force-dynamic";
+// NOTE: no `force-dynamic` needed. This page reads `searchParams`, which already
+// makes it dynamically rendered in the App Router. Removing the explicit flag
+// lets the cached filter data (see @/lib/cached-data) actually be reused.
 
 export async function generateMetadata({
   params,
@@ -50,23 +52,13 @@ export default async function SearchPage({
   console.log("[perf] ── SearchPage shell render start ──");
   const t = await perf("shell.getTranslations", () => getTranslations("search"));
 
-  // Fetch filters data in parallel
-  const [categories, cityGroups] = await Promise.all([
-    perf("shell.category.findMany", () =>
-      prisma.category.findMany({ orderBy: { name: "asc" } })),
-    perf("shell.business.groupBy(city)", () =>
-      prisma.business.groupBy({
-        by: ["city"],
-        where: { status: "APPROVED", city: { not: null } },
-        _count: { city: true },
-        orderBy: { _count: { city: "desc" } },
-        take: 20,
-      })),
+  // Public, non-user-specific reference data — served from the Next data cache.
+  // On a cache HIT these cost no DB round trip at all; on a MISS the two run
+  // concurrently and each logs its own "cache MISS" timing.
+  const [categories, cities] = await Promise.all([
+    perf("shell.filterCategories", () => getFilterCategories()),
+    perf("shell.cityCounts", () => getCityCounts()),
   ]);
-
-  const cities = cityGroups
-    .filter((g) => g.city)
-    .map((g) => ({ city: g.city as string, count: g._count.city }));
 
   const hasSearch = searchParams.q || searchParams.category || searchParams.city;
 

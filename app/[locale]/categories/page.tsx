@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
-import { prisma } from "@/lib/prisma";
+import { getCategoriesWithCounts } from "@/lib/cached-data";
 import { Link } from "@/i18n/routing";
 import { getTranslations } from "next-intl/server";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CategoriesClient from "@/components/CategoriesClient";
 
-export const dynamic = "force-dynamic";
+// Was `force-dynamic`. Public, non-user-specific category listing.
+export const revalidate = 300; // 5 minutes
 
 export async function generateMetadata({
   params,
@@ -56,25 +57,14 @@ function getCategoryIcon(slug: string): string {
 export default async function CategoriesPage() {
   const t = await getTranslations("categoriesPage");
   const tCat = await getTranslations("categories");
-  const categories = await prisma.category.findMany({
-    orderBy: { name: "asc" },
-    include: {
-      _count: {
-        select: {
-          businesses: {
-            where: { status: "APPROVED" },
-          },
-        },
-      },
-    },
-  });
+  const categories = await getCategoriesWithCounts();
 
   const categoriesWithMeta = categories.map((c) => ({
     id:    c.id,
     name:  tCat.has(c.slug) ? tCat(c.slug) : c.name,
     slug:  c.slug,
     icon:  c.icon ?? getCategoryIcon(c.slug),
-    count: c._count.businesses,
+    count: c.count,
   }));
 
   const totalBusinesses = categoriesWithMeta.reduce((s, c) => s + c.count, 0);

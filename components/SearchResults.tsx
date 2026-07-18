@@ -12,10 +12,6 @@ interface SearchResultsProps {
   };
 }
 
-function avgRating(reviews: { rating: number }[]): number | null {
-  if (!reviews.length) return null;
-  return reviews.reduce((s, r) => s + r.rating, 0) / reviews.length;
-}
 
 // TEMP PERF — remove after audit
 async function perf<T>(label: string, fn: () => Promise<T>): Promise<T> {
@@ -40,10 +36,10 @@ export default async function SearchResults({ searchParams }: SearchResultsProps
     ];
   }
 
+  // Folded into the main query as a relation filter — this used to be a
+  // separate, sequential `category.findUnique` round trip.
   if (category) {
-    const cat = await perf("results.category.findUnique(slug)", () =>
-      prisma.category.findUnique({ where: { slug: category } }));
-    if (cat) where.categoryId = cat.id;
+    where.category = { slug: category };
   }
 
   if (city) {
@@ -57,18 +53,41 @@ export default async function SearchResults({ searchParams }: SearchResultsProps
   if (sort === "reviewed")    orderBy = { reviews: { _count: "desc" } };
 
   // ── Query ─────────────────────────────────────────────────────────────────
-  const businesses = await perf("results.business.findMany", () =>
-    prisma.business.findMany({
-      where,
-      include: {
-        category: true,
-        reviews:  { select: { rating: true } },
-        _count:   { select: { branches: true } },
-      },
-      orderBy,
-      take: 48,
-    }));
-  console.log(`[perf] results.rows=${businesses.length} totalReviewRows=${businesses.reduce((n, b) => n + b.reviews.length, 0)}`);
+  // Two independent queries run CONCURRENTLY:
+  //   1. the page of businesses (only the fields the card renders)
+  //   2. rating averages/counts aggregated in the database
+  // Previously every individual review row was fetched and averaged in JS.
+  const [businesses, ratingGroups] = await Promise.all([
+    perf("results.business.findMany", () =>
+      prisma.business.findMany({
+        where,
+        select: {
+          id:         true,
+          name:       true,
+          description: true,
+          city:       true,
+          status:     true,
+          logo:       true,
+          coverImage: true,
+          category:   { select: { name: true, slug: true } },
+          _count:     { select: { branches: true } },
+        },
+        orderBy,
+        take: 48,
+      })),
+    perf("results.review.groupBy(rating)", () =>
+      prisma.review.groupBy({
+        by: ["businessId"],
+        where: { business: where },
+        _avg: { rating: true },
+        _count: { rating: true },
+      })),
+  ]);
+
+  const ratingsByBusiness = new Map(
+    ratingGroups.map((g) => [g.businessId, { avg: g._avg.rating, count: g._count.rating }])
+  );
+  console.log(`[perf] results.rows=${businesses.length} ratingGroups=${ratingGroups.length} (review rows fetched: 0)`);
 
   // ── Empty state ───────────────────────────────────────────────────────────
   if (businesses.length === 0) {
@@ -112,7 +131,8 @@ export default async function SearchResults({ searchParams }: SearchResultsProps
       {/* Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
         {businesses.map((b) => {
-          const rating = avgRating(b.reviews);
+          const stats  = ratingsByBusiness.get(b.id);
+          const rating = stats?.avg ?? null;
           return (
             <BusinessCard
               key={b.id}
@@ -126,7 +146,7 @@ export default async function SearchResults({ searchParams }: SearchResultsProps
               logo={b.logo}
               coverImage={b.coverImage}
               rating={rating}
-              reviewCount={b.reviews.length}
+              reviewCount={stats?.count ?? 0}
               branchCount={b._count.branches}
               highlight={q}
             />
