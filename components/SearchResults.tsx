@@ -17,8 +17,16 @@ function avgRating(reviews: { rating: number }[]): number | null {
   return reviews.reduce((s, r) => s + r.rating, 0) / reviews.length;
 }
 
+// TEMP PERF — remove after audit
+async function perf<T>(label: string, fn: () => Promise<T>): Promise<T> {
+  const s = performance.now();
+  try { return await fn(); }
+  finally { console.log(`[perf] ${label}: ${(performance.now() - s).toFixed(1)}ms`); }
+}
+
 export default async function SearchResults({ searchParams }: SearchResultsProps) {
-  const t = await getTranslations("searchResults");
+  console.log("[perf] ── SearchResults (streamed Suspense) start ──");
+  const t = await perf("results.getTranslations", () => getTranslations("searchResults"));
   const { q, category, city, sort = "popular" } = searchParams;
 
   // ── Build where clause ────────────────────────────────────────────────────
@@ -33,7 +41,8 @@ export default async function SearchResults({ searchParams }: SearchResultsProps
   }
 
   if (category) {
-    const cat = await prisma.category.findUnique({ where: { slug: category } });
+    const cat = await perf("results.category.findUnique(slug)", () =>
+      prisma.category.findUnique({ where: { slug: category } }));
     if (cat) where.categoryId = cat.id;
   }
 
@@ -48,16 +57,18 @@ export default async function SearchResults({ searchParams }: SearchResultsProps
   if (sort === "reviewed")    orderBy = { reviews: { _count: "desc" } };
 
   // ── Query ─────────────────────────────────────────────────────────────────
-  const businesses = await prisma.business.findMany({
-    where,
-    include: {
-      category: true,
-      reviews:  { select: { rating: true } },
-      _count:   { select: { branches: true } },
-    },
-    orderBy,
-    take: 48,
-  });
+  const businesses = await perf("results.business.findMany", () =>
+    prisma.business.findMany({
+      where,
+      include: {
+        category: true,
+        reviews:  { select: { rating: true } },
+        _count:   { select: { branches: true } },
+      },
+      orderBy,
+      take: 48,
+    }));
+  console.log(`[perf] results.rows=${businesses.length} totalReviewRows=${businesses.reduce((n, b) => n + b.reviews.length, 0)}`);
 
   // ── Empty state ───────────────────────────────────────────────────────────
   if (businesses.length === 0) {

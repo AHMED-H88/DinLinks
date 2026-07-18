@@ -35,23 +35,33 @@ export async function generateMetadata({
   };
 }
 
+// TEMP PERF — remove after audit
+async function perf<T>(label: string, fn: () => Promise<T>): Promise<T> {
+  const s = performance.now();
+  try { return await fn(); }
+  finally { console.log(`[perf] ${label}: ${(performance.now() - s).toFixed(1)}ms`); }
+}
+
 export default async function SearchPage({
   searchParams,
 }: {
   searchParams: { q?: string; category?: string; city?: string; sort?: string };
 }) {
-  const t = await getTranslations("search");
+  console.log("[perf] ── SearchPage shell render start ──");
+  const t = await perf("shell.getTranslations", () => getTranslations("search"));
 
   // Fetch filters data in parallel
   const [categories, cityGroups] = await Promise.all([
-    prisma.category.findMany({ orderBy: { name: "asc" } }),
-    prisma.business.groupBy({
-      by: ["city"],
-      where: { status: "APPROVED", city: { not: null } },
-      _count: { city: true },
-      orderBy: { _count: { city: "desc" } },
-      take: 20,
-    }),
+    perf("shell.category.findMany", () =>
+      prisma.category.findMany({ orderBy: { name: "asc" } })),
+    perf("shell.business.groupBy(city)", () =>
+      prisma.business.groupBy({
+        by: ["city"],
+        where: { status: "APPROVED", city: { not: null } },
+        _count: { city: true },
+        orderBy: { _count: { city: "desc" } },
+        take: 20,
+      })),
   ]);
 
   const cities = cityGroups
