@@ -66,12 +66,12 @@
     "ownerBenefit5": "Spor profilvisninger i dashboardet ditt"
   },
   "branches": {
-    "title":            "Filialer",
-    "main":             "Hovedfilial",
-    "add":              "Legg til filial",
-    "edit":             "Rediger filial",
-    "delete":           "Slett filial",
-    "name":             "Navn på filial",
+    "title":            "Lokasjoner",
+    "main":             "Hovedlokasjon",
+    "add":              "Legg til lokasjon",
+    "edit":             "Rediger lokasjon",
+    "delete":           "Slett lokasjon",
+    "name":             "Navn på lokasjon",
     "address":          "Adresse",
     "city":             "By",
     "postalCode":       "Postnummer",
@@ -80,28 +80,28 @@
     "openingHours":     "Åpningstider",
     "contactInfo":      "Kontaktinformasjon",
     "noReviews":        "Ingen anmeldelser ennå",
-    "noBranches":       "Ingen filialer lagt til ennå.",
+    "noBranches":       "Ingen lokasjoner lagt til ennå.",
     "closed":           "Stengt",
-    "setMain":          "Sett som hovedfilial",
-    "setMainDesc":      "Kun én filial kan være hovedfilialen.",
+    "setMain":          "Sett som hovedlokasjon",
+    "setMainDesc":      "Kun én lokasjon kan være hovedlokasjonen.",
     "save":             "Lagre endringer",
     "cancel":           "Avbryt",
-    "confirmDelete":    "Slett filial?",
+    "confirmDelete":    "Slett lokasjon?",
     "deleteWarning":    "vil bli slettet permanent.",
-    "cannotDeleteLast": "Kan ikke slette den eneste filialen. Legg til en ny filial først.",
+    "cannotDeleteLast": "Kan ikke slette den eneste lokasjonen. Legg til en ny lokasjon først.",
     "saving":           "Lagrer…",
-    "noBranchesYet":    "Ingen filialer ennå",
-    "addFirstBranch":   "Legg til den første filialen for å vise plasseringer på profilen din.",
-    "branchSingular":   "filial",
-    "branchPlural":     "filialer",
+    "noBranchesYet":    "Ingen lokasjoner ennå",
+    "addFirstBranch":   "Legg til den første lokasjonen for å vise den på profilen din.",
+    "branchSingular":   "lokasjon",
+    "branchPlural":     "lokasjoner",
     "editAction":       "Rediger",
     "deleteAction":     "Slett",
-    "namePlaceholder":  "f.eks. Filial Oslo Sentrum",
+    "namePlaceholder":  "f.eks. Oslo Sentrum",
     "addressPlaceholder": "Gateadresse",
     "cityPlaceholder":  "Oslo",
     "postalPlaceholder": "0150",
     "phonePlaceholder": "+47 123 45 678",
-    "emailPlaceholder": "filial@bedrift.no",
+    "emailPlaceholder": "lokasjon@bedrift.no",
     "nameRequired": "Navn er påkrevd",
     "errorUnknown": "Noe gikk galt. Prøv igjen.",
     "requestFailed": "Forespørselen mislyktes. Prøv igjen."
@@ -220,7 +220,7 @@
     "profileViews": "Profilvisninger",
     "favorites": "Favoritter",
     "reviews": "Anmeldelser",
-    "branches": "Filialer",
+    "branches": "Lokasjoner",
     "editProfile": "Rediger bedriftsprofil",
     "createProfile": "Opprett din bedriftsprofil",
     "editSubtitle": "Endringer lagres umiddelbart. Hvis du ble avvist, vil lagring sende inn profilen på nytt.",
@@ -259,6 +259,7 @@
   "businessForm": {
     "sections": {
       "basics": "Grunnleggende informasjon",
+      "company": "Bedriftsinformasjon",
       "media": "Media",
       "location": "Beliggenhet",
       "contact": "Kontaktinformasjon",
@@ -267,6 +268,7 @@
     },
     "subtitles": {
       "basics": "Bedriftsnavn, kategori og beskrivelse.",
+      "company": "Valgfrie opplysninger om bedriften. Alle felt kan stå tomme.",
       "media": "Logo, forsidebilde og bildegalleri.",
       "location": "Her finner kundene deg.",
       "contact": "Slik når kundene deg."
@@ -277,7 +279,14 @@
       "network": "Nettverksfeil — sjekk tilkoblingen og prøv igjen.",
       "logoUpload": "Opplasting av logo mislyktes",
       "coverUpload": "Opplasting av forsidebilde mislyktes",
-      "imageUpload": "Bildeopplasting mislyktes"
+      "imageUpload": "Bildeopplasting mislyktes",
+      "foundedYearRange": "Oppgi et etableringsår mellom 1800 og i år.",
+      "employeeCountRange": "Antall ansatte kan ikke være negativt.",
+      "companySizeInvalid": "Velg en gyldig bedriftsstørrelse.",
+      "orgNumberInvalid": "Organisasjonsnummeret må være 9 siffer.",
+      "serviceModesInvalid": "Én eller flere valgte leveringsmåter er ugyldige.",
+      "highlightCodesInvalid": "Ett eller flere valgte kjennetegn er ugyldige.",
+      "invalidType": "Ett av feltene har en ugyldig verdi."
     },
     "success": {
       "updated": "Profilen er oppdatert.",
@@ -288,11 +297,38 @@
     "photoGallery": "Bildegalleri",
     "tabs": {
       "basicInfo": "Grunnleggende info",
+      "company": "Bedrift",
       "media": "Media",
       "location": "Beliggenhet",
       "contact": "Kontakt",
       "openingHours": "Åpningstider",
       "services": "Tjenester"
+    },
+    "companySize": {
+      "none": "Ikke oppgitt",
+      "SELF_EMPLOYED": "Selvstendig",
+      "MICRO": "Mikro (1–9)",
+      "SMALL": "Liten (10–49)",
+      "MEDIUM": "Mellomstor (50–249)",
+      "LARGE": "Stor (250–999)",
+      "ENTERPRISE": "Storbedrift (1000+)"
+    },
+    "serviceMode": {
+      "ON_SITE": "På stedet",
+      "REMOTE": "Eksternt",
+      "NATIONWIDE": "Hele landet"
+    },
+    "highlight": {
+      "FREE_ESTIMATE": "Gratis befaring",
+      "EMERGENCY_SERVICE": "Døgnvakt",
+      "FAMILY_OWNED": "Familieeid",
+      "CERTIFIED_PROFESSIONALS": "Sertifiserte fagfolk",
+      "ECO_FRIENDLY": "Miljøvennlig",
+      "WEEKEND_SERVICE": "Helgeåpent",
+      "FAST_RESPONSE": "Rask respons",
+      "MOBILE_SERVICE": "Mobil tjeneste",
+      "NATIONWIDE_SERVICE": "Landsdekkende",
+      "REMOTE_SERVICE": "Ekstern tjeneste"
     },
     "days": {
       "monday": "Mandag",
@@ -324,7 +360,16 @@
       "openingHours": "Åpningstider",
       "services": "Tjenester",
       "serviceName": "Tjenestenavn",
-      "price": "Pris"
+      "price": "Pris",
+      "companyStory": "Bedriftshistorie",
+      "foundedYear": "Etableringsår",
+      "employeeCount": "Antall ansatte",
+      "companySize": "Bedriftsstørrelse",
+      "legalName": "Juridisk navn",
+      "organizationNumber": "Organisasjonsnummer",
+      "organizationType": "Organisasjonsform",
+      "serviceModes": "Slik leverer du tjenesten",
+      "highlightCodes": "Kjennetegn"
     },
     "placeholders": {
       "name": "f.eks. Oslo Auto Repair",
@@ -342,7 +387,13 @@
       "bookingUrl": "https://booking.dinbedrift.no",
       "serviceName": "Oljeskift",
       "servicePrice": "499 kr",
-      "serviceDescription": "Kort beskrivelse av denne tjenesten (valgfritt)"
+      "serviceDescription": "Kort beskrivelse av denne tjenesten (valgfritt)",
+      "companyStory": "Fortell den lengre historien — bakgrunn, verdier, hva som skiller dere ut...",
+      "foundedYear": "f.eks. 2015",
+      "employeeCount": "f.eks. 12",
+      "legalName": "f.eks. Oslo Auto Repair AS",
+      "organizationNumber": "f.eks. 123456789",
+      "organizationType": "f.eks. AS, ENK, enkeltpersonforetak"
     },
     "hints": {
       "logo": "Kvadratisk bilde, 400×400 px anbefalt · maks 2 MB · JPG, PNG, WebP",
@@ -350,7 +401,10 @@
       "photos": "Ekstra bilder av lokaler, produkter eller team · maks 5 MB per bilde",
       "bookingUrl": "En direkte lenke der kunder kan bestille time eller reservere.",
       "openingHours": "Sett ukeplanen din. Bruk «Stengt» for dager du ikke holder åpent.",
-      "services": "List opp hva du tilbyr. Kundene ser disse på profilen din."
+      "services": "List opp hva du tilbyr. Kundene ser disse på profilen din.",
+      "companyStory": "Dette er atskilt fra den korte beskrivelsen ovenfor.",
+      "organizationNumber": "9 siffer. Mellomrom fjernes automatisk.",
+      "highlightCodes": "Korte merker som vises på profilen din."
     },
     "actions": {
       "save": "Lagre endringer",
@@ -705,8 +759,8 @@
       "verified": "Verifisert",
       "openNow": "Åpent nå",
       "closedNow": "Stengt nå",
-      "branchSingular": "filial",
-      "branchPlural": "filialer"
+      "branchSingular": "lokasjon",
+      "branchPlural": "lokasjoner"
     },
     "actions": {
       "bookNow": "Book nå",
@@ -720,7 +774,7 @@
       "about": "Om bedriften",
       "photos": "Bilder",
       "services": "Tjenester",
-      "branches": "Filialer",
+      "branches": "Lokasjoner",
       "reviews": "Anmeldelser",
       "similar": "Lignende bedrifter"
     },
@@ -779,6 +833,12 @@
       "genuineRatings": "Vurderinger fra kunder",
       "profileViews": "Profilvisninger",
       "lastUpdated": "Sist oppdatert"
+    },
+    "locations": {
+      "heading": "Lokasjoner",
+      "countOne": "1 lokasjon",
+      "countOther": "{count} lokasjoner",
+      "mainLabel": "Hovedlokasjon"
     },
     "days": {
       "monday": "Mandag",

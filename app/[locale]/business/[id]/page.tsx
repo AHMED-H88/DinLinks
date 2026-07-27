@@ -17,6 +17,7 @@ import type { Branch } from "@/components/BranchManager";
 import { getTranslations } from "next-intl/server";
 import { normalizeDayKey } from "@/lib/days";
 import { formatCity } from "@/lib/format";
+import { buildDisplayLocations } from "@/lib/locations";
 
 export const dynamic = "force-dynamic";
 
@@ -159,6 +160,9 @@ export default async function BusinessProfilePage({
     ? (business.services as unknown as ServiceItem[])
     : [];
   const branches      = (business.branches ?? []) as unknown as Branch[];
+  // Final public Locations list: the company's primary location (from the
+  // Business fields) first, then the additional Branch records, de-duplicated.
+  const displayLocations = buildDisplayLocations(business, branches);
   const galleryImages = business.images;
   const avgRating     = avgRatingOf(business.reviews);
   const hasHours      = Object.keys(openingHours).length > 0;
@@ -317,13 +321,15 @@ export default async function BusinessProfilePage({
                         <span className="text-white/50">({business.reviews.length})</span>
                       </span>
                     )}
-                    {branches.length > 0 && (
+                    {displayLocations.length > 0 && (
                       <span className="flex items-center gap-1 text-sm text-white/60">
                         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                             d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" />
                         </svg>
-                        {branches.length} {branches.length === 1 ? t("hero.branchSingular") : t("hero.branchPlural")}
+                        {displayLocations.length === 1
+                          ? t("locations.countOne")
+                          : t("locations.countOther", { count: displayLocations.length })}
                       </span>
                     )}
                   </div>
@@ -464,6 +470,11 @@ export default async function BusinessProfilePage({
                 />
               )}
 
+              {/* ── Filialer ──────────────────────────────────────────── */}
+              {displayLocations.length > 0 && (
+                <BranchesSection locations={displayLocations} locale={locale} />
+              )}
+
               {/* ── Tjenester ─────────────────────────────────────────── */}
               {services.length > 0 && (
                 <section id="services" className="scroll-mt-24">
@@ -489,11 +500,6 @@ export default async function BusinessProfilePage({
                     ))}
                   </div>
                 </section>
-              )}
-
-              {/* ── Filialer ──────────────────────────────────────────── */}
-              {branches.length > 0 && (
-                <BranchesSection branches={branches} locale={locale} />
               )}
 
               {/* ── Anmeldelser ───────────────────────────────────────── */}

@@ -4,6 +4,11 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
+import {
+  COMPANY_SIZES,
+  SERVICE_MODES,
+  HIGHLIGHT_CODES,
+} from "@/lib/business-fields";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -36,6 +41,16 @@ interface Business {
   mapLink: string | null;
   openingHours: any;
   status: "PENDING" | "APPROVED" | "REJECTED";
+  // Step A1 — company information
+  companyStory?: string | null;
+  foundedYear?: number | null;
+  companySize?: string | null;
+  employeeCount?: number | null;
+  serviceModes?: string[] | null;
+  organizationNumber?: string | null;
+  legalName?: string | null;
+  organizationType?: string | null;
+  highlightCodes?: string[] | null;
 }
 
 interface Category {
@@ -73,12 +88,14 @@ const defaultOpeningHours = {
 
 const SECTIONS = [
   { id: "basics",   labelKey: "basicInfo" },
+  { id: "company",  labelKey: "company" },
   { id: "media",    labelKey: "media" },
   { id: "location", labelKey: "location" },
   { id: "contact",  labelKey: "contact" },
   { id: "hours",    labelKey: "openingHours" },
   { id: "services", labelKey: "services" },
 ] as const;
+
 
 // ─── Storage helpers ──────────────────────────────────────────────────────────
 
@@ -189,6 +206,21 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
       ? (business.openingHours as Record<string, any>)
       : defaultOpeningHours
   );
+
+  // ── Step A1 — company information state (all optional) ────────────────────────
+  const [companyStory,       setCompanyStory]       = useState(business?.companyStory ?? "");
+  const [foundedYear,        setFoundedYear]        = useState(business?.foundedYear != null ? String(business.foundedYear) : "");
+  const [companySize,        setCompanySize]        = useState(business?.companySize ?? "");
+  const [employeeCount,      setEmployeeCount]      = useState(business?.employeeCount != null ? String(business.employeeCount) : "");
+  const [legalName,          setLegalName]          = useState(business?.legalName ?? "");
+  const [organizationNumber, setOrganizationNumber] = useState(business?.organizationNumber ?? "");
+  const [organizationType,   setOrganizationType]   = useState(business?.organizationType ?? "");
+  const [serviceModes,       setServiceModes]       = useState<string[]>(business?.serviceModes ?? []);
+  const [highlightCodes,     setHighlightCodes]     = useState<string[]>(business?.highlightCodes ?? []);
+
+  function toggleInList(list: string[], setter: (v: string[]) => void, value: string) {
+    setter(list.includes(value) ? list.filter((v) => v !== value) : [...list, value]);
+  }
 
   // ── UI state ────────────────────────────────────────────────────────────────
   const [loading,         setLoading]         = useState(false);
@@ -330,6 +362,16 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
         bookingLink:  bookingLink.trim() || null,
         mapLink:      mapLink.trim()     || null,
         openingHours,
+        // Step A1 — company information (optional; server validates + normalises)
+        companyStory:       companyStory.trim() || null,
+        foundedYear:        foundedYear.trim()   === "" ? null : Number(foundedYear),
+        companySize:        companySize || null,
+        employeeCount:      employeeCount.trim() === "" ? null : Number(employeeCount),
+        legalName:          legalName.trim() || null,
+        organizationNumber: organizationNumber.trim() || null,
+        organizationType:   organizationType.trim() || null,
+        serviceModes,
+        highlightCodes,
       };
 
       const res  = await fetch("/api/business", {
@@ -340,7 +382,13 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error ?? t("errors.generic"));
+        // Field-level validation errors from the API carry a message key we
+        // can localise; fall back to the generic message otherwise.
+        const fieldMsg =
+          Array.isArray(data.fields) && data.fields[0]?.message
+            ? t(`errors.${data.fields[0].message}` as any)
+            : null;
+        setError(fieldMsg ?? data.error ?? t("errors.generic"));
       } else {
         setSuccess(
           isEdit ? t("success.updated") : t("success.created")
@@ -431,6 +479,147 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
               />
               <p className="text-xs text-gray-400 mt-1">{description.length} / 1000</p>
             </div>
+          </div>
+        </section>
+
+        {/* ── Company information (Step A1) ─────────────────────────── */}
+        <section>
+          <SectionHeading
+            id="company"
+            title={t("sections.company")}
+            subtitle={t("subtitles.company")}
+          />
+          <div className="space-y-5">
+            {/* Company story */}
+            <div>
+              <FieldLabel>{t("labels.companyStory")}</FieldLabel>
+              <textarea
+                value={companyStory}
+                onChange={(e) => setCompanyStory(e.target.value)}
+                className="input min-h-[120px] resize-y"
+                rows={5}
+                placeholder={t("placeholders.companyStory")}
+              />
+              <p className="text-xs text-gray-400 mt-1">{t("hints.companyStory")}</p>
+            </div>
+
+            {/* Founded year + employee count */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div>
+                <FieldLabel>{t("labels.foundedYear")}</FieldLabel>
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  min={1800}
+                  max={new Date().getFullYear()}
+                  value={foundedYear}
+                  onChange={(e) => setFoundedYear(e.target.value)}
+                  className="input"
+                  placeholder={t("placeholders.foundedYear")}
+                />
+              </div>
+              <div>
+                <FieldLabel>{t("labels.employeeCount")}</FieldLabel>
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  min={0}
+                  value={employeeCount}
+                  onChange={(e) => setEmployeeCount(e.target.value)}
+                  className="input"
+                  placeholder={t("placeholders.employeeCount")}
+                />
+              </div>
+            </div>
+
+            {/* Company size */}
+            <div>
+              <FieldLabel>{t("labels.companySize")}</FieldLabel>
+              <select
+                value={companySize}
+                onChange={(e) => setCompanySize(e.target.value)}
+                className="input"
+              >
+                <option value="">{t("companySize.none")}</option>
+                {COMPANY_SIZES.map((size) => (
+                  <option key={size} value={size}>{t(`companySize.${size}` as any)}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Legal name + organization number + organization type */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div>
+                <FieldLabel>{t("labels.legalName")}</FieldLabel>
+                <input
+                  type="text"
+                  value={legalName}
+                  onChange={(e) => setLegalName(e.target.value)}
+                  className="input"
+                  placeholder={t("placeholders.legalName")}
+                />
+              </div>
+              <div>
+                <FieldLabel>{t("labels.organizationNumber")}</FieldLabel>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={organizationNumber}
+                  onChange={(e) => setOrganizationNumber(e.target.value)}
+                  className="input"
+                  placeholder={t("placeholders.organizationNumber")}
+                />
+                <p className="text-xs text-gray-400 mt-1">{t("hints.organizationNumber")}</p>
+              </div>
+            </div>
+
+            <div>
+              <FieldLabel>{t("labels.organizationType")}</FieldLabel>
+              <input
+                type="text"
+                value={organizationType}
+                onChange={(e) => setOrganizationType(e.target.value)}
+                className="input"
+                placeholder={t("placeholders.organizationType")}
+              />
+            </div>
+
+            {/* Service modes */}
+            <fieldset>
+              <legend className="block text-sm font-medium text-gray-700 mb-1.5">{t("labels.serviceModes")}</legend>
+              <div className="flex flex-wrap gap-x-5 gap-y-2">
+                {SERVICE_MODES.map((mode) => (
+                  <label key={mode} className="flex items-center gap-2 text-sm text-gray-700">
+                    <input
+                      type="checkbox"
+                      checked={serviceModes.includes(mode)}
+                      onChange={() => toggleInList(serviceModes, setServiceModes, mode)}
+                      className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                    />
+                    {t(`serviceMode.${mode}` as any)}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+
+            {/* Highlights */}
+            <fieldset>
+              <legend className="block text-sm font-medium text-gray-700 mb-1.5">{t("labels.highlightCodes")}</legend>
+              <p className="text-xs text-gray-400 mb-2">{t("hints.highlightCodes")}</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-2">
+                {HIGHLIGHT_CODES.map((code) => (
+                  <label key={code} className="flex items-center gap-2 text-sm text-gray-700">
+                    <input
+                      type="checkbox"
+                      checked={highlightCodes.includes(code)}
+                      onChange={() => toggleInList(highlightCodes, setHighlightCodes, code)}
+                      className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                    />
+                    {t(`highlight.${code}` as any)}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
           </div>
         </section>
 

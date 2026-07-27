@@ -184,6 +184,15 @@ export default async function DashboardPage({
                         mapLink:      business.mapLink,
                         openingHours: business.openingHours,
                         status:       business.status,
+                        companyStory:       business.companyStory,
+                        foundedYear:        business.foundedYear,
+                        companySize:        business.companySize,
+                        employeeCount:      business.employeeCount,
+                        serviceModes:       business.serviceModes,
+                        organizationNumber: business.organizationNumber,
+                        legalName:          business.legalName,
+                        organizationType:   business.organizationType,
+                        highlightCodes:     business.highlightCodes,
                       }
                     : null
                 }
