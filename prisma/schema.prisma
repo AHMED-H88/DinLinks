@@ -4,8 +4,8 @@ generator client {
 
 datasource db {
   provider  = "postgresql"
-  url       = env("DATABASE_URL")   // pooled (PgBouncer) — runtime
-  directUrl = env("DIRECT_URL")     // direct — prisma migrate only
+  url       = env("DATABASE_URL") // pooled (PgBouncer) — runtime
+  directUrl = env("DIRECT_URL") // direct — prisma migrate only
 }
 
 model User {
@@ -66,23 +66,34 @@ model VerificationToken {
 }
 
 model Business {
-  id          String   @id @default(cuid())
-  userId      String   @unique
+  id          String         @id @default(cuid())
+  userId      String         @unique
   name        String?
   description String?
   categoryId  String?
   status      BusinessStatus @default(PENDING)
 
-  logo        String?
-  coverImage  String?
-  images      String[]
-  services    Json?
+  logo       String?
+  coverImage String?
+  images     String[]
+  services   Json?
 
-  address     String?
-  latitude    Float?
-  longitude   Float?
-  city        String?
-  postalCode  String?
+  // ── Phase 1 · Step A1 — company information (all optional / safe defaults) ──
+  companyStory       String?
+  foundedYear        Int?
+  companySize        CompanySize?
+  employeeCount      Int?
+  serviceModes       String[]     @default([])
+  organizationNumber String?
+  legalName          String?
+  organizationType   String?
+  highlightCodes     String[]     @default([])
+
+  address    String?
+  latitude   Float?
+  longitude  Float?
+  city       String?
+  postalCode String?
 
   phone       String?
   email       String?
@@ -92,12 +103,12 @@ model Business {
 
   openingHours Json?
 
-  views       Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  views     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  category     Category?  @relation(fields: [categoryId], references: [id])
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category     Category?     @relation(fields: [categoryId], references: [id])
   favorites    Favorite[]
   reviews      Review[]
   subscription Subscription?
@@ -110,14 +121,14 @@ model Business {
 }
 
 model Category {
-  id          String     @id @default(cuid())
-  name        String     @unique
-  slug        String     @unique
-  icon        String?
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  id        String   @id @default(cuid())
+  name      String   @unique
+  slug      String   @unique
+  icon      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  businesses  Business[]
+  businesses Business[]
 
   @@map("categories")
 }
@@ -189,6 +200,15 @@ model Branch {
 
   @@index([businessId])
   @@map("branches")
+}
+
+enum CompanySize {
+  SELF_EMPLOYED
+  MICRO
+  SMALL
+  MEDIUM
+  LARGE
+  ENTERPRISE
 }
 
 enum UserRole {

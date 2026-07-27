@@ -66,12 +66,12 @@
     "ownerBenefit5": "Track profile views in your dashboard"
   },
   "branches": {
-    "title":            "Branches",
-    "main":             "Main branch",
-    "add":              "Add branch",
-    "edit":             "Edit branch",
-    "delete":           "Delete branch",
-    "name":             "Branch name",
+    "title":            "Locations",
+    "main":             "Main location",
+    "add":              "Add location",
+    "edit":             "Edit location",
+    "delete":           "Delete location",
+    "name":             "Location name",
     "address":          "Address",
     "city":             "City",
     "postalCode":       "Postal code",
@@ -80,20 +80,20 @@
     "openingHours":     "Opening hours",
     "contactInfo":      "Contact information",
     "noReviews":        "No reviews yet",
-    "noBranches":       "No branches added yet.",
+    "noBranches":       "No locations added yet.",
     "closed":           "Closed",
-    "setMain":          "Set as main branch",
-    "setMainDesc":      "Only one branch can be the main branch.",
+    "setMain":          "Set as main location",
+    "setMainDesc":      "Only one location can be the main location.",
     "save":             "Save changes",
     "cancel":           "Cancel",
-    "confirmDelete":    "Delete branch?",
+    "confirmDelete":    "Delete location?",
     "deleteWarning":    "will be permanently deleted.",
-    "cannotDeleteLast": "Cannot delete the only branch. Add another branch first.",
+    "cannotDeleteLast": "Cannot delete the only location. Add another location first.",
     "saving":           "Saving…",
-    "noBranchesYet":    "No branches yet",
-    "addFirstBranch":   "Add your first branch to show locations on your public profile.",
-    "branchSingular":   "branch",
-    "branchPlural":     "branches",
+    "noBranchesYet":    "No locations yet",
+    "addFirstBranch":   "Add your first location to show it on your public profile.",
+    "branchSingular":   "location",
+    "branchPlural":     "locations",
     "editAction":       "Edit",
     "deleteAction":     "Delete",
     "namePlaceholder":  "e.g. Oslo City Centre",
@@ -101,7 +101,7 @@
     "cityPlaceholder":  "Oslo",
     "postalPlaceholder": "0150",
     "phonePlaceholder": "+47 123 45 678",
-    "emailPlaceholder": "branch@business.no",
+    "emailPlaceholder": "location@business.no",
     "nameRequired": "Name is required",
     "errorUnknown": "Something went wrong. Please try again.",
     "requestFailed": "The request failed. Please try again."
@@ -220,7 +220,7 @@
     "profileViews": "Profile views",
     "favorites": "Favourites",
     "reviews": "Reviews",
-    "branches": "Branches",
+    "branches": "Locations",
     "editProfile": "Edit business profile",
     "createProfile": "Create your business profile",
     "editSubtitle": "Changes are saved immediately. If you were rejected, saving will re-submit for review.",
@@ -259,6 +259,7 @@
   "businessForm": {
     "sections": {
       "basics": "Basic information",
+      "company": "Company information",
       "media": "Media",
       "location": "Location",
       "contact": "Contact information",
@@ -267,6 +268,7 @@
     },
     "subtitles": {
       "basics": "Your business name, category, and description.",
+      "company": "Optional details about your company. All fields can be left blank.",
       "media": "Logo, cover image, and photo gallery.",
       "location": "Where customers can find you.",
       "contact": "How customers can reach you."
@@ -277,7 +279,14 @@
       "network": "Network error — please check your connection and try again.",
       "logoUpload": "Logo upload failed",
       "coverUpload": "Cover upload failed",
-      "imageUpload": "Image upload failed"
+      "imageUpload": "Image upload failed",
+      "foundedYearRange": "Enter a founding year between 1800 and this year.",
+      "employeeCountRange": "The number of employees cannot be negative.",
+      "companySizeInvalid": "Select a valid company size.",
+      "orgNumberInvalid": "The organization number must be 9 digits.",
+      "serviceModesInvalid": "One or more selected service modes are not valid.",
+      "highlightCodesInvalid": "One or more selected highlights are not valid.",
+      "invalidType": "One of the fields has an invalid value."
     },
     "success": {
       "updated": "Profile updated successfully.",
@@ -288,11 +297,38 @@
     "photoGallery": "Photo gallery",
     "tabs": {
       "basicInfo": "Basic info",
+      "company": "Company",
       "media": "Media",
       "location": "Location",
       "contact": "Contact",
       "openingHours": "Opening hours",
       "services": "Services"
+    },
+    "companySize": {
+      "none": "Not specified",
+      "SELF_EMPLOYED": "Self-employed",
+      "MICRO": "Micro (1–9)",
+      "SMALL": "Small (10–49)",
+      "MEDIUM": "Medium (50–249)",
+      "LARGE": "Large (250–999)",
+      "ENTERPRISE": "Enterprise (1000+)"
+    },
+    "serviceMode": {
+      "ON_SITE": "On site",
+      "REMOTE": "Remote",
+      "NATIONWIDE": "Nationwide"
+    },
+    "highlight": {
+      "FREE_ESTIMATE": "Free estimate",
+      "EMERGENCY_SERVICE": "Emergency service",
+      "FAMILY_OWNED": "Family owned",
+      "CERTIFIED_PROFESSIONALS": "Certified professionals",
+      "ECO_FRIENDLY": "Eco-friendly",
+      "WEEKEND_SERVICE": "Weekend service",
+      "FAST_RESPONSE": "Fast response",
+      "MOBILE_SERVICE": "Mobile service",
+      "NATIONWIDE_SERVICE": "Nationwide service",
+      "REMOTE_SERVICE": "Remote service"
     },
     "days": {
       "monday": "Monday",
@@ -324,7 +360,16 @@
       "openingHours": "Opening hours",
       "services": "Services",
       "serviceName": "Service name",
-      "price": "Price"
+      "price": "Price",
+      "companyStory": "Company story",
+      "foundedYear": "Founded year",
+      "employeeCount": "Number of employees",
+      "companySize": "Company size",
+      "legalName": "Legal name",
+      "organizationNumber": "Organization number",
+      "organizationType": "Organization type",
+      "serviceModes": "How you deliver your service",
+      "highlightCodes": "Highlights"
     },
     "placeholders": {
       "name": "e.g. Oslo Auto Repair",
@@ -342,7 +387,13 @@
       "bookingUrl": "https://booking.yourbusiness.no",
       "serviceName": "Oil change",
       "servicePrice": "499 kr",
-      "serviceDescription": "Short description of this service (optional)"
+      "serviceDescription": "Short description of this service (optional)",
+      "companyStory": "Tell your longer story — history, values, what makes you different...",
+      "foundedYear": "e.g. 2015",
+      "employeeCount": "e.g. 12",
+      "legalName": "e.g. Oslo Auto Repair AS",
+      "organizationNumber": "e.g. 123456789",
+      "organizationType": "e.g. AS, ENK, sole proprietorship"
     },
     "hints": {
       "logo": "Square image, 400×400 px recommended · max 2 MB · JPG, PNG, WebP",
@@ -350,7 +401,10 @@
       "photos": "Additional photos of your premises, products, or team · max 5 MB each",
       "bookingUrl": "A direct link for customers to book appointments or reservations.",
       "openingHours": "Set your weekly schedule. Toggle 'Closed' for days you're not open.",
-      "services": "List what you offer. Customers will see these on your profile."
+      "services": "List what you offer. Customers will see these on your profile.",
+      "companyStory": "This is separate from the short description above.",
+      "organizationNumber": "9 digits. Spaces are removed automatically.",
+      "highlightCodes": "Short badges shown on your profile."
     },
     "actions": {
       "save": "Save changes",
@@ -705,8 +759,8 @@
       "verified": "Verified",
       "openNow": "Open now",
       "closedNow": "Closed now",
-      "branchSingular": "branch",
-      "branchPlural": "branches"
+      "branchSingular": "location",
+      "branchPlural": "locations"
     },
     "actions": {
       "bookNow": "Book now",
@@ -720,7 +774,7 @@
       "about": "About this business",
       "photos": "Photos",
       "services": "Services",
-      "branches": "Branches",
+      "branches": "Locations",
       "reviews": "Reviews",
       "similar": "Similar businesses"
     },
@@ -779,6 +833,12 @@
       "genuineRatings": "Ratings from customers",
       "profileViews": "Profile views",
       "lastUpdated": "Last updated"
+    },
+    "locations": {
+      "heading": "Locations",
+      "countOne": "1 location",
+      "countOther": "{count} locations",
+      "mainLabel": "Main location"
     },
     "days": {
       "monday": "Monday",

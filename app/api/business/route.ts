@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { validateBusinessExtras } from "@/lib/business-fields";
 
 // ─── Shared field picker ──────────────────────────────────────────────────────
 
@@ -47,12 +48,23 @@ export async function POST(req: Request) {
       );
     }
 
-    const data     = await req.json();
+    const data = await req.json();
+
+    // Step A1 fields — explicitly whitelisted, normalised and validated.
+    const extras = validateBusinessExtras(data);
+    if (!extras.ok) {
+      return NextResponse.json(
+        { error: "Validation failed", fields: extras.errors },
+        { status: 400 }
+      );
+    }
+
     const business = await prisma.business.create({
       data: {
         userId: session.user.id,
         status: "PENDING",
         ...pickFields(data),
+        ...extras.data,
       },
     });
 
@@ -85,6 +97,15 @@ export async function PUT(req: Request) {
 
     const data = await req.json();
 
+    // Step A1 fields — explicitly whitelisted, normalised and validated.
+    const extras = validateBusinessExtras(data);
+    if (!extras.ok) {
+      return NextResponse.json(
+        { error: "Validation failed", fields: extras.errors },
+        { status: 400 }
+      );
+    }
+
     // If the business was REJECTED and the owner updates it → back to PENDING
     const statusUpdate =
       existing.status === "REJECTED" ? { status: "PENDING" as const } : {};
@@ -93,6 +114,7 @@ export async function PUT(req: Request) {
       where: { userId: session.user.id },
       data: {
         ...pickFields(data),
+        ...extras.data,
         ...statusUpdate,
       },
     });

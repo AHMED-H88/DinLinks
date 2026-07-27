@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import type { Branch } from "@/components/BranchManager";
+import type { DisplayLocation } from "@/lib/locations";
 import { normalizeDayKey } from "@/lib/days";
 
 function HoursTable({
@@ -36,15 +37,14 @@ function HoursTable({
 }
 
 interface BranchesSectionProps {
-  branches: Branch[];
-  locale:   string;
+  locations: DisplayLocation[];
+  locale:    string;
 }
 
-export default async function BranchesSection({ branches, locale }: BranchesSectionProps) {
-  if (branches.length === 0) return null;
+export default async function BranchesSection({ locations, locale }: BranchesSectionProps) {
+  if (locations.length === 0) return null;
 
-  const t         = await getTranslations({ locale, namespace: "profile" });
-  const tBranches = await getTranslations({ locale, namespace: "branches" });
+  const t = await getTranslations({ locale, namespace: "profile" });
 
   const DAY_LABELS: Record<string, string> = {
     monday:    t("days.monday"),
@@ -56,29 +56,20 @@ export default async function BranchesSection({ branches, locale }: BranchesSect
     sunday:    t("days.sunday"),
   };
 
-  const sorted = [...branches].sort((a, b) => {
-    if (a.isMainBranch && !b.isMainBranch) return -1;
-    if (!a.isMainBranch && b.isMainBranch) return 1;
-    return a.name.localeCompare(b.name);
-  });
-
   return (
     <section id="branches" className="scroll-mt-24">
       <div className="flex items-center gap-3 mb-5">
         <h2 className="text-lg font-bold text-gray-900">
-          {t("sections.branches")}
+          {t("locations.heading")} ({locations.length})
         </h2>
-        <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full">
-          {branches.length}
-        </span>
       </div>
 
       <div className="grid sm:grid-cols-2 gap-4">
-        {sorted.map((branch) => (
+        {locations.map((branch) => (
           <div
-            key={branch.id}
+            key={branch.key}
             className={`rounded-2xl border p-5 ${
-              branch.isMainBranch
+              branch.isMain
                 ? "border-primary-200 bg-primary-50/40"
                 : "border-gray-100 bg-gray-50"
             }`}
@@ -87,12 +78,12 @@ export default async function BranchesSection({ branches, locale }: BranchesSect
               <h3 className="font-semibold text-gray-900 text-sm leading-snug">
                 {branch.name}
               </h3>
-              {branch.isMainBranch && (
+              {branch.isMain && (
                 <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary-700 bg-primary-100 px-2 py-0.5 rounded-full flex-shrink-0">
                   <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none">
                     <path d="M10 3L5 8.5 2 5.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
-                  {tBranches("main")}
+                  {t("locations.mainLabel")}
                 </span>
               )}
             </div>
