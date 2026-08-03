@@ -86,63 +86,51 @@ export default async function HomePage() {
 
       <main>
         {/* ── Hero ─────────────────────────────────────────────────────────── */}
-        <section className="relative bg-gradient-to-b from-gray-50 to-white border-b border-gray-100 pt-20 pb-24 md:pt-28 md:pb-32 px-4 overflow-hidden">
-          {/* Subtle background rings */}
-          <div aria-hidden className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="w-[600px] h-[600px] rounded-full border border-primary-100 opacity-40" />
-            <div className="absolute w-[900px] h-[900px] rounded-full border border-primary-50 opacity-30" />
-          </div>
-
+        <section className="relative bg-gradient-to-b from-gray-50 to-white border-b border-gray-100 pt-20 pb-24 md:pt-28 md:pb-32 px-4">
           <div className="relative max-w-4xl mx-auto text-center">
-            {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary-50 border border-primary-100 text-primary-700 text-xs font-semibold mb-8 tracking-wide uppercase">
-              <span className="w-1.5 h-1.5 rounded-full bg-primary-500 animate-pulse" />
+            {/* Quiet trust label (green check = verification meaning only) */}
+            <div className="inline-flex items-center gap-1.5 mb-8 text-xs font-semibold tracking-wide uppercase text-gray-500">
+              <svg className="w-3.5 h-3.5 text-green-600" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fillRule="evenodd" d="M16.704 5.29a1 1 0 010 1.42l-7.5 7.5a1 1 0 01-1.42 0l-3.5-3.5a1 1 0 011.42-1.42l2.79 2.79 6.79-6.79a1 1 0 011.42 0z" clipRule="evenodd" />
+              </svg>
               {t("badge")}
             </div>
 
-            {/* Headline */}
+            {/* Calm headline */}
             <h1 className="text-4xl sm:text-5xl md:text-[3.5rem] font-bold text-gray-900 mb-5 tracking-tight leading-tight">
               {t("heroTitle")}
-              <span className="block text-primary-700">{t("heroTitleAccent")}</span>
+              <span className="block text-gray-400">{t("heroTitleAccent")}</span>
             </h1>
 
+            {/* Optional one-line supporting text */}
             <p className="text-lg sm:text-xl text-gray-500 mb-10 max-w-2xl mx-auto leading-relaxed font-light">
               {t("subheadline")}
             </p>
 
-            {/* CTAs */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-10">
-              <Link
-                href="/search"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl bg-gray-900 text-white font-semibold text-base hover:bg-gray-800 active:scale-[0.98] transition-all shadow-medium"
-              >
-                {t("exploreBusinesses")}
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                </svg>
-              </Link>
-              <Link
-                href="/signup"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl bg-white text-gray-700 font-semibold text-base border border-gray-200 hover:border-gray-300 hover:bg-gray-50 active:scale-[0.98] transition-all shadow-subtle"
-              >
-                {t("listYourBusiness")}
-              </Link>
-            </div>
-
-            {/* Search */}
+            {/* Search — the primary action and strongest visual element */}
             <SearchBar placeholder={t("searchPlaceholder")} />
 
-            {/* Category pills */}
+            {/* Main-category shortcuts (real top-level categories → filtered search) */}
             <div className="flex flex-wrap items-center justify-center gap-2 mt-6">
-              {categoriesWithCount.slice(0, 5).map((cat) => (
+              {categoriesWithCount.slice(0, 6).map((cat) => (
                 <Link
                   key={cat.id}
                   href={`/search?category=${cat.slug}`}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-gray-200 text-xs text-gray-600 hover:border-primary-300 hover:text-primary-700 hover:bg-primary-50 transition-all duration-150 font-medium shadow-subtle"
+                  className="inline-flex items-center px-3.5 py-1.5 rounded-full bg-white border border-gray-200 text-xs font-medium text-gray-600 hover:border-gray-300 hover:text-gray-900 hover:bg-gray-50 transition-colors duration-150 shadow-subtle focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2"
                 >
                   {cat.name}
                 </Link>
               ))}
+            </div>
+
+            {/* Register Business — quiet secondary action, never competes with search */}
+            <div className="mt-8">
+              <Link
+                href="/signup"
+                className="text-sm text-gray-500 hover:text-gray-800 underline underline-offset-4 decoration-gray-300 hover:decoration-gray-400 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 rounded-sm"
+              >
+                {t("listYourBusiness")}
+              </Link>
             </div>
           </div>
         </section>
@@ -167,7 +155,7 @@ export default async function HomePage() {
             <div className="max-w-7xl mx-auto">
               <div className="flex items-end justify-between mb-10">
                 <div>
-                  <p className="text-xs font-semibold text-primary-700 uppercase tracking-widest mb-2">
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-2">
                     {t("featuredLabel")}
                   </p>
                   <h2 className="text-3xl font-bold text-gray-900 tracking-tight">
@@ -176,7 +164,7 @@ export default async function HomePage() {
                 </div>
                 <Link
                   href="/search"
-                  className="hidden sm:inline-flex items-center gap-1.5 text-sm font-medium text-primary-700 hover:text-primary-800 transition-colors"
+                  className="hidden sm:inline-flex items-center gap-1.5 text-sm font-medium text-gray-900 hover:text-gray-700 transition-colors"
                 >
                   {t("viewAll")}
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -219,7 +207,7 @@ export default async function HomePage() {
         <section className="bg-gray-50 border-y border-gray-100 py-16 md:py-20 px-4">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-10">
-              <p className="text-xs font-semibold text-primary-700 uppercase tracking-widest mb-2">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-2">
                 {t("categoriesLabel")}
               </p>
               <h2 className="text-3xl font-bold text-gray-900 tracking-tight mb-3">
@@ -234,7 +222,7 @@ export default async function HomePage() {
                   href={`/categories/${cat.slug}`}
                   className="card card-hover p-5 text-center group flex flex-col items-center gap-2"
                 >
-                  <h3 className="text-sm font-semibold text-gray-900 group-hover:text-primary-700 transition-colors">
+                  <h3 className="text-sm font-semibold text-gray-900 group-hover:text-gray-700 transition-colors">
                     {cat.name}
                   </h3>
                   <p className="text-xs text-gray-400">{cat.count} {cat.count === 1 ? t("businessSingular") : t("businessPlural")}</p>
@@ -244,7 +232,7 @@ export default async function HomePage() {
             <div className="text-center mt-8">
               <Link
                 href="/categories"
-                className="inline-flex items-center gap-1.5 text-sm font-medium text-primary-700 hover:text-primary-800 transition-colors"
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-900 hover:text-gray-700 transition-colors"
               >
                 {t("browseAllCategories")}
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -259,7 +247,7 @@ export default async function HomePage() {
         <section className="py-16 md:py-20 px-4">
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-14">
-              <p className="text-xs font-semibold text-primary-700 uppercase tracking-widest mb-2">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-2">
                 {t("howLabel")}
               </p>
               <h2 className="text-3xl font-bold text-gray-900 tracking-tight">{t("howTitle")}</h2>
@@ -267,7 +255,7 @@ export default async function HomePage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
               {(["1","2","3"] as const).map((n, i) => (
                 <div key={n} className="relative">
-                  <div className="w-10 h-10 rounded-full bg-primary-700 text-white text-sm font-bold flex items-center justify-center mb-5 shadow-soft">
+                  <div className="w-10 h-10 rounded-full bg-gray-900 text-white text-sm font-bold flex items-center justify-center mb-5 shadow-soft">
                     {n}
                   </div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">
@@ -284,7 +272,7 @@ export default async function HomePage() {
         <section className="bg-gray-50 border-y border-gray-100 py-16 md:py-20 px-4">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12">
-              <p className="text-xs font-semibold text-primary-700 uppercase tracking-widest mb-2">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-2">
                 {t("whyLabel")}
               </p>
               <h2 className="text-3xl font-bold text-gray-900 tracking-tight">
@@ -294,8 +282,8 @@ export default async function HomePage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {whyItems.map((item) => (
                 <div key={item.titleKey} className="card p-6 flex flex-col gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-primary-50 flex items-center justify-center flex-shrink-0">
-                    <svg className="w-5 h-5 text-primary-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-5 h-5 text-gray-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       {item.icon}
                     </svg>
                   </div>
@@ -314,7 +302,7 @@ export default async function HomePage() {
           <div className="max-w-4xl mx-auto">
             <div className="grid md:grid-cols-2 gap-10 items-center">
               <div>
-                <p className="text-xs font-semibold text-primary-400 uppercase tracking-widest mb-3">
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">
                   {t("forOwners")}
                 </p>
                 <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 tracking-tight">
@@ -344,7 +332,7 @@ export default async function HomePage() {
               <div className="space-y-4">
                 {(["1", "2", "3", "4", "5"] as const).map((n) => (
                   <div key={n} className="flex items-start gap-3">
-                    <div className="w-5 h-5 rounded-full bg-primary-700 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <div className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0 mt-0.5">
                       <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                       </svg>
