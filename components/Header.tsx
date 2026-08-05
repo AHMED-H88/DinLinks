@@ -102,12 +102,12 @@ export default function Header() {
   const pathname                       = usePathname();
   const [mobileOpen, setMobileOpen]   = useState(false);
 
-  // NAV_ITEMS built from translation keys so they auto-switch language
+  // NAV_ITEMS built from translation keys so they auto-switch language.
+  // "About" lives in the Footer (Om DinLinks / Om oss), not the main Header.
   const NAV_ITEMS = [
-    { label: t("home"),       href: "/"            },
-    { label: t("categories"), href: "/categories"  },
-    { label: t("businesses"), href: "/search"      },
-    { label: t("about"),      href: "/about"       },
+    { label: t("home"),         href: "/"            },
+    { label: t("findBusiness"), href: "/search"      },
+    { label: t("categories"),   href: "/categories"  },
   ] as const;
 
   function isActive(href: string) {
