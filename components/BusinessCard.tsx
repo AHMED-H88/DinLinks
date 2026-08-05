@@ -104,7 +104,7 @@ export default function BusinessCard({
           />
         ) : (
           /* subtle branded gradient when no cover */
-          <div className="absolute inset-0 bg-gradient-to-br from-primary-50 via-white to-gray-100" />
+          <div className="absolute inset-0 bg-gradient-to-br from-gray-100 via-white to-gray-100" />
         )}
 
         {/* Logo chip, bottom-left of cover */}
@@ -112,7 +112,7 @@ export default function BusinessCard({
           {logoSrc ? (
             <Image src={logoSrc} alt={name} width={44} height={44} className="w-full h-full object-cover" />
           ) : (
-            <span className="text-xs font-bold text-primary-700">{initials}</span>
+            <span className="text-xs font-bold text-gray-700">{initials}</span>
           )}
         </div>
 
@@ -132,7 +132,7 @@ export default function BusinessCard({
       {/* ── Card body ────────────────────────────────────────────────── */}
       <div className="flex flex-col gap-2 p-4 flex-1">
         {/* Name */}
-        <h3 className="text-sm font-semibold text-gray-900 group-hover:text-primary-700 transition-colors line-clamp-1 leading-snug mt-2">
+        <h3 className="text-sm font-semibold text-gray-900 group-hover:text-gray-700 transition-colors line-clamp-1 leading-snug mt-2">
           <Highlighted text={name} query={highlight} />
         </h3>
 
@@ -192,7 +192,7 @@ export default function BusinessCard({
           </div>
 
           <svg
-            className="w-4 h-4 text-gray-300 group-hover:text-primary-600 group-hover:translate-x-0.5 transition-all flex-shrink-0"
+            className="w-4 h-4 text-gray-300 group-hover:text-gray-600 group-hover:translate-x-0.5 transition-all flex-shrink-0"
             fill="none" viewBox="0 0 24 24" stroke="currentColor"
           >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

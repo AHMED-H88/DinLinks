@@ -28,7 +28,7 @@ export default function Footer() {
                 <span className="text-white text-xs font-bold">DL</span>
               </div>
               <span className="text-lg font-bold text-gray-900">
-                Din<span className="text-primary-700">Links</span>
+                Din<span className="text-gray-900">Links</span>
               </span>
             </Link>
             <p className="text-sm text-gray-500 max-w-sm leading-relaxed">
