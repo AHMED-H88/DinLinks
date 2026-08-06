@@ -9,6 +9,9 @@
     "start": "next start",
     "lint": "next lint",
     "check:copy-characters": "node scripts/check-copy-characters.js",
+    "check:taxonomy-v1": "tsx scripts/check-taxonomy-v1.js",
+    "taxonomy:preflight": "tsx scripts/taxonomy-v1-preflight.js",
+    "taxonomy:migrate": "tsx scripts/taxonomy-v1-migrate.js",
     "postinstall": "prisma generate",
     "db:seed": "tsx prisma/seed.ts"
   },
