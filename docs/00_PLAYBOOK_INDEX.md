@@ -88,6 +88,18 @@ Build features because they solve real problems.
 
 ---
 
+# Specifications
+
+The following specialized specifications support the Playbook. They govern their own areas only when they do not conflict with the Playbook or the Taxonomy Master List.
+
+- `specifications/01_SEARCH_RANKING.md` — search ranking specification.
+- `specifications/03_TAXONOMY_MASTER_LIST.md` — the authoritative and sole source of truth for the DinLinks taxonomy: Categories, Subcategories, hierarchy, display names, canonical slugs, business assignment rules, Homepage category behavior, and category migration and validation rules.
+- `specifications/02_CATEGORY_ARCHITECTURE.md` — superseded. It described an earlier three-level model and is no longer authoritative. Use the Taxonomy Master List instead.
+
+There is exactly one authoritative taxonomy specification: `specifications/03_TAXONOMY_MASTER_LIST.md`.
+
+---
+
 # Current Playbook
 
 Current Version: 1.0
