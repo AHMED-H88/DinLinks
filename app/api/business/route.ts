@@ -28,6 +28,35 @@ function pickFields(data: any) {
   };
 }
 
+// ─── Category (Subcategory) validation ───────────────────────────────────────
+// Taxonomy v1: a business must be assigned to exactly one Subcategory — a
+// category whose parent is a top-level Category (parentId = null). This never
+// trusts the client; it verifies the hierarchy on the server.
+async function validateCategorySelection(
+  categoryId: unknown
+): Promise<{ ok: true; categoryId: string } | { ok: false; error: string }> {
+  if (typeof categoryId !== "string" || categoryId.length === 0) {
+    return { ok: false, error: "A subcategory is required." };
+  }
+  const cat = await prisma.category.findUnique({
+    where: { id: categoryId },
+    select: { id: true, slug: true, parentId: true, parent: { select: { id: true, parentId: true } } },
+  });
+  if (!cat) return { ok: false, error: "Selected category does not exist." };
+  if (cat.slug === "annet" || cat.slug === "generelt") {
+    return { ok: false, error: "This category is not allowed." };
+  }
+  if (cat.parentId === null) {
+    return { ok: false, error: "A business must be assigned to a subcategory, not a top-level category." };
+  }
+  // Parent must be a top-level Category (its own parentId is null) — this also
+  // rejects any third-level row (depth greater than two).
+  if (!cat.parent || cat.parent.parentId !== null) {
+    return { ok: false, error: "Selected category is not a valid subcategory." };
+  }
+  return { ok: true, categoryId: cat.id };
+}
+
 // ─── POST /api/business — create ─────────────────────────────────────────────
 
 export async function POST(req: Request) {
@@ -57,6 +86,12 @@ export async function POST(req: Request) {
         { error: "Validation failed", fields: extras.errors },
         { status: 400 }
       );
+    }
+
+    // Server-side taxonomy validation — must be a valid Subcategory.
+    const catCheck = await validateCategorySelection(data.categoryId);
+    if (!catCheck.ok) {
+      return NextResponse.json({ error: catCheck.error, field: "categoryId" }, { status: 400 });
     }
 
     const business = await prisma.business.create({
@@ -104,6 +139,12 @@ export async function PUT(req: Request) {
         { error: "Validation failed", fields: extras.errors },
         { status: 400 }
       );
+    }
+
+    // Server-side taxonomy validation — must be a valid Subcategory.
+    const catCheck = await validateCategorySelection(data.categoryId);
+    if (!catCheck.ok) {
+      return NextResponse.json({ error: catCheck.error, field: "categoryId" }, { status: 400 });
     }
 
     // If the business was REJECTED and the owner updates it → back to PENDING

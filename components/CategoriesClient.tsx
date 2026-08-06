@@ -4,12 +4,20 @@ import { useState, useMemo } from "react";
 import { Link } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
 
+interface SubcategoryItem {
+  id: string;
+  name: string;
+  slug: string;
+  count: number;
+}
+
 interface CategoryItem {
   id: string;
   name: string;
   slug: string;
   icon: string;
   count: number;
+  subcategories?: SubcategoryItem[];
 }
 
 export default function CategoriesClient({ categories }: { categories: CategoryItem[] }) {
@@ -19,7 +27,11 @@ export default function CategoriesClient({ categories }: { categories: CategoryI
   const filtered = useMemo(() => {
     const q = query.toLowerCase().trim();
     if (!q) return categories;
-    return categories.filter((c) => c.name.toLowerCase().includes(q));
+    return categories.filter(
+      (c) =>
+        c.name.toLowerCase().includes(q) ||
+        (c.subcategories ?? []).some((s) => s.name.toLowerCase().includes(q))
+    );
   }, [categories, query]);
 
   return (
@@ -78,6 +90,12 @@ export default function CategoriesClient({ categories }: { categories: CategoryI
                 <p className="text-xs text-gray-400 mt-0.5">
                   {cat.count} {cat.count === 1 ? t("businessSingular") : t("businessPlural")}
                 </p>
+                {cat.subcategories && cat.subcategories.length > 0 && (
+                  <p className="text-[11px] text-gray-400 mt-1.5 leading-relaxed line-clamp-2">
+                    {cat.subcategories.slice(0, 4).map((s) => s.name).join(" · ")}
+                    {cat.subcategories.length > 4 ? " …" : ""}
+                  </p>
+                )}
               </div>
             </Link>
           ))}

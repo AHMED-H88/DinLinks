@@ -9,6 +9,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BusinessCard from "@/components/BusinessCard";
 import CategorySortBar from "@/components/CategorySortBar";
+import { subOrder } from "@/lib/taxonomy-v1";
 
 // No `force-dynamic`: this page reads `searchParams` (sort / page), which
 // already forces dynamic rendering. The flag was redundant.
@@ -25,11 +26,16 @@ export async function generateMetadata({
   const { slug, locale } = await params;
   const t = await getTranslations({ locale, namespace: "categoryPage" });
   const tCat = await getTranslations({ locale, namespace: "categories" });
-  const category = await prisma.category.findUnique({ where: { slug } });
+  const category = await prisma.category.findUnique({
+    where: { slug },
+    select: { id: true, name: true, slug: true, children: { select: { id: true } } },
+  });
   if (!category) return { title: t("metaNotFound") };
 
+  // Top-level Category counts span its Subcategories; a leaf counts its own.
+  const targetIds = category.children.length > 0 ? category.children.map((c) => c.id) : [category.id];
   const count = await prisma.business.count({
-    where: { categoryId: category.id, status: "APPROVED" },
+    where: { categoryId: { in: targetIds }, status: "APPROVED" },
   });
 
   const catName = tCat.has(category.slug) ? tCat(category.slug) : category.name;
@@ -79,16 +85,34 @@ export default async function CategoryDetailPage({
   const sort      = searchParams.sort ?? "popular";
   const page      = Math.max(1, parseInt(searchParams.page ?? "1", 10));
 
-  const category = await prisma.category.findUnique({ where: { slug } });
+  const category = await prisma.category.findUnique({
+    where: { slug },
+    // Explicit select (no broad implicit select) + children for the two-level view.
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      parentId: true,
+      children: { select: { id: true, name: true, slug: true } },
+    },
+  });
   if (!category) notFound();
 
   const catName = tCat.has(category.slug) ? tCat(category.slug) : category.name;
 
+  // A top-level Category shows businesses across its Subcategories; a leaf (a
+  // Subcategory, or a not-yet-migrated flat row) shows its own businesses.
+  const isTopLevel = category.parentId === null && category.children.length > 0;
+  const targetIds = category.children.length > 0 ? category.children.map((c) => c.id) : [category.id];
+  const subcategories = [...category.children]
+    .map((c) => ({ id: c.id, name: tCat.has(c.slug) ? tCat(c.slug) : c.name, slug: c.slug }))
+    .sort((a, b) => subOrder(a.slug) - subOrder(b.slug));
+
   const [total, businesses, cityGroups] = await Promise.all([
-    prisma.business.count({ where: { categoryId: category.id, status: "APPROVED" } }),
+    prisma.business.count({ where: { categoryId: { in: targetIds }, status: "APPROVED" } }),
 
     prisma.business.findMany({
-      where:   { categoryId: category.id, status: "APPROVED" },
+      where:   { categoryId: { in: targetIds }, status: "APPROVED" },
       include: { reviews: { select: { rating: true } }, _count: { select: { branches: true } } },
       orderBy: buildOrderBy(sort),
       skip:  (page - 1) * PAGE_SIZE,
@@ -97,7 +121,7 @@ export default async function CategoryDetailPage({
 
     prisma.business.groupBy({
       by:      ["city"],
-      where:   { categoryId: category.id, status: "APPROVED", city: { not: null } },
+      where:   { categoryId: { in: targetIds }, status: "APPROVED", city: { not: null } },
       _count:  { city: true },
       orderBy: { _count: { city: "desc" } },
       take:    8,
@@ -161,6 +185,22 @@ export default async function CategoryDetailPage({
                 <CategorySortBar currentSort={sort} slug={slug} />
               </div>
             </div>
+
+            {/* Subcategories — shown for a top-level Category so its two-level
+                structure is clear. Never renders Subcategories as top-level. */}
+            {isTopLevel && subcategories.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-6">
+                {subcategories.map((s) => (
+                  <Link
+                    key={s.id}
+                    href={`/categories/${s.slug}`}
+                    className="inline-flex items-center px-3 py-1.5 rounded-full bg-gray-50 border border-gray-200 text-xs font-medium text-gray-600 hover:border-gray-300 hover:text-gray-900 hover:bg-white transition-colors"
+                  >
+                    {s.name}
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
         </section>
 

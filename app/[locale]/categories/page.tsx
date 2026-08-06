@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getCategoriesWithCounts } from "@/lib/cached-data";
+import { getTaxonomyTree } from "@/lib/cached-data";
 import { Link } from "@/i18n/routing";
 import { getTranslations } from "next-intl/server";
 import Header from "@/components/Header";
@@ -57,14 +57,22 @@ function getCategoryIcon(slug: string): string {
 export default async function CategoriesPage() {
   const t = await getTranslations("categoriesPage");
   const tCat = await getTranslations("categories");
-  const categories = await getCategoriesWithCounts();
+  // Top-level Categories only, in approved Taxonomy v1 order. Each carries its
+  // Subcategories so the index can expose them under each top-level Category.
+  const tree = await getTaxonomyTree();
 
-  const categoriesWithMeta = categories.map((c) => ({
+  const categoriesWithMeta = tree.map((c) => ({
     id:    c.id,
     name:  tCat.has(c.slug) ? tCat(c.slug) : c.name,
     slug:  c.slug,
     icon:  c.icon ?? getCategoryIcon(c.slug),
     count: c.count,
+    subcategories: c.children.map((s) => ({
+      id:   s.id,
+      name: tCat.has(s.slug) ? tCat(s.slug) : s.name,
+      slug: s.slug,
+      count: s.count,
+    })),
   }));
 
   const totalBusinesses = categoriesWithMeta.reduce((s, c) => s + c.count, 0);

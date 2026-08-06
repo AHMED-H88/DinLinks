@@ -38,6 +38,7 @@ export default async function DashboardPage({
 
   const categories = await prisma.category.findMany({
     orderBy: { name: "asc" },
+    select: { id: true, name: true, slug: true, parentId: true },
   });
 
   const stats = business

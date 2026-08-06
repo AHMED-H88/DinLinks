@@ -5,7 +5,8 @@ import Footer from "@/components/Footer";
 import SearchBar from "@/components/SearchBar";
 import BusinessCard from "@/components/BusinessCard";
 import { prisma } from "@/lib/prisma";
-import { getCategoriesWithCounts } from "@/lib/cached-data";
+import { getTopLevelCategories } from "@/lib/cached-data";
+import { HOMEPAGE_SHORTCUT_SLUGS } from "@/lib/taxonomy-v1";
 
 // Was `force-dynamic`. Nothing on this page is user-specific — the session is
 // read client-side in <Header> — so it is safe to render on an interval
@@ -86,7 +87,8 @@ export default async function HomePage() {
 
   // Real data from Supabase
   const [categories, featuredBusinesses] = await Promise.all([
-    getCategoriesWithCounts(),
+    // Top-level Categories only (parentId = null), in approved Taxonomy v1 order.
+    getTopLevelCategories(),
     prisma.business.findMany({
       where: { status: "APPROVED" },
       orderBy: { views: "desc" },
@@ -101,6 +103,14 @@ export default async function HomePage() {
     slug: c.slug,
     count: c.count,
   }));
+
+  // Homepage shortcuts: the approved top-level shortcut slugs that actually
+  // exist as rows, in approved order. Before the taxonomy data migration some
+  // (e.g. mat, bil) may not exist yet — we simply show fewer; we never
+  // fabricate category rows in code.
+  const shortcutCategories = HOMEPAGE_SHORTCUT_SLUGS
+    .map((slug) => categoriesWithCount.find((c) => c.slug === slug))
+    .filter((c): c is (typeof categoriesWithCount)[number] => Boolean(c));
 
   return (
     <div className="min-h-screen bg-white">
@@ -133,25 +143,33 @@ export default async function HomePage() {
             <SearchBar placeholder={t("searchPlaceholder")} />
 
             {/*
-              Main-category shortcuts. These currently render the real category
-              rows from the database and must not link to categories that do not
-              exist yet. After the approved Category Data Migration, the final
-              Homepage shortcuts will become the six top-level taxonomy links:
-              Mat, Shopping, Tjenester, Helse, Bil, Administrasjon.
-              The Homepage shortcut label may display "Mat", and the canonical
-              taxonomy display name is also "Mat". Do not change the
-              Taxonomy Master List here.
+              Homepage category shortcuts — TOP-LEVEL Categories only, in the
+              approved Taxonomy v1 order (Mat, Shopping, Tjenester, Helse, Bil,
+              Administrasjon). Subcategories (Restaurant, Kafe, Håndverk, …) must
+              never appear here. Rows come from the database; before the taxonomy
+              data migration some top-levels may be missing, so we render fewer
+              shortcuts rather than fabricate category rows.
             */}
             <div className="flex flex-wrap items-center justify-center gap-2 mt-6">
-              {categoriesWithCount.slice(0, 6).map((cat) => (
+              {shortcutCategories.map((cat) => (
                 <Link
                   key={cat.id}
-                  href={`/search?category=${cat.slug}`}
+                  href={`/categories/${cat.slug}`}
                   className="inline-flex items-center px-3.5 py-1.5 rounded-full bg-white border border-gray-200 text-xs font-medium text-gray-600 hover:border-gray-300 hover:text-gray-900 hover:bg-gray-50 transition-colors duration-150 shadow-subtle focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2"
                 >
                   {cat.name}
                 </Link>
               ))}
+            </div>
+
+            {/* View all categories — opens the full Categories page (all eight top-level Categories) */}
+            <div className="mt-5">
+              <Link
+                href="/categories"
+                className="text-sm font-medium text-gray-700 hover:text-gray-900 underline underline-offset-4 decoration-gray-300 hover:decoration-gray-500 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 rounded-sm"
+              >
+                {t("viewAllCategories")}
+              </Link>
             </div>
 
             {/* Register Business — quiet secondary action, never competes with search */}
