@@ -15,7 +15,7 @@
   },
   "home": {
     "badge": "Bedrifter i hele Norge",
-    "subheadline": "Oppdatert informasjon om tjenester åpningstider og kontakt samlet på ett sted",
+    "subheadline": "Oppdatert informasjon om bedrifter samlet på ett sted",
     "searchPlaceholder": "Søk på navn, tjeneste eller kategori",
     "trust1Title": "Oppdatert informasjon",
     "trust1Text": "Åpningstider tjenester og kontakt samlet på ett sted",
@@ -83,7 +83,7 @@
     "noBranches":       "Ingen lokasjoner lagt til ennå.",
     "closed":           "Stengt",
     "setMain":          "Sett som hovedlokasjon",
-    "setMainDesc":      "Kun én lokasjon kan være hovedlokasjonen.",
+    "setMainDesc":      "Kun en lokasjon kan være hovedlokasjonen.",
     "save":             "Lagre endringer",
     "cancel":           "Avbryt",
     "confirmDelete":    "Slett lokasjon?",
@@ -179,7 +179,7 @@
     "handverk": "Håndverk",
     "annet": "Annet",
     "restaurant": "Restaurant",
-    "cafe": "Kafé",
+    "cafe": "Kafe",
     "shopping": "Butikker",
     "tjenester": "Tjenester"
   },
@@ -284,7 +284,7 @@
       "employeeCountRange": "Antall ansatte kan ikke være negativt.",
       "companySizeInvalid": "Velg en gyldig bedriftsstørrelse.",
       "orgNumberInvalid": "Organisasjonsnummeret må være 9 siffer.",
-      "serviceModesInvalid": "Én eller flere valgte leveringsmåter er ugyldige.",
+      "serviceModesInvalid": "En eller flere valgte leveringsmåter er ugyldige.",
       "highlightCodesInvalid": "Ett eller flere valgte kjennetegn er ugyldige.",
       "invalidType": "Ett av feltene har en ugyldig verdi."
     },

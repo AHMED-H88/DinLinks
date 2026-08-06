@@ -56,7 +56,7 @@ mat
 | Display name | Slug |
 |---|---|
 | Restaurant | restaurant |
-| Kafé | cafe |
+| Kafe | cafe |
 | Bakeri | bakeri |
 | Bar | bar |
 | Catering | catering |
@@ -271,7 +271,7 @@ The following existing Categories become Subcategories:
 
 The existing slugs must remain unchanged.
 
-The display name for `cafe` becomes `Kafé`, while its slug remains `cafe`.
+The display name for `cafe` becomes `Kafe`, while its slug remains `cafe`.
 
 ## New top-level Categories to create
 

@@ -8,6 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "check:copy-characters": "node scripts/check-copy-characters.js",
     "postinstall": "prisma generate",
     "db:seed": "tsx prisma/seed.ts"
   },
