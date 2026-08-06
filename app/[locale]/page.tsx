@@ -138,8 +138,8 @@ export default async function HomePage() {
               exist yet. After the approved Category Data Migration, the final
               Homepage shortcuts will become the six top-level taxonomy links:
               Mat, Shopping, Tjenester, Helse, Bil, Administrasjon.
-              The Homepage shortcut label may read "Mat" even though the canonical
-              taxonomy display name remains "Mat og drikke". Do not change the
+              The Homepage shortcut label may display "Mat", and the canonical
+              taxonomy display name is also "Mat". Do not change the
               Taxonomy Master List here.
             */}
             <div className="flex flex-wrap items-center justify-center gap-2 mt-6">
