@@ -138,6 +138,20 @@ The localization system should support adding new languages without requiring ma
 
 ---
 
+# Character Standard
+
+This rule governs which characters are allowed in DinLinks-owned user-facing copy.
+
+- DinLinks-owned user-facing copy must use plain Latin characters whenever an accepted Norwegian form exists.
+- Use Kafe instead of Kafé.
+- The Norwegian letters æ, ø, and å remain allowed.
+- Other accented Latin characters such as é, è, ê, á, à, ó, ò, and similar forms must not be used in DinLinks-owned UI copy unless explicitly approved.
+- Registered business names, user content, addresses, and external data must never be automatically rewritten.
+
+The automated check `npm run check:copy-characters` enforces this rule for `messages/no.json` and `messages/en.json`.
+
+---
+
 # Key Principle
 
 A translated product should feel native, not translated.

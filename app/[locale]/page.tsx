@@ -48,12 +48,44 @@ const whyItems = [
   },
 ];
 
+// Three equal trust cards (replaces the old number-based stats bar).
+// Monochrome line icons only; no business counts shown here.
+const trustItems = [
+  {
+    // Clock — current information
+    icon: (
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75}
+        d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+    ),
+    titleKey: "trust1Title",
+    textKey: "trust1Text",
+  },
+  {
+    // Tag — free for users
+    icon: (
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75}
+        d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3zM6 6h.008v.008H6V6z" />
+    ),
+    titleKey: "trust2Title",
+    textKey: "trust2Text",
+  },
+  {
+    // No-symbol — no advertisements
+    icon: (
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75}
+        d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+    ),
+    titleKey: "trust3Title",
+    textKey: "trust3Text",
+  },
+];
+
 export default async function HomePage() {
   const t = await getTranslations("home");
   const tCat = await getTranslations("categories");
 
   // Real data from Supabase
-  const [categories, featuredBusinesses, businessCount, approvedCount] = await Promise.all([
+  const [categories, featuredBusinesses] = await Promise.all([
     getCategoriesWithCounts(),
     prisma.business.findMany({
       where: { status: "APPROVED" },
@@ -61,17 +93,7 @@ export default async function HomePage() {
       take: 6,
       include: { category: true, reviews: { select: { rating: true } }, _count: { select: { branches: true } } },
     }),
-    prisma.business.count(),
-    prisma.business.count({ where: { status: "APPROVED" } }),
   ]);
-
-  // Items 1 & 2 are real Supabase counts (no "+" — the number is exact).
-  // Item 3 is a non-numerical trust statement, not a fabricated metric.
-  const stats = [
-    { value: businessCount.toLocaleString(),  label: t("statsBusinesses") },
-    { value: approvedCount.toLocaleString(),  label: t("statsVerified") },
-    { value: t("statsFreeTitle"),             label: t("statsFreeSubtitle") },
-  ];
 
   const categoriesWithCount = categories.map((c) => ({
     id: c.id,
@@ -96,21 +118,30 @@ export default async function HomePage() {
               {t("badge")}
             </div>
 
-            {/* Calm headline */}
+            {/* Calm headline — line 1 strong charcoal, line 2 a readable dark gray (not faded) */}
             <h1 className="text-4xl sm:text-5xl md:text-[3.5rem] font-bold text-gray-900 mb-5 tracking-tight leading-tight">
               {t("heroTitle")}
-              <span className="block text-gray-400">{t("heroTitleAccent")}</span>
+              <span className="block text-gray-600">{t("heroTitleAccent")}</span>
             </h1>
 
-            {/* Optional one-line supporting text */}
-            <p className="text-lg sm:text-xl text-gray-500 mb-10 max-w-2xl mx-auto leading-relaxed font-light">
+            {/* Supporting text — slightly stronger contrast */}
+            <p className="text-lg sm:text-xl text-gray-600 mb-10 max-w-2xl mx-auto leading-relaxed font-light">
               {t("subheadline")}
             </p>
 
             {/* Search — the primary action and strongest visual element */}
             <SearchBar placeholder={t("searchPlaceholder")} />
 
-            {/* Main-category shortcuts (real top-level categories → filtered search) */}
+            {/*
+              Main-category shortcuts. These currently render the real category
+              rows from the database and must not link to categories that do not
+              exist yet. After the approved Category Data Migration, the final
+              Homepage shortcuts will become the six top-level taxonomy links:
+              Mat, Shopping, Tjenester, Helse, Bil, Administrasjon.
+              The Homepage shortcut label may display "Mat", and the canonical
+              taxonomy display name is also "Mat". Do not change the
+              Taxonomy Master List here.
+            */}
             <div className="flex flex-wrap items-center justify-center gap-2 mt-6">
               {categoriesWithCount.slice(0, 6).map((cat) => (
                 <Link
@@ -135,14 +166,19 @@ export default async function HomePage() {
           </div>
         </section>
 
-        {/* ── Stats bar ────────────────────────────────────────────────────── */}
-        <section className="border-b border-gray-100 bg-white py-10">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-3 gap-4 sm:gap-12 text-center">
-              {stats.map(({ value, label }) => (
-                <div key={label}>
-                  <div className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">{value}</div>
-                  <div className="text-xs sm:text-sm text-gray-500 mt-1">{label}</div>
+        {/* ── Trust cards (three equal, no business counts) ─────────────────── */}
+        <section className="border-b border-gray-100 bg-white py-12 md:py-16 px-4">
+          <div className="max-w-5xl mx-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+              {trustItems.map((item) => (
+                <div key={item.titleKey} className="card p-6 flex flex-col gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-5 h-5 text-gray-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      {item.icon}
+                    </svg>
+                  </div>
+                  <h3 className="text-base font-semibold text-gray-900">{t(item.titleKey)}</h3>
+                  <p className="text-sm text-gray-500 leading-relaxed">{t(item.textKey)}</p>
                 </div>
               ))}
             </div>
