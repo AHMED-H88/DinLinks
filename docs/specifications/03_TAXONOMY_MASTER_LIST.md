@@ -34,6 +34,21 @@ No taxonomy change may be implemented in the database or application code before
 - Norwegian is the canonical language for display names.
 - English display names are managed through localization files.
 - Localization must never change the canonical slug.
+- Homepage category shortcuts must display top-level Categories only.
+- Subcategories must never appear beside top-level Categories as if they were the same level.
+
+---
+
+# Naming Standards
+
+- The approved Norwegian display name is `Mat`.
+- Do not use `Mat og drikke` as the top-level Category name.
+- The approved Norwegian display name is `Kafe`.
+- Do not use accented variants of `Kafe`.
+- The permanent slug for `Kafe` remains `cafe`.
+- Norwegian letters `æ`, `ø`, and `å` are allowed.
+- Other accented Latin characters should not be used in DinLinks-owned taxonomy display names unless explicitly approved.
+- Registered business names and external data must never be automatically rewritten.
 
 ---
 
@@ -41,9 +56,20 @@ No taxonomy change may be implemented in the database or application code before
 
 DinLinks Taxonomy v1 contains exactly eight top-level Categories.
 
+| Norwegian display name | English display name | Slug |
+|---|---|---|
+| Mat | Food | mat |
+| Shopping | Shopping | shopping |
+| Tjenester | Services | tjenester |
+| Helse | Health | helse |
+| Bil | Automotive | bil |
+| Utdanning | Education | utdanning |
+| Administrasjon | Administration | administrasjon |
+| Dyr | Animals | dyr |
+
 ---
 
-## 🍽️ Mat og drikke
+## 🍽️ Mat
 
 Slug:
 
@@ -56,7 +82,7 @@ mat
 | Display name | Slug |
 |---|---|
 | Restaurant | restaurant |
-| Kafé | cafe |
+| Kafe | cafe |
 | Bakeri | bakeri |
 | Bar | bar |
 | Catering | catering |
@@ -244,6 +270,39 @@ dyr
 
 ---
 
+# Homepage and Category UX Rules
+
+- The Homepage must display top-level Categories only.
+- The approved Homepage shortcuts are:
+  - Mat
+  - Shopping
+  - Tjenester
+  - Helse
+  - Bil
+  - Administrasjon
+- `Utdanning` and `Dyr` may appear through `Se alle kategorier` when only six shortcuts are displayed.
+- `Restaurant`, `Kafe`, `Håndverk`, and all other Subcategories must not appear beside top-level Categories.
+- Selecting a top-level Category opens or filters to its Subcategories.
+- Selecting a Subcategory shows businesses assigned to that Subcategory.
+- Business counts may be shown for Categories and Subcategories.
+- Empty Subcategories may be hidden from public result pages while remaining available in registration and administration flows.
+- Mobile category controls should be collapsed by default and should close after a selection.
+- The category experience must clearly communicate the difference between Category and Subcategory.
+
+Example:
+
+```text
+Mat
+├── Restaurant
+├── Kafe
+├── Bakeri
+├── Bar
+├── Catering
+└── Gatekjøkken
+```
+
+---
+
 # Migration Notes — v1 Rollout
 
 These notes describe the database state before the Taxonomy v1 data migration.
@@ -265,13 +324,13 @@ The following existing Categories become Subcategories:
 
 | Existing slug | New parent Category |
 |---|---|
-| restaurant | Mat og drikke |
-| cafe | Mat og drikke |
+| restaurant | Mat |
+| cafe | Mat |
 | handverk | Tjenester |
 
 The existing slugs must remain unchanged.
 
-The display name for `cafe` becomes `Kafé`, while its slug remains `cafe`.
+The display name for `cafe` becomes `Kafe`, while its slug remains `cafe`.
 
 ## New top-level Categories to create
 
@@ -282,20 +341,39 @@ The following top-level Categories will be created during the approved taxonomy 
 - `utdanning`
 - `dyr`
 
+## Existing test businesses
+
+The five businesses currently in Production are test profiles used to validate the product during development.
+
+They must remain available until DinLinks is ready to begin registering the first real pilot businesses.
+
+The test profiles may be temporarily reassigned to approved Subcategories during the Taxonomy v1 migration so the interface, filters, profile pages, and search behavior can continue to be tested.
+
+Temporary assignments do not define the real-world classification of these profiles and must not change the approved taxonomy.
+
+Approved temporary assignments:
+
+| Test business | Temporary Category | Temporary Subcategory |
+|---|---|---|
+| Maaemo | Mat | Restaurant |
+| Elkjøp Ullevål | Shopping | Elektronikk |
+| Cutters Storo | Tjenester | Frisør |
+| TEST AS | Helse | Fysioterapeut |
+| DAVIDOFF | Shopping | Klær |
+
+The five test profiles will be deleted before the first real pilot businesses are registered.
+
+Their deletion is a separate controlled operation and is not part of the Taxonomy v1 data migration.
+
 ## Existing businesses on top-level Categories
 
-Businesses currently assigned directly to a Category that will remain top-level must be reassigned to an approved Subcategory before the migration is considered complete.
+No business may remain assigned directly to a top-level Category after the migration.
 
-This includes businesses assigned directly to:
-
-- `administrasjon`
-- `helse`
-- `shopping`
-- `tjenester`
+Any test business currently assigned directly to a top-level Category must be moved to its approved temporary Subcategory during the migration.
 
 ## Category to remove
 
-The following Category will be removed only after all businesses have been reassigned:
+The following Category must be removed after its businesses have been reassigned:
 
 - `annet`
 
@@ -303,7 +381,7 @@ Before removal:
 
 - It must contain no businesses.
 - It must contain no child Categories.
-- Every affected business must have an explicitly approved replacement Subcategory.
+- Every affected business must have an explicitly approved temporary or permanent replacement Subcategory.
 - The migration validation checks must pass.
 
 ---
@@ -325,6 +403,50 @@ Before applying the Taxonomy v1 data migration:
 - No approved existing slug may be renamed.
 - Validation queries must pass before the migration is considered complete.
 - Production migration requires explicit final approval.
+
+## Required post-migration validation
+
+The migration is complete only when all checks pass:
+
+- Exactly eight top-level Categories exist.
+- The top-level slugs are exactly:
+  - `mat`
+  - `shopping`
+  - `tjenester`
+  - `helse`
+  - `bil`
+  - `utdanning`
+  - `administrasjon`
+  - `dyr`
+- Every Subcategory has exactly one top-level parent.
+- No Category exists below the Subcategory level.
+- Every business is assigned to a Subcategory.
+- No business is assigned directly to a top-level Category.
+- `restaurant` and `cafe` have parent `mat`.
+- `handverk` has parent `tjenester`.
+- The display name for `cafe` is `Kafe`.
+- No `annet` or `generelt` slug exists.
+- Existing approved slugs remain unchanged.
+- Homepage category queries return top-level Categories only.
+- Category and business row counts reconcile with the pre-migration snapshot.
+
+---
+
+# Rollback Requirements
+
+A rollback plan must exist before the migration is executed.
+
+The preferred rollback method is restoring the verified database backup.
+
+A manual rollback script may also be prepared and must be able to:
+
+- Restore the original business-to-category assignments.
+- Remove newly created Categories and Subcategories.
+- Restore the previous flat Category structure where required.
+- Recreate `annet` only as part of rollback to the captured pre-migration state.
+- Restore the original display name for `cafe` only if required by the captured pre-migration state.
+
+No rollback may reuse a slug for a different meaning.
 
 ---
 
@@ -355,7 +477,7 @@ The DinLinks category experience may take inspiration from clear Norwegian filte
 - Collapsible filter sections.
 - Visible business counts.
 - Clear selection controls.
-- A `Vis alle` action when the full list is hidden.
+- A `Se alle kategorier` action when the full list is hidden.
 
 This is a UX inspiration only.
 
@@ -365,9 +487,9 @@ The official DinLinks taxonomy structure and naming must always follow this docu
 
 # Version
 
-- Version: 1.0
+- Version: 1.1
 - Created: 2026-08-03
-- Last updated: 2026-08-05
+- Last updated: 2026-08-06
 - Status: Approved
 - Owner: DinLinks
 
