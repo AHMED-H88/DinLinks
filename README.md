@@ -154,8 +154,9 @@ npm run db:seed
 ```
 
 This will create:
-- Default categories (Administrasjon, Helse, Håndverk, Annet)
-- An admin user (admin@dinlinks.com / admin123)
+- The current pre-migration category rows and an admin user (admin@dinlinks.com / admin123)
+
+Note: the seed still reflects the legacy flat category state (which includes `Annet`). It is not the approved taxonomy. The approved taxonomy is defined in `docs/specifications/03_TAXONOMY_MASTER_LIST.md` and is applied through the controlled Taxonomy v1 migration. `Annet` is not a valid final Category and is removed during that migration.
 
 ## Project Structure
 
@@ -290,13 +291,15 @@ npx prisma migrate dev --name migration_name
 - Image Gallery
 
 ### Categories
-Default categories included:
-- Administrasjon (Administration)
-- Helse (Health)
-- Håndverk (Crafts/Handwork)
-- Annet (Other)
 
-More categories can be added via admin dashboard.
+The DinLinks taxonomy is defined by the single source of truth at `docs/specifications/03_TAXONOMY_MASTER_LIST.md`.
+
+- The taxonomy has exactly two levels: Category → Subcategory.
+- There are exactly eight top-level Categories: Mat, Shopping, Tjenester, Helse, Bil, Utdanning, Administrasjon, Dyr.
+- Every business belongs to exactly one Subcategory. A business is never assigned directly to a top-level Category.
+- The top-level Category is derived from the selected Subcategory (through `parentId`).
+- There is no `Annet` and no `Generelt` final Category.
+- Categories are not freely created outside the approved taxonomy process. Taxonomy changes require founder approval, and the Taxonomy Master List must be updated before any code or database change.
 
 ## Support
 
