@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import BusinessCard from "@/components/BusinessCard";
 import { getTranslations } from "next-intl/server";
 import { formatCity } from "@/lib/format";
+import { isTopLevelSlug } from "@/lib/taxonomy-v1";
 
 interface SearchResultsProps {
   searchParams: {
@@ -36,10 +37,14 @@ export default async function SearchResults({ searchParams }: SearchResultsProps
     ];
   }
 
-  // Folded into the main query as a relation filter — this used to be a
-  // separate, sequential `category.findUnique` round trip.
+  // Folded into the main query as a relation filter. A top-level Category slug
+  // matches businesses across all of its Subcategories (via the parent slug); a
+  // Subcategory (or a not-yet-migrated flat slug) matches that category
+  // directly. A top-level Category id is never used as a business categoryId.
   if (category) {
-    where.category = { slug: category };
+    where.category = isTopLevelSlug(category)
+      ? { parent: { slug: category } }
+      : { slug: category };
   }
 
   if (city) {

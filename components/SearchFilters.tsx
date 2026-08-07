@@ -6,11 +6,12 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { formatCity } from "@/lib/format";
 
-interface Category { id: string; name: string; slug: string }
+interface Subcategory { id: string; name: string; slug: string }
+interface CategoryGroup { id: string; name: string; slug: string; subcategories: Subcategory[] }
 interface CityCount { city: string; count: number }
 
 interface SearchFiltersProps {
-  categories: Category[];
+  categories: CategoryGroup[];
   cities: CityCount[];
 }
 
@@ -57,7 +58,11 @@ export default function SearchFilters({ categories, cities }: SearchFiltersProps
     setCatOpen(false);
   }
 
-  const selectedCategory = categories.find((c) => c.slug === currentCategory);
+  const allCategoryItems = categories.flatMap((g) => [
+    { slug: g.slug, name: g.name },
+    ...g.subcategories,
+  ]);
+  const selectedCategory = allCategoryItems.find((c) => c.slug === currentCategory);
   const selectedCategoryLabel = selectedCategory
     ? (tCat.has(selectedCategory.slug) ? tCat(selectedCategory.slug) : selectedCategory.name)
     : t("allCategories");
@@ -127,18 +132,38 @@ export default function SearchFilters({ categories, cities }: SearchFiltersProps
           >
             {t("allCategories")}
           </button>
-          {categories.map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => selectCategory(cat.slug)}
-              className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all ${
-                currentCategory === cat.slug
-                  ? "bg-primary-50 text-primary-700 font-semibold border border-primary-100"
-                  : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-              }`}
-            >
-              {tCat.has(cat.slug) ? tCat(cat.slug) : cat.name}
-            </button>
+          {/* Two-level filter: top-level Category (parent group) with its
+              Subcategories indented underneath. No third level. */}
+          {categories.map((group) => (
+            <div key={group.id} className="pt-1">
+              <button
+                onClick={() => selectCategory(group.slug)}
+                className={`w-full text-left px-3 py-2 rounded-lg text-sm font-semibold transition-all ${
+                  currentCategory === group.slug
+                    ? "bg-primary-50 text-primary-700 border border-primary-100"
+                    : "text-gray-900 hover:bg-gray-50"
+                }`}
+              >
+                {tCat.has(group.slug) ? tCat(group.slug) : group.name}
+              </button>
+              {group.subcategories.length > 0 && (
+                <div className="mt-0.5 ml-3 border-l border-gray-100 pl-2 space-y-0.5">
+                  {group.subcategories.map((sub) => (
+                    <button
+                      key={sub.id}
+                      onClick={() => selectCategory(sub.slug)}
+                      className={`w-full text-left px-3 py-1.5 rounded-lg text-[13px] transition-all ${
+                        currentCategory === sub.slug
+                          ? "bg-primary-50 text-primary-700 font-semibold border border-primary-100"
+                          : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
+                      }`}
+                    >
+                      {tCat.has(sub.slug) ? tCat(sub.slug) : sub.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           ))}
         </div>
       </div>
