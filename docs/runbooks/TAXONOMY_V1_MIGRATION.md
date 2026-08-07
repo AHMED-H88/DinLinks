@@ -111,12 +111,16 @@ persist.
 
 ## Validation checklist (enforced in-transaction)
 
-- Exactly eight top-level Categories, matching the approved slugs.
+- Exactly **59** Category rows: **8** top-level and **51** Subcategories.
+- The final slug set exactly matches Taxonomy v1 (nothing extra, nothing missing).
+- Every top-level Category has `parentId = null`; every Subcategory has its
+  canonical top-level parent and canonical Norwegian display name.
 - No category exists below the Subcategory level (no third level).
-- No business is assigned directly to a top-level Category.
-- `restaurant` and `cafe` have parent `mat`; `handverk` has parent `tjenester`.
-- `cafe` display name is `Kafe`.
 - No `annet` or `generelt` slug exists.
+- **Every business** has a non-null `categoryId`, its Category exists, is an
+  approved Subcategory, and its parent is a top-level Category — checked per row,
+  so a null category relation cannot escape the check.
+- No business is assigned directly to a top-level Category.
 - Business row count is unchanged (only `categoryId` moved).
 
 ## Rollback
@@ -127,14 +131,62 @@ persist.
   structure, and recreates `annet` only as part of restoring the captured
   pre-migration state. No slug is ever reused for a different meaning.
 
-## Post-deployment UI checks
+## Post-migration cache and ISR window
+
+Caching is intentional (Performance P1) and is **not** removed. After the
+database migration, cached pre-migration taxonomy data may remain temporarily
+visible; this is **not** evidence of migration failure. Based on the current
+code:
+
+- `getTaxonomyTree` (`lib/cached-data.ts`) is wrapped in `unstable_cache` with
+  `revalidate: CITY_TTL` = **900 seconds (15 minutes)**, tags
+  `["categories","businesses"]`. Its cached tree may stay stale for up to
+  **15 minutes**.
+- The Homepage (`app/[locale]/page.tsx`) and Categories index
+  (`app/[locale]/categories/page.tsx`) are ISR with `export const revalidate =
+  300` = **5 minutes**.
+- **Maximum expected wait ≈ 15 minutes** (the `getTaxonomyTree` TTL dominates;
+  the ISR page then reflects it on its next ≤5-minute cycle).
+
+To refresh sooner, use an already-supported mechanism only:
+
+- **Wait** out the TTL above, or
+- **Redeploy** the application (Vercel). A fresh deployment starts with an empty
+  Next.js data cache and regenerates ISR, so the new taxonomy is reflected
+  immediately.
+
+Do not add an admin cache-clear endpoint and do not add unsafe cache-clearing
+code.
+
+## Post-migration validation
+
+### A. Database validation — run IMMEDIATELY after the migration
+
+- Exactly **59** taxonomy rows: **8** top-level + **51** Subcategories.
+- No `annet` or `generelt`.
+- All businesses on approved Subcategories (non-null `categoryId`, canonical
+  top-level parent, none on a top-level).
+- The five test mappings are correct (Maaemo→restaurant, Elkjøp Ullevål→
+  elektronikk, Cutters Storo→frisor, TEST AS→fysioterapeut, DAVIDOFF→klaer).
+
+(The in-transaction checks above already enforce these; re-confirm with a
+read-only query if desired.)
+
+### B. UI validation — run AFTER cache freshness is confirmed
+
+Only after the cache/ISR window above has elapsed (or after a redeploy):
 
 - Homepage shows top-level Categories only (six shortcuts + "Se alle kategorier").
 - Categories index shows the eight top-level Categories with their Subcategories.
+- Search filters show top-level Categories with Subcategories nested underneath.
 - A top-level Category page lists its Subcategories and businesses across them; a
   Subcategory page lists its own businesses.
 - Business registration/edit requires selecting a top-level Category then a
   Subcategory; only the Subcategory is stored.
+- All five test profiles are present and correctly categorised.
+
+Do not declare UI validation failed until cache/ISR freshness is confirmed
+(waited out, or refreshed via a redeploy).
 
 ## Test profiles
 

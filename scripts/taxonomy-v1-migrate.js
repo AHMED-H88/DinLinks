@@ -81,6 +81,13 @@ async function main() {
   const orphanBiz = await prisma.business.count({ where: { categoryId: { not: null }, category: { is: null } } });
   if (orphanBiz > 0) abort(`${orphanBiz} business(es) reference a missing Category.`);
 
+  // Schema allows categoryId String?, so handle no-category businesses explicitly.
+  const nullCatBiz = await prisma.business.findMany({ where: { categoryId: null }, select: { name: true } });
+  if (nullCatBiz.length > 0) {
+    const names = nullCatBiz.map((b) => `"${b.name ?? "(no name)"}"`).join(", ");
+    abort(`${nullCatBiz.length} business(es) have no category assigned: ${names}. Assign a Subcategory first — not guessing.`);
+  }
+
   // ── Verify the five test businesses match the captured expectations ─────────
   for (const e of EXPECTED_TEST_BUSINESSES) {
     const matches = await prisma.business.findMany({
@@ -185,9 +192,24 @@ async function main() {
       }
     }
 
-    // Every business is on an approved Subcategory; none directly on a top-level.
-    const onTopLevel = await tx.business.count({ where: { category: { parentId: null } } });
-    if (onTopLevel > 0) throw new Error(`${onTopLevel} business(es) still assigned directly to a top-level Category.`);
+    // Every business must be on an approved Subcategory with a canonical
+    // top-level parent. Checked per-row (a null category relation would escape a
+    // `category.parentId === null` filter, so we assert categoryId/relation too).
+    const approvedSubSlugs = new Set(SUBCATEGORIES.map((s) => s.slug));
+    const bizRows = await tx.business.findMany({
+      select: {
+        id: true,
+        name: true,
+        categoryId: true,
+        category: { select: { slug: true, parentId: true, parent: { select: { parentId: true } } } },
+      },
+    });
+    for (const b of bizRows) {
+      if (!b.categoryId || !b.category) throw new Error(`Business "${b.name}" has no category after migration.`);
+      if (!approvedSubSlugs.has(b.category.slug)) throw new Error(`Business "${b.name}" is not on an approved Subcategory (${b.category.slug}).`);
+      if (b.category.parentId === null) throw new Error(`Business "${b.name}" is assigned directly to a top-level Category.`);
+      if (!b.category.parent || b.category.parent.parentId !== null) throw new Error(`Business "${b.name}" Subcategory parent is not a top-level Category.`);
+    }
 
     // Business count unchanged (only categoryId moved).
     const afterBiz = await tx.business.count();

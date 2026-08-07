@@ -73,9 +73,11 @@ export function classifyPreflight(
     }
   }
 
-  // Business → missing category.
+  // Business with no category, or referencing a missing Category — both blocking.
+  // (schema allows categoryId String? so this must be handled explicitly.)
   for (const b of businesses) {
-    if (b.categoryId && !b.categorySlug) blocking.push(`Business "${b.name}" references a missing Category.`);
+    if (!b.categoryId) blocking.push(`Business "${b.name}" has no category assigned.`);
+    else if (!b.categorySlug) blocking.push(`Business "${b.name}" references a missing Category.`);
   }
 
   // Test businesses: exactly one each, and on the expected pre-migration category.

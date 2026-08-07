@@ -59,7 +59,20 @@ const biz5 = biz1.map((b) => (b.name === "DAVIDOFF" ? { ...b, categorySlug: "sho
 const r5 = classifyPreflight(cats1, biz5, EXPECTED_TEST);
 assert(r5.blocking.some((b) => b.includes("DAVIDOFF")), "test business on wrong category should be a blocker");
 
-// ── Fixture 6: unknown slug + orphan parentId → blocking ─────────────────────
+// ── Fixture 6: a business with null categoryId → blocking ─────────────────────
+const biz6 = biz1.map((b) =>
+  b.name === "Maaemo" ? { ...b, categoryId: null, categorySlug: null, categoryParentId: null } : b
+);
+const r6b = classifyPreflight(cats1, biz6, EXPECTED_TEST);
+assert(
+  r6b.blocking.some((b) => b.includes('has no category assigned')),
+  "a null categoryId must be a blocker"
+);
+// The healthy fixture (Fixture 1) has no null categories and stays blocker-free,
+// which confirms expected-only state remains non-blocking (would exit 0).
+assert(r1.blocking.length === 0, "expected-only state must remain non-blocking");
+
+// ── Fixture 7: unknown slug + orphan parentId → blocking ─────────────────────
 const r6 = classifyPreflight(
   [...cats1, { id: "c_x", name: "Mystery", slug: "mystery", parentId: "does_not_exist", businessCount: 0, childCount: 0 }],
   biz1,
