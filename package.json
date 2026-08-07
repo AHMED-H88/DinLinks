@@ -10,6 +10,7 @@
     "lint": "next lint",
     "check:copy-characters": "node scripts/check-copy-characters.js",
     "check:taxonomy-v1": "tsx scripts/check-taxonomy-v1.js",
+    "check:preflight-logic": "tsx scripts/check-preflight-logic.js",
     "taxonomy:preflight": "tsx scripts/taxonomy-v1-preflight.js",
     "taxonomy:migrate": "tsx scripts/taxonomy-v1-migrate.js",
     "postinstall": "prisma generate",

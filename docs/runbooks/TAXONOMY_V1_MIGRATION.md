@@ -22,6 +22,41 @@ describes how to apply it; it does not redefine it.
 - The code implementation (this PR) is merged and deployed.
 - You have direct database access (the direct connection, not the pooled one).
 
+## Compatibility window (important)
+
+The application code and the database migration must roll out **together** in one
+controlled window. The new code expects the two-level hierarchy, so before the
+data migration is applied:
+
+- `BusinessForm` may present a top-level Category with **no selectable
+  Subcategories** (the Subcategory rows do not exist yet).
+- The Homepage shows only the **currently existing** top-level rows (e.g. `mat`
+  and `bil` are absent until created), so it may show fewer shortcuts.
+- Category pages, search filters and registration are **not considered fully
+  operational**.
+
+Do **not** leave the new code deployed against the old flat data for any
+extended period. Deploy the reviewed commit and apply the migration in the same
+controlled window.
+
+## Coordinated rollout (exact order)
+
+1. Create and verify a **PostgreSQL 17** `pg_dump` backup (outside the repo,
+   owner-only, verified with `pg_restore --list`).
+2. Confirm the latest **Supabase** scheduled backup and note its timestamp.
+3. Run the **read-only preflight from the reviewed commit** (`npm run
+   taxonomy:preflight`).
+4. Review the preflight output — proceed only if section B (blocking problems) is
+   empty and the five test businesses match.
+5. Obtain **explicit founder approval**.
+6. **Deploy the reviewed application commit.**
+7. **Immediately apply** the taxonomy data migration during the controlled
+   window (`taxonomy:migrate -- --apply` with both env confirmations).
+8. **Validate** Homepage Categories, search filters, registration/edit flow,
+   Category pages, and all five test profiles.
+9. If validation fails, **roll back application and database together** (redeploy
+   the previous app commit and restore the verified backup).
+
 ## Backup (required)
 
 1. Create and verify a **PostgreSQL 17** `pg_dump` custom-format backup, stored

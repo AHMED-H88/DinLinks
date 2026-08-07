@@ -15,9 +15,22 @@
  * implementation.
  */
 import { PrismaClient } from "@prisma/client";
-import { TOP_LEVELS, SUBCATEGORIES, TEST_BUSINESS_ASSIGNMENTS } from "../lib/taxonomy-v1";
+import {
+  TOP_LEVELS,
+  SUBCATEGORIES,
+  TEST_BUSINESS_ASSIGNMENTS,
+  parentSlugOf,
+} from "../lib/taxonomy-v1";
 
 const EXPECTED_TEST_BUSINESSES = TEST_BUSINESS_ASSIGNMENTS;
+
+/** Slugs allowed to exist BEFORE the migration: every approved slug, plus
+ *  `annet` as the known temporary legacy row. `generelt` is never allowed. */
+const ALLOWED_PRE_MIGRATION_SLUGS = new Set([
+  ...TOP_LEVELS.map((t) => t.slug),
+  ...SUBCATEGORIES.map((s) => s.slug),
+  "annet",
+]);
 
 const prisma = new PrismaClient();
 
@@ -42,6 +55,31 @@ async function main() {
   if (process.env.TAXONOMY_MIGRATION_APPROVED !== "YES") {
     abort("TAXONOMY_MIGRATION_APPROVED is not YES. Explicit founder approval is required.");
   }
+
+  // ── Pre-transaction drift gate ──────────────────────────────────────────────
+  const preCats = await prisma.category.findMany({
+    select: { id: true, name: true, slug: true, parentId: true },
+  });
+  const preById = new Map(preCats.map((c) => [c.id, c]));
+  const slugSeen = new Map();
+  const nameSeen = new Map();
+  for (const c of preCats) {
+    slugSeen.set(c.slug, (slugSeen.get(c.slug) ?? 0) + 1);
+    nameSeen.set(c.name, (nameSeen.get(c.name) ?? 0) + 1);
+    if (c.slug === "generelt") abort("`generelt` exists — never allowed.");
+    if (!ALLOWED_PRE_MIGRATION_SLUGS.has(c.slug)) abort(`Unknown pre-migration slug: ${c.slug}`);
+  }
+  for (const [slug, n] of slugSeen) if (n > 1) abort(`Duplicate slug: ${slug}`);
+  for (const [name, n] of nameSeen) if (n > 1) abort(`Duplicate name: ${name}`);
+  for (const c of preCats) {
+    if (c.parentId) {
+      const parent = preById.get(c.parentId);
+      if (!parent) abort(`Orphaned parentId on ${c.slug}`);
+      if (parent.parentId) abort(`Depth > 2: ${c.slug} under ${parent.slug}`);
+    }
+  }
+  const orphanBiz = await prisma.business.count({ where: { categoryId: { not: null }, category: { is: null } } });
+  if (orphanBiz > 0) abort(`${orphanBiz} business(es) reference a missing Category.`);
 
   // ── Verify the five test businesses match the captured expectations ─────────
   for (const e of EXPECTED_TEST_BUSINESSES) {
@@ -89,10 +127,12 @@ async function main() {
     }
 
     // 3. Reassign the five test businesses (categoryId only — no profile changes).
+    //    Each update must affect exactly one row, else roll back.
     for (const e of EXPECTED_TEST_BUSINESSES) {
       const targetId = subId.get(e.toSlug);
       if (!targetId) throw new Error(`Missing target subcategory ${e.toSlug} for ${e.name}`);
-      await tx.business.updateMany({ where: { name: e.name }, data: { categoryId: targetId } });
+      const res = await tx.business.updateMany({ where: { name: e.name }, data: { categoryId: targetId } });
+      if (res.count !== 1) throw new Error(`Expected to update exactly 1 row for "${e.name}", updated ${res.count}.`);
     }
 
     // 4. Remove `annet` only when empty (no businesses, no children).
@@ -107,31 +147,51 @@ async function main() {
       await tx.category.delete({ where: { id: annet.id } });
     }
 
-    // 5. Validate the full hierarchy — throws to trigger rollback on failure.
-    const tops = await tx.category.findMany({ where: { parentId: null }, select: { slug: true } });
-    if (tops.length !== 8) throw new Error(`Expected 8 top-level Categories, found ${tops.length}.`);
-    const expectedTop = new Set(TOP_LEVELS.map((t) => t.slug));
-    for (const t of tops) if (!expectedTop.has(t.slug)) throw new Error(`Unexpected top-level: ${t.slug}`);
+    // 5. Validate the COMPLETE final taxonomy — throws to trigger rollback.
+    const finalCats = await tx.category.findMany({ select: { id: true, name: true, slug: true, parentId: true } });
+    const topRows = finalCats.filter((c) => c.parentId === null);
+    const subRows = finalCats.filter((c) => c.parentId !== null);
 
-    const deepChildren = await tx.category.findMany({
-      where: { parent: { parentId: { not: null } } },
-      select: { slug: true },
-    });
-    if (deepChildren.length > 0) throw new Error(`Third level detected: ${deepChildren.map((c) => c.slug).join(", ")}`);
+    if (topRows.length !== TOP_LEVELS.length) throw new Error(`Expected ${TOP_LEVELS.length} top-level Categories, found ${topRows.length}.`);
+    if (subRows.length !== SUBCATEGORIES.length) throw new Error(`Expected ${SUBCATEGORIES.length} Subcategories, found ${subRows.length}.`);
+    const expectedTotal = TOP_LEVELS.length + SUBCATEGORIES.length;
+    if (finalCats.length !== expectedTotal) throw new Error(`Expected ${expectedTotal} total Categories, found ${finalCats.length}.`);
 
+    // Exact slug set — nothing missing, nothing extra.
+    const expectedSlugs = new Set([...TOP_LEVELS.map((t) => t.slug), ...SUBCATEGORIES.map((s) => s.slug)]);
+    const actualSlugs = new Set(finalCats.map((c) => c.slug));
+    for (const s of expectedSlugs) if (!actualSlugs.has(s)) throw new Error(`Missing approved slug: ${s}`);
+    for (const s of actualSlugs) if (!expectedSlugs.has(s)) throw new Error(`Unexpected slug remains: ${s}`);
+    if (actualSlugs.has("annet") || actualSlugs.has("generelt")) throw new Error("annet/generelt still present.");
+
+    // Per-row: canonical parent + canonical Norwegian display name; parent is
+    // top-level (parentId = null); no third level.
+    const idToRow = new Map(finalCats.map((c) => [c.id, c]));
+    const topBySlug = new Map(TOP_LEVELS.map((t) => [t.slug, t]));
+    const subBySlug = new Map(SUBCATEGORIES.map((s) => [s.slug, s]));
+    for (const c of topRows) {
+      const cfg = topBySlug.get(c.slug);
+      if (!cfg) throw new Error(`Unexpected top-level: ${c.slug}`);
+      if (c.name !== cfg.no) throw new Error(`Top-level ${c.slug} name "${c.name}" != "${cfg.no}".`);
+    }
+    for (const c of subRows) {
+      const cfg = subBySlug.get(c.slug);
+      if (!cfg) throw new Error(`Unexpected subcategory: ${c.slug}`);
+      if (c.name !== cfg.no) throw new Error(`Subcategory ${c.slug} name "${c.name}" != "${cfg.no}".`);
+      const parentRow = idToRow.get(c.parentId);
+      if (!parentRow || parentRow.parentId !== null) throw new Error(`${c.slug} parent is not a top-level Category.`);
+      if (parentRow.slug !== parentSlugOf(c.slug)) {
+        throw new Error(`${c.slug} parent "${parentRow.slug}" != canonical "${parentSlugOf(c.slug)}".`);
+      }
+    }
+
+    // Every business is on an approved Subcategory; none directly on a top-level.
     const onTopLevel = await tx.business.count({ where: { category: { parentId: null } } });
     if (onTopLevel > 0) throw new Error(`${onTopLevel} business(es) still assigned directly to a top-level Category.`);
 
-    const forbidden = await tx.category.findMany({ where: { slug: { in: ["annet", "generelt"] } }, select: { slug: true } });
-    if (forbidden.length > 0) throw new Error(`Forbidden category still present: ${forbidden.map((c) => c.slug).join(", ")}`);
-
-    const restaurant = await tx.category.findUnique({ where: { slug: "restaurant" }, select: { parentId: true } });
-    const cafe = await tx.category.findUnique({ where: { slug: "cafe" }, select: { parentId: true, name: true } });
-    const handverk = await tx.category.findUnique({ where: { slug: "handverk" }, select: { parentId: true } });
-    if (restaurant?.parentId !== topId.get("mat")) throw new Error("restaurant is not parented to mat.");
-    if (cafe?.parentId !== topId.get("mat")) throw new Error("cafe is not parented to mat.");
-    if (cafe?.name !== "Kafe") throw new Error("cafe display name is not 'Kafe'.");
-    if (handverk?.parentId !== topId.get("tjenester")) throw new Error("handverk is not parented to tjenester.");
+    // Business count unchanged (only categoryId moved).
+    const afterBiz = await tx.business.count();
+    if (afterBiz !== before.businesses) throw new Error(`Business count changed: ${before.businesses} -> ${afterBiz}.`);
   });
 
   const after = {
