@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { TOP_LEVELS, SUBCATEGORIES } from "../lib/taxonomy-v1";
 
 const prisma = new PrismaClient();
 
@@ -20,33 +21,40 @@ async function main() {
 
   console.log("Admin user created:", admin.email);
 
-  const categories = [
-    { name: "Administrasjon", slug: "administrasjon" },
-    { name: "Helse", slug: "helse" },
-    { name: "Håndverk", slug: "handverk" },
-    { name: "Annet", slug: "annet" },
-    { name: "Restaurant", slug: "restaurant" },
-    { name: "Cafe", slug: "cafe" },
-    { name: "Shopping", slug: "shopping" },
-    { name: "Tjenester", slug: "tjenester" },
-  ];
-
-  for (const category of categories) {
-    await prisma.category.upsert({
-      where: { slug: category.slug },
-      update: {},
-      create: category,
+  // ── Taxonomy v1 (docs/specifications/03_TAXONOMY_MASTER_LIST.md) ─────────────
+  // Idempotent, slug-keyed upserts. Parents (top-level Categories) are created
+  // before children (Subcategories). No `annet`, no `generelt`. Kafe uses slug
+  // `cafe`. Existing approved slugs are never renamed.
+  const topIdBySlug = new Map<string, string>();
+  for (const top of TOP_LEVELS) {
+    const row = await prisma.category.upsert({
+      where: { slug: top.slug },
+      update: { name: top.no, parentId: null },
+      create: { name: top.no, slug: top.slug },
     });
+    topIdBySlug.set(top.slug, row.id);
   }
 
-  console.log("Categories created");
+  const subIdBySlug = new Map<string, string>();
+  for (const sub of SUBCATEGORIES) {
+    const parentId = topIdBySlug.get(sub.parent);
+    if (!parentId) throw new Error(`Seed: missing parent ${sub.parent} for ${sub.slug}`);
+    const row = await prisma.category.upsert({
+      where: { slug: sub.slug },
+      update: { name: sub.no, parentId },
+      create: { name: sub.no, slug: sub.slug, parentId },
+    });
+    subIdBySlug.set(sub.slug, row.id);
+  }
+
+  console.log(`Taxonomy v1 created: ${TOP_LEVELS.length} top-level, ${SUBCATEGORIES.length} subcategories`);
 
   const businessUserPassword = await bcrypt.hash("business123", 10);
 
-  // Fetch categories to get IDs
-  const restaurantCat = await prisma.category.findUnique({ where: { slug: "restaurant" } });
-  const servicesCat = await prisma.category.findUnique({ where: { slug: "tjenester" } });
-  const shoppingCat = await prisma.category.findUnique({ where: { slug: "shopping" } });
+  // Demo businesses are assigned to Subcategories (never a top-level Category).
+  const restaurantCat = { id: subIdBySlug.get("restaurant")! };
+  const servicesCat = { id: subIdBySlug.get("frisor")! };
+  const shoppingCat = { id: subIdBySlug.get("elektronikk")! };
 
   // 1. Maaemo
   const maaemoOwner = await prisma.user.upsert({

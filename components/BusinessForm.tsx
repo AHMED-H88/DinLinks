@@ -9,6 +9,7 @@ import {
   SERVICE_MODES,
   HIGHLIGHT_CODES,
 } from "@/lib/business-fields";
+import { topLevelOrder, subOrder } from "@/lib/taxonomy-v1";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -57,6 +58,7 @@ interface Category {
   id: string;
   name: string;
   slug?: string;
+  parentId?: string | null;
 }
 
 interface BusinessFormProps {
@@ -185,6 +187,16 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
   const [name,         setName]        = useState(business?.name         ?? "");
   const [description,  setDescription] = useState(business?.description  ?? "");
   const [categoryId,   setCategoryId]  = useState(business?.categoryId   ?? "");
+  // ── Two-level category selection (Taxonomy v1) ───────────────────────────────
+  // Pick a top-level Category first, then one Subcategory. Only the Subcategory
+  // id is submitted as categoryId; the parent is derived from it.
+  const topLevelCategories = categories
+    .filter((c) => !c.parentId)
+    .sort((a, b) => topLevelOrder(a.slug ?? "") - topLevelOrder(b.slug ?? ""));
+  const allSubcategories = categories.filter((c) => c.parentId);
+  const [topLevelId, setTopLevelId] = useState(
+    allSubcategories.find((c) => c.id === (business?.categoryId ?? ""))?.parentId ?? ""
+  );
   const [logo,         setLogo]        = useState(business?.logo         ?? "");
   const [coverImage,   setCoverImage]  = useState(business?.coverImage   ?? "");
   const [images,       setImages]      = useState<string[]>(business?.images ?? []);
@@ -341,6 +353,13 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
       return;
     }
 
+    // A business must belong to exactly one Subcategory (never a top-level).
+    if (!categoryId || !allSubcategories.some((c) => c.id === categoryId)) {
+      setError(t("subcategoryRequired"));
+      document.getElementById("basics")?.scrollIntoView({ behavior: "smooth" });
+      return;
+    }
+
     setLoading(true);
     try {
       const payload = {
@@ -382,13 +401,19 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
       const data = await res.json();
 
       if (!res.ok) {
+        // Category (Subcategory) validation returns a stable `code` we localise
+        // via businessForm.categoryErrors.*, so NO/EN users see native text.
+        const categoryMsg =
+          data.field === "categoryId" && typeof data.code === "string"
+            ? t(`categoryErrors.${data.code}` as any)
+            : null;
         // Field-level validation errors from the API carry a message key we
         // can localise; fall back to the generic message otherwise.
         const fieldMsg =
           Array.isArray(data.fields) && data.fields[0]?.message
             ? t(`errors.${data.fields[0].message}` as any)
             : null;
-        setError(fieldMsg ?? data.error ?? t("errors.generic"));
+        setError(categoryMsg ?? fieldMsg ?? data.error ?? t("errors.generic"));
       } else {
         setSuccess(
           isEdit ? t("success.updated") : t("success.created")
@@ -454,18 +479,48 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
               />
             </div>
 
-            <div>
-              <FieldLabel>{t("labels.category")}</FieldLabel>
-              <select
-                value={categoryId}
-                onChange={(e) => setCategoryId(e.target.value)}
-                className="input"
-              >
-                <option value="">{t("placeholders.selectCategory")}</option>
-                {categories.map((c) => (
-                  <option key={c.id} value={c.id}>{c.slug && tCat.has(c.slug) ? tCat(c.slug) : c.name}</option>
-                ))}
-              </select>
+            {/* Two-level category selection: top-level Category, then Subcategory.
+                Only the Subcategory id is stored as categoryId. */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <FieldLabel>{t("labels.category")}</FieldLabel>
+                <select
+                  value={topLevelId}
+                  onChange={(e) => {
+                    const id = e.target.value;
+                    setTopLevelId(id);
+                    // Clear an incompatible Subcategory when the parent changes.
+                    const current = allSubcategories.find((c) => c.id === categoryId);
+                    if (!current || current.parentId !== id) setCategoryId("");
+                  }}
+                  className="input"
+                >
+                  <option value="">{t("placeholders.selectCategory")}</option>
+                  {topLevelCategories.map((c) => (
+                    <option key={c.id} value={c.id}>{c.slug && tCat.has(c.slug) ? tCat(c.slug) : c.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <FieldLabel>{t("labels.subcategory")}</FieldLabel>
+                <select
+                  value={categoryId}
+                  onChange={(e) => setCategoryId(e.target.value)}
+                  disabled={!topLevelId}
+                  className="input disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed"
+                >
+                  <option value="">
+                    {topLevelId ? t("placeholders.selectSubcategory") : t("placeholders.selectTopLevelFirst")}
+                  </option>
+                  {allSubcategories
+                    .filter((c) => c.parentId === topLevelId)
+                    .sort((a, b) => subOrder(a.slug ?? "") - subOrder(b.slug ?? ""))
+                    .map((c) => (
+                      <option key={c.id} value={c.id}>{c.slug && tCat.has(c.slug) ? tCat(c.slug) : c.name}</option>
+                    ))}
+                </select>
+              </div>
             </div>
 
             <div>

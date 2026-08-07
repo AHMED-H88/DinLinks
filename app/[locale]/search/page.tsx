@@ -5,7 +5,7 @@ import SearchFilters from "@/components/SearchFilters";
 import SearchBar from "@/components/SearchBar";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { getFilterCategories, getCityCounts } from "@/lib/cached-data";
+import { getTaxonomyTree, getCityCounts } from "@/lib/cached-data";
 import { getTranslations } from "next-intl/server";
 
 // NOTE: no `force-dynamic` needed. This page reads `searchParams`, which already
@@ -55,10 +55,19 @@ export default async function SearchPage({
   // Public, non-user-specific reference data — served from the Next data cache.
   // On a cache HIT these cost no DB round trip at all; on a MISS the two run
   // concurrently and each logs its own "cache MISS" timing.
-  const [categories, cities] = await Promise.all([
-    perf("shell.filterCategories", () => getFilterCategories()),
+  const [tree, cities] = await Promise.all([
+    perf("shell.taxonomyTree", () => getTaxonomyTree()),
     perf("shell.cityCounts", () => getCityCounts()),
   ]);
+
+  // Hierarchical filter data: top-level Categories, each with its Subcategories,
+  // in approved Taxonomy v1 order.
+  const categoryGroups = tree.map((tl) => ({
+    id: tl.id,
+    name: tl.name,
+    slug: tl.slug,
+    subcategories: tl.children.map((s) => ({ id: s.id, name: s.name, slug: s.slug })),
+  }));
 
   const hasSearch = searchParams.q || searchParams.category || searchParams.city;
 
@@ -84,7 +93,7 @@ export default async function SearchPage({
           {/* Sidebar */}
           <aside className="w-full lg:w-64 flex-shrink-0">
             <div className="lg:sticky lg:top-6">
-              <SearchFilters categories={categories} cities={cities} />
+              <SearchFilters categories={categoryGroups} cities={cities} />
             </div>
           </aside>
 
