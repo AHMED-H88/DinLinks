@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { validateBusinessExtras } from "@/lib/business-fields";
+import { validateSelectedSubcategory } from "@/lib/taxonomy-v1";
 
 // ─── Shared field picker ──────────────────────────────────────────────────────
 
@@ -34,26 +35,30 @@ function pickFields(data: any) {
 // trusts the client; it verifies the hierarchy on the server.
 async function validateCategorySelection(
   categoryId: unknown
-): Promise<{ ok: true; categoryId: string } | { ok: false; error: string }> {
+): Promise<{ ok: true; categoryId: string } | { ok: false; code: string }> {
   if (typeof categoryId !== "string" || categoryId.length === 0) {
-    return { ok: false, error: "A subcategory is required." };
+    return { ok: false, code: "missing" };
   }
   const cat = await prisma.category.findUnique({
     where: { id: categoryId },
-    select: { id: true, slug: true, parentId: true, parent: { select: { id: true, parentId: true } } },
+    // Explicit select: the row plus its parent's slug + parentId, so the pure
+    // canonical validator can verify slug, parent, and exact depth.
+    select: {
+      id: true,
+      slug: true,
+      parentId: true,
+      parent: { select: { id: true, slug: true, parentId: true } },
+    },
   });
-  if (!cat) return { ok: false, error: "Selected category does not exist." };
-  if (cat.slug === "annet" || cat.slug === "generelt") {
-    return { ok: false, error: "This category is not allowed." };
-  }
-  if (cat.parentId === null) {
-    return { ok: false, error: "A business must be assigned to a subcategory, not a top-level category." };
-  }
-  // Parent must be a top-level Category (its own parentId is null) — this also
-  // rejects any third-level row (depth greater than two).
-  if (!cat.parent || cat.parent.parentId !== null) {
-    return { ok: false, error: "Selected category is not a valid subcategory." };
-  }
+  if (!cat) return { ok: false, code: "unknownSubcategory" };
+
+  const code = validateSelectedSubcategory({
+    slug: cat.slug,
+    parentId: cat.parentId,
+    parentSlug: cat.parent?.slug ?? null,
+    parentParentId: cat.parent?.parentId ?? null,
+  });
+  if (code !== "ok") return { ok: false, code };
   return { ok: true, categoryId: cat.id };
 }
 
@@ -91,7 +96,7 @@ export async function POST(req: Request) {
     // Server-side taxonomy validation — must be a valid Subcategory.
     const catCheck = await validateCategorySelection(data.categoryId);
     if (!catCheck.ok) {
-      return NextResponse.json({ error: catCheck.error, field: "categoryId" }, { status: 400 });
+      return NextResponse.json({ error: "Invalid category selection.", code: catCheck.code, field: "categoryId" }, { status: 400 });
     }
 
     const business = await prisma.business.create({
@@ -144,7 +149,7 @@ export async function PUT(req: Request) {
     // Server-side taxonomy validation — must be a valid Subcategory.
     const catCheck = await validateCategorySelection(data.categoryId);
     if (!catCheck.ok) {
-      return NextResponse.json({ error: catCheck.error, field: "categoryId" }, { status: 400 });
+      return NextResponse.json({ error: "Invalid category selection.", code: catCheck.code, field: "categoryId" }, { status: 400 });
     }
 
     // If the business was REJECTED and the owner updates it → back to PENDING

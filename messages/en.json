@@ -393,6 +393,15 @@
       "sunday": "Sunday"
     },
     "subcategoryRequired": "Select a subcategory for your business.",
+    "categoryErrors": {
+      "missing": "Select a subcategory for your business.",
+      "unknownSubcategory": "The selected category is not a valid subcategory.",
+      "topLevelNotAllowed": "Select a subcategory, not a top-level category.",
+      "parentNotTopLevel": "The selected category does not have a valid top-level category.",
+      "wrongParent": "The selected subcategory does not belong to the chosen top-level category.",
+      "thirdLevel": "A category cannot have more than two levels.",
+      "forbidden": "This category is not allowed."
+    },
     "labels": {
       "name": "Business name",
       "category": "Category",

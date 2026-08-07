@@ -174,6 +174,41 @@ export function subcategoriesOf(topLevelSlug: string): SubCategory[] {
   return SUBCATEGORIES.filter((s) => s.parent === topLevelSlug);
 }
 
+/** Stable validation codes for a selected business category (used as
+ *  localization keys under `businessForm.categoryErrors.*`). */
+export type CategoryValidationCode =
+  | "ok"
+  | "missing"
+  | "unknownSubcategory"
+  | "topLevelNotAllowed"
+  | "parentNotTopLevel"
+  | "wrongParent"
+  | "thirdLevel"
+  | "forbidden";
+
+/**
+ * Validate that a database category row is a canonical Taxonomy v1 Subcategory
+ * eligible for a business assignment. Pure — the caller supplies the row's
+ * slug/parent facts (fetched with an explicit Prisma select). No I/O.
+ */
+export function validateSelectedSubcategory(input: {
+  slug: string | null | undefined;
+  parentId: string | null;
+  parentSlug: string | null;
+  parentParentId: string | null;
+}): CategoryValidationCode {
+  const { slug, parentId, parentSlug, parentParentId } = input;
+  if (!slug) return "missing";
+  if (slug === "annet" || slug === "generelt") return "forbidden";
+  if (parentId === null) return "topLevelNotAllowed";
+  if (!isSubcategorySlug(slug)) return "unknownSubcategory";
+  if (!parentSlug || !isTopLevelSlug(parentSlug)) return "parentNotTopLevel";
+  if (parentSlug === "annet" || parentSlug === "generelt") return "forbidden";
+  if (parentParentId !== null) return "thirdLevel";
+  if (parentSlugOf(slug) !== parentSlug) return "wrongParent";
+  return "ok";
+}
+
 /**
  * Validate the configuration itself against the Master List invariants.
  * Returns a list of problems; empty means valid. Pure, no I/O.

@@ -393,6 +393,15 @@
       "sunday": "Søndag"
     },
     "subcategoryRequired": "Velg en underkategori for bedriften din.",
+    "categoryErrors": {
+      "missing": "Velg en underkategori for bedriften din.",
+      "unknownSubcategory": "Den valgte kategorien er ikke en gyldig underkategori.",
+      "topLevelNotAllowed": "Velg en underkategori, ikke en hovedkategori.",
+      "parentNotTopLevel": "Den valgte kategorien har ikke en gyldig hovedkategori.",
+      "wrongParent": "Den valgte underkategorien hører ikke til den valgte hovedkategorien.",
+      "thirdLevel": "Kategorien kan ikke ha mer enn to nivåer.",
+      "forbidden": "Denne kategorien er ikke tillatt."
+    },
     "labels": {
       "name": "Bedriftsnavn",
       "category": "Kategori",

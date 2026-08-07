@@ -401,13 +401,19 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
       const data = await res.json();
 
       if (!res.ok) {
+        // Category (Subcategory) validation returns a stable `code` we localise
+        // via businessForm.categoryErrors.*, so NO/EN users see native text.
+        const categoryMsg =
+          data.field === "categoryId" && typeof data.code === "string"
+            ? t(`categoryErrors.${data.code}` as any)
+            : null;
         // Field-level validation errors from the API carry a message key we
         // can localise; fall back to the generic message otherwise.
         const fieldMsg =
           Array.isArray(data.fields) && data.fields[0]?.message
             ? t(`errors.${data.fields[0].message}` as any)
             : null;
-        setError(fieldMsg ?? data.error ?? t("errors.generic"));
+        setError(categoryMsg ?? fieldMsg ?? data.error ?? t("errors.generic"));
       } else {
         setSuccess(
           isEdit ? t("success.updated") : t("success.created")
