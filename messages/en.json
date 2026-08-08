@@ -156,8 +156,8 @@
     "inPreposition": "in",
     "heading": "Search results",
     "find": "Find businesses",
-    "discover": "Discover businesses across Norway.",
-    "placeholder": "Business name, service, or category…"
+    "discover": "Find the right business and the information you need",
+    "placeholder": "Search by business service or category"
   },
   "categories": {
     "mat": "Food",
@@ -547,28 +547,28 @@
   },
   "searchFilters": {
     "sortBy": "Sort by",
-    "mostPopular": "Most popular",
+    "mostPopular": "Most profile views",
     "mostReviewed": "Most reviewed",
     "newest": "Newest",
-    "alphabetical": "A → Z",
+    "alphabetical": "Alphabetical",
     "category": "Category",
     "allCategories": "All categories",
     "city": "City",
-    "cityPlaceholder": "e.g. Oslo",
-    "go": "Go",
+    "cityPlaceholder": "Oslo",
+    "go": "Apply",
     "popularCities": "Popular cities",
     "clearCity": "Clear city",
-    "resetAll": "Reset all filters"
+    "resetAll": "Clear all filters"
   },
   "searchResults": {
     "noResults": "No businesses match your search",
     "noBusinesses": "No businesses yet",
-    "adjustFilters": "Try adjusting your filters or search with different keywords.",
-    "checkBack": "Check back soon — businesses are being added regularly.",
-    "clearFilters": "Clear all filters →",
+    "adjustFilters": "Try adjusting your filters or search with different keywords",
+    "checkBack": "Check back later",
+    "clearFilters": "Clear all filters",
     "businessSingular": "business",
     "businessPlural": "businesses",
-    "found": "found",
+    "found": "Showing",
     "for": "for",
     "in": "in"
   },

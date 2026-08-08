@@ -99,12 +99,6 @@ export default async function SearchResults({ searchParams }: SearchResultsProps
     const hasFilters = q || category || city;
     return (
       <div className="text-center py-20">
-        <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-5">
-          <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-              d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1 0 6.15 6.15a7.5 7.5 0 0 0 10.5 10.5z" />
-          </svg>
-        </div>
         <h3 className="text-base font-semibold text-gray-900 mb-2">
           {hasFilters ? t("noResults") : t("noBusinesses")}
         </h3>
@@ -127,8 +121,9 @@ export default async function SearchResults({ searchParams }: SearchResultsProps
     <div>
       {/* Result count */}
       <p className="text-sm text-gray-500 mb-5">
+        {t("found")}{" "}
         <span className="font-semibold text-gray-900">{businesses.length}</span>{" "}
-        {businesses.length === 1 ? t("businessSingular") : t("businessPlural")} {t("found")}
+        {businesses.length === 1 ? t("businessSingular") : t("businessPlural")}
         {q    && <> {t("for")} <span className="font-medium text-gray-700">&quot;{q}&quot;</span></>}
         {city && <> {t("in")} <span className="font-medium text-gray-700">{formatCity(city)}</span></>}
       </p>

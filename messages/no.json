@@ -156,8 +156,8 @@
     "inPreposition": "i",
     "heading": "Søkeresultater",
     "find": "Finn bedrifter",
-    "discover": "Oppdag bedrifter over hele Norge.",
-    "placeholder": "Bedriftsnavn, tjeneste eller kategori…"
+    "discover": "Finn riktig bedrift og informasjonen du trenger",
+    "placeholder": "Søk etter bedrift tjeneste eller kategori"
   },
   "categories": {
     "mat": "Mat",
@@ -547,28 +547,28 @@
   },
   "searchFilters": {
     "sortBy": "Sorter etter",
-    "mostPopular": "Mest populære",
+    "mostPopular": "Flest profilvisninger",
     "mostReviewed": "Mest anmeldt",
     "newest": "Nyeste",
-    "alphabetical": "A → Å",
+    "alphabetical": "Alfabetisk",
     "category": "Kategori",
     "allCategories": "Alle kategorier",
     "city": "By",
-    "cityPlaceholder": "f.eks. Oslo",
-    "go": "Gå",
+    "cityPlaceholder": "Oslo",
+    "go": "Bruk",
     "popularCities": "Populære byer",
     "clearCity": "Fjern by",
-    "resetAll": "Tilbakestill alle filtre"
+    "resetAll": "Fjern alle filtre"
   },
   "searchResults": {
     "noResults": "Ingen bedrifter samsvarer med søket ditt",
     "noBusinesses": "Ingen bedrifter ennå",
-    "adjustFilters": "Prøv å justere filtrene eller søk med andre nøkkelord.",
-    "checkBack": "Kom tilbake snart — bedrifter legges til jevnlig.",
-    "clearFilters": "Fjern alle filtre →",
+    "adjustFilters": "Prøv å justere filtrene eller søk med andre nøkkelord",
+    "checkBack": "Prøv igjen senere",
+    "clearFilters": "Fjern alle filtre",
     "businessSingular": "bedrift",
     "businessPlural": "bedrifter",
-    "found": "funnet",
+    "found": "Viser",
     "for": "for",
     "in": "i"
   },
