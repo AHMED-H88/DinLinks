@@ -159,19 +159,19 @@
   },
   "layout": {
     "metaTitle": "DinLinks — Norway's Business Directory",
-    "metaDescription": "Find verified local businesses in Norway. Accurate opening hours, contact details, reviews, and more — all in one place.",
+    "metaDescription": "Find local businesses in Norway. Accurate opening hours, contact details, reviews, and more — all in one place.",
     "ogTitle": "DinLinks — Norway's Business Directory",
-    "ogDescription": "Find verified local businesses in Norway with accurate contact info, opening hours, and customer reviews.",
-    "twitterDescription": "Find verified local businesses in Norway."
+    "ogDescription": "Find local businesses in Norway with accurate contact info, opening hours, and customer reviews.",
+    "twitterDescription": "Find local businesses in Norway."
   },
   "search": {
     "metaTitle": "Search: {query} | DinLinks",
     "metaDefault": "Search businesses | DinLinks",
-    "metaDescription": "Search Norwegian businesses by name, category, or city. Find verified local businesses with accurate opening hours and contact information.",
+    "metaDescription": "Search Norwegian businesses by name, category, or city. Find local businesses with accurate opening hours and contact information.",
     "inPreposition": "in",
     "heading": "Search results",
     "find": "Find businesses",
-    "discover": "Discover verified businesses across Norway.",
+    "discover": "Discover businesses across Norway.",
     "placeholder": "Business name, service, or category…"
   },
   "categories": {
@@ -249,12 +249,11 @@
   "categoryPage": {
     "metaNotFound": "Not found | DinLinks",
     "metaTitle": "{category} businesses in Norway | DinLinks",
-    "metaDescription": "Browse {count} verified {category} businesses on DinLinks. Find contact details, opening hours, and reviews.",
+    "metaDescription": "Browse {count} {category} businesses on DinLinks. Find contact details, opening hours, and reviews.",
     "ogTitle": "{category} businesses | DinLinks",
-    "ogDescription": "{count} verified {category} businesses.",
+    "ogDescription": "{count} {category} businesses.",
     "home": "Home",
     "categories": "Categories",
-    "verified": "verified",
     "businessSingular": "business",
     "businessPlural": "businesses",
     "andMore": "and more",
@@ -787,7 +786,7 @@
       "item1": "That all information you provide is true and accurate",
       "item2": "That you have the right to represent the business",
       "item3": "That you will keep the information up to date",
-      "item4": "That the profile may be verified before approval"
+      "item4": "The profile may be reviewed before approval"
     },
     "ip": {
       "heading": "5. Intellectual property",
