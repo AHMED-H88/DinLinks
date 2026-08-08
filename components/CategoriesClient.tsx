@@ -15,7 +15,6 @@ interface CategoryItem {
   id: string;
   name: string;
   slug: string;
-  icon: string;
   count: number;
   subcategories?: SubcategoryItem[];
 }
@@ -65,7 +64,6 @@ export default function CategoriesClient({ categories }: { categories: CategoryI
       {/* Grid */}
       {filtered.length === 0 ? (
         <div className="text-center py-16">
-          <div className="text-4xl mb-3">🔍</div>
           <h3 className="text-base font-semibold text-gray-900 mb-1">{t("noCategories")}</h3>
           <p className="text-sm text-gray-500">{t("tryDifferent")}</p>
           <button onClick={() => setQuery("")} className="mt-4 text-sm text-primary-700 hover:underline">
@@ -80,9 +78,6 @@ export default function CategoriesClient({ categories }: { categories: CategoryI
               href={`/categories/${cat.slug}`}
               className="group card card-hover p-5 flex flex-col items-center text-center gap-3"
             >
-              <span className="text-3xl leading-none" role="img" aria-label={cat.name}>
-                {cat.icon}
-              </span>
               <div>
                 <h2 className="text-sm font-semibold text-gray-900 group-hover:text-primary-700 transition-colors">
                   {cat.name}
@@ -91,10 +86,16 @@ export default function CategoriesClient({ categories }: { categories: CategoryI
                   {cat.count} {cat.count === 1 ? t("businessSingular") : t("businessPlural")}
                 </p>
                 {cat.subcategories && cat.subcategories.length > 0 && (
-                  <p className="text-[11px] text-gray-400 mt-1.5 leading-relaxed line-clamp-2">
-                    {cat.subcategories.slice(0, 4).map((s) => s.name).join(" · ")}
-                    {cat.subcategories.length > 4 ? " …" : ""}
-                  </p>
+                  <>
+                    <p className="text-[11px] text-gray-400 mt-1.5 leading-relaxed">
+                      {cat.subcategories.slice(0, 4).map((s) => s.name).join(" · ")}
+                    </p>
+                    {cat.subcategories.length > 4 && (
+                      <span className="inline-block text-[11px] font-medium text-gray-500 group-hover:text-gray-900 mt-1.5 transition-colors">
+                        {t("viewAll")}
+                      </span>
+                    )}
+                  </>
                 )}
               </div>
             </Link>

@@ -225,10 +225,12 @@
     "metaTitle": "Browse categories | DinLinks",
     "metaDescription": "Explore all business categories on DinLinks — from restaurants and retail to health and automotive. Find exactly what you need.",
     "ogDescription": "Explore all business categories on DinLinks.",
-    "title": "Browse",
     "allCategories": "All categories",
+    "subtitle": "Find businesses by category",
     "home": "Home",
+    "categorySingular": "category",
     "categoriesLabel": "categories",
+    "businessSingular": "business",
     "businesses": "businesses"
   },
   "categoryPage": {
@@ -242,9 +244,10 @@
     "businessSingular": "business",
     "businessPlural": "businesses",
     "andMore": "and more",
-    "noBusinesses": "No {category} businesses yet",
-    "beFirst": "Be the first to list your business in this category and reach customers looking for {category} services.",
-    "listYourBusiness": "List your business",
+    "viewAll": "View all",
+    "showLess": "Show less",
+    "noBusinesses": "No businesses in this category yet",
+    "beFirst": "Try another category or subcategory",
     "prevPage": "Previous page",
     "nextPage": "Next page"
   },
@@ -580,10 +583,11 @@
     "button": "Search"
   },
   "categoriesClient": {
-    "searchPlaceholder": "Search categories…",
+    "searchPlaceholder": "Search by category",
     "noCategories": "No categories found",
     "tryDifferent": "Try a different search term.",
     "clearSearch": "Clear search",
+    "viewAll": "View all",
     "businessSingular": "business",
     "businessPlural": "businesses"
   },
@@ -602,10 +606,10 @@
   },
   "categorySortBar": {
     "sortBy": "Sort by",
-    "mostPopular": "Most popular",
+    "mostPopular": "Most profile views",
     "mostReviewed": "Most reviewed",
     "newest": "Newest",
-    "alphabetical": "A → Z"
+    "alphabetical": "Alphabetical"
   },
   "favoriteButton": {
     "saved": "Saved",

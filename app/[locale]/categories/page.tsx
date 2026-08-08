@@ -26,34 +26,6 @@ export async function generateMetadata({
   };
 }
 
-// Category icon map — used to give each category a visual cue
-const CATEGORY_ICONS: Record<string, string> = {
-  restaurant: "🍽️",
-  cafe: "☕",
-  retail: "🛍️",
-  health: "🏥",
-  fitness: "💪",
-  automotive: "🚗",
-  beauty: "💅",
-  education: "📚",
-  technology: "💻",
-  legal: "⚖️",
-  finance: "💳",
-  construction: "🔨",
-  cleaning: "🧹",
-  real_estate: "🏠",
-  travel: "✈️",
-  entertainment: "🎭",
-  sports: "⚽",
-  hotel: "🏨",
-  photography: "📸",
-  design: "🎨",
-};
-
-function getCategoryIcon(slug: string): string {
-  return CATEGORY_ICONS[slug.toLowerCase()] ?? "🏢";
-}
-
 export default async function CategoriesPage() {
   const t = await getTranslations("categoriesPage");
   const tCat = await getTranslations("categories");
@@ -65,7 +37,6 @@ export default async function CategoriesPage() {
     id:    c.id,
     name:  tCat.has(c.slug) ? tCat(c.slug) : c.name,
     slug:  c.slug,
-    icon:  c.icon ?? getCategoryIcon(c.slug),
     count: c.count,
     subcategories: c.children.map((s) => ({
       id:   s.id,
@@ -85,13 +56,21 @@ export default async function CategoriesPage() {
         {/* Hero */}
         <section className="bg-white border-b border-gray-100 py-12 px-4">
           <div className="max-w-5xl mx-auto text-center">
-            <p className="text-xs font-semibold text-primary-700 uppercase tracking-widest mb-3">{t("title")}</p>
             <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 tracking-tight mb-3">
               {t("allCategories")}
             </h1>
-            <p className="text-base text-gray-500 max-w-xl mx-auto">
-              {categoriesWithMeta.length} {t("categoriesLabel")} ·{" "}
-              <span className="font-medium text-gray-700">{totalBusinesses}</span> {t("businesses")}
+            <p className="text-base text-gray-500 max-w-xl mx-auto mb-4">
+              {t("subtitle")}
+            </p>
+            <p className="flex items-center justify-center gap-6 text-sm text-gray-500">
+              <span>
+                {categoriesWithMeta.length}{" "}
+                {categoriesWithMeta.length === 1 ? t("categorySingular") : t("categoriesLabel")}
+              </span>
+              <span>
+                {totalBusinesses}{" "}
+                {totalBusinesses === 1 ? t("businessSingular") : t("businesses")}
+              </span>
             </p>
           </div>
         </section>

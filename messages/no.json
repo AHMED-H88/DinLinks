@@ -225,10 +225,12 @@
     "metaTitle": "Bla gjennom kategorier | DinLinks",
     "metaDescription": "Utforsk alle bedriftskategorier på DinLinks — fra restauranter og butikker til helse og bil. Finn akkurat det du trenger.",
     "ogDescription": "Utforsk alle bedriftskategorier på DinLinks.",
-    "title": "Bla gjennom",
     "allCategories": "Alle kategorier",
+    "subtitle": "Finn bedrifter etter kategori",
     "home": "Hjem",
+    "categorySingular": "kategori",
     "categoriesLabel": "kategorier",
+    "businessSingular": "bedrift",
     "businesses": "bedrifter"
   },
   "categoryPage": {
@@ -242,9 +244,10 @@
     "businessSingular": "bedrift",
     "businessPlural": "bedrifter",
     "andMore": "og flere",
-    "noBusinesses": "Ingen {category}-bedrifter ennå",
-    "beFirst": "Vær den første til å registrere bedriften din i denne kategorien og nå kunder som leter etter {category}-tjenester.",
-    "listYourBusiness": "Registrer bedriften din",
+    "viewAll": "Vis alle",
+    "showLess": "Vis færre",
+    "noBusinesses": "Ingen bedrifter i denne kategorien ennå",
+    "beFirst": "Prøv en annen kategori eller underkategori",
     "prevPage": "Forrige side",
     "nextPage": "Neste side"
   },
@@ -580,10 +583,11 @@
     "button": "Søk"
   },
   "categoriesClient": {
-    "searchPlaceholder": "Søk kategorier…",
+    "searchPlaceholder": "Søk etter kategori",
     "noCategories": "Ingen kategorier funnet",
     "tryDifferent": "Prøv et annet søkeord.",
     "clearSearch": "Fjern søk",
+    "viewAll": "Vis alle",
     "businessSingular": "bedrift",
     "businessPlural": "bedrifter"
   },
@@ -602,10 +606,10 @@
   },
   "categorySortBar": {
     "sortBy": "Sorter etter",
-    "mostPopular": "Mest populære",
+    "mostPopular": "Flest profilvisninger",
     "mostReviewed": "Mest anmeldt",
     "newest": "Nyeste",
-    "alphabetical": "A → Å"
+    "alphabetical": "Alfabetisk"
   },
   "favoriteButton": {
     "saved": "Lagret",
