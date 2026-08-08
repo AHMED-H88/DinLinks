@@ -9,6 +9,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BusinessCard from "@/components/BusinessCard";
 import CategorySortBar from "@/components/CategorySortBar";
+import SubcategoryChips from "@/components/SubcategoryChips";
 import { subOrder } from "@/lib/taxonomy-v1";
 
 // No `force-dynamic`: this page reads `searchParams` (sort / page), which
@@ -113,7 +114,14 @@ export default async function CategoryDetailPage({
 
     prisma.business.findMany({
       where:   { categoryId: { in: targetIds }, status: "APPROVED" },
-      include: { reviews: { select: { rating: true } }, _count: { select: { branches: true } } },
+      include: {
+        // The business's own (sub)category, so a card on a top-level Category
+        // page shows the specific Subcategory (e.g. "Frisør") rather than
+        // repeating the parent Category ("Tjenester").
+        category: { select: { name: true, slug: true } },
+        reviews:  { select: { rating: true } },
+        _count:   { select: { branches: true } },
+      },
       orderBy: buildOrderBy(sort),
       skip:  (page - 1) * PAGE_SIZE,
       take:  PAGE_SIZE,
@@ -180,26 +188,19 @@ export default async function CategoryDetailPage({
                 </p>
               </div>
 
-              {/* Sort bar */}
-              <div className="sm:ml-auto">
-                <CategorySortBar currentSort={sort} slug={slug} />
-              </div>
+              {/* Sort bar — only meaningful with 2+ results to reorder. */}
+              {total >= 2 && (
+                <div className="sm:ml-auto">
+                  <CategorySortBar currentSort={sort} slug={slug} />
+                </div>
+              )}
             </div>
 
             {/* Subcategories — shown for a top-level Category so its two-level
-                structure is clear. Never renders Subcategories as top-level. */}
+                structure is clear. Never renders Subcategories as top-level.
+                Desktop shows all; mobile shows the first four with Vis alle. */}
             {isTopLevel && subcategories.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-6">
-                {subcategories.map((s) => (
-                  <Link
-                    key={s.id}
-                    href={`/categories/${s.slug}`}
-                    className="inline-flex items-center px-3 py-1.5 rounded-full bg-gray-50 border border-gray-200 text-xs font-medium text-gray-600 hover:border-gray-300 hover:text-gray-900 hover:bg-white transition-colors"
-                  >
-                    {s.name}
-                  </Link>
-                ))}
-              </div>
+              <SubcategoryChips subcategories={subcategories} />
             )}
           </div>
         </section>
@@ -208,7 +209,7 @@ export default async function CategoryDetailPage({
         <section className="py-10 px-4">
           <div className="max-w-7xl mx-auto">
             {businesses.length === 0 ? (
-              <EmptyCategory name={catName} />
+              <EmptyCategory />
             ) : (
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-10">
@@ -218,8 +219,8 @@ export default async function CategoryDetailPage({
                       id={b.id}
                       name={b.name ?? ""}
                       description={b.description ?? ""}
-                      category={catName}
-                      categorySlug={category.slug}
+                      category={b.category?.name ?? catName}
+                      categorySlug={b.category?.slug ?? category.slug}
                       city={b.city ?? ""}
                       logo={b.logo}
                       coverImage={b.coverImage}
@@ -252,23 +253,16 @@ export default async function CategoryDetailPage({
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
-function EmptyCategory({ name }: { name: string }) {
+function EmptyCategory() {
   const t = useTranslations("categoryPage");
   return (
     <div className="text-center py-20">
-      <div className="text-4xl mb-4">🏢</div>
       <h3 className="text-base font-semibold text-gray-900 mb-2">
-        {t("noBusinesses", { category: name.toLowerCase() })}
+        {t("noBusinesses")}
       </h3>
-      <p className="text-sm text-gray-500 mb-6 max-w-sm mx-auto">
-        {t("beFirst", { category: name.toLowerCase() })}
+      <p className="text-sm text-gray-500 max-w-sm mx-auto">
+        {t("beFirst")}
       </p>
-      <Link
-        href="/dashboard"
-        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gray-900 text-white text-sm font-semibold hover:bg-gray-800 transition-colors"
-      >
-        {t("listYourBusiness")}
-      </Link>
     </div>
   );
 }
