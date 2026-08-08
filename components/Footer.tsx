@@ -14,13 +14,12 @@ export default function Footer() {
   const legalLinks = [
     { labelKey: "privacy" as const, href: "/privacy" },
     { labelKey: "terms"   as const, href: "/terms"   },
-    { labelKey: "contact" as const, href: "/contact" },
   ];
 
   return (
     <footer className="bg-white border-t border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-10">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-10 mb-10">
           {/* Brand */}
           <div className="md:col-span-2">
             <Link href="/" className="inline-flex items-center gap-2 mb-4">
@@ -73,11 +72,28 @@ export default function Footer() {
               ))}
             </ul>
           </div>
+
+          {/* Contact — its own group, not under Legal */}
+          <div>
+            <h3 className="text-xs font-semibold text-gray-900 mb-4 uppercase tracking-widest">
+              {t("contact")}
+            </h3>
+            <ul className="space-y-3">
+              <li>
+                <Link
+                  href="/contact"
+                  className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
+                >
+                  {t("contactUs")}
+                </Link>
+              </li>
+            </ul>
+          </div>
         </div>
 
         <div className="pt-8 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-xs text-gray-400">
-            © {currentYear} DinLinks AS. {t("rights")}
+            © {currentYear} DinLinks AS {t("rights")}
           </p>
           <p className="text-xs text-gray-400">{t("builtIn")}</p>
         </div>
