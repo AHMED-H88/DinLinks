@@ -639,33 +639,32 @@
   },
   "about": {
     "title": "Om DinLinks",
-    "subtitle": "Vi kobler lokale bedrifter med kunder på en enkel, moderne og effektiv måte.",
+    "subtitle": "DinLinks gjør det enklere å finne bedrifter og informasjonen du trenger",
     "vision": {
       "heading": "Vår visjon",
-      "p1": "DinLinks ble grunnlagt med en enkel visjon: å gjøre det lettere for folk å finne og kontakte lokale bedrifter i sitt område.",
-      "p2": "Vi tror på å støtte lokale bedrifter og hjelpe dem med å vokse ved å gi dem en moderne, profesjonell plattform for å nå sine kunder."
+      "p1": "Når folk trenger informasjon om en bedrift skal DinLinks være et sted de kan stole på",
+      "p2": "Bedrifter skal kunne presentere seg tydelig og profesjonelt slik at kunder lettere kan forstå hvem de er og hva de tilbyr"
     },
-    "tagline": "Koble bedrifter med kunder",
     "why": {
-      "heading": "Hvorfor velge DinLinks?",
+      "heading": "Hvorfor DinLinks",
       "search": {
-        "title": "Enkelt søk",
-        "desc": "Finn lokale bedrifter raskt og enkelt med vårt intuitive søkesystem."
+        "title": "Finn det du trenger",
+        "desc": "Søk etter bedrifter og tjenester og finn nyttig informasjon samlet på ett sted"
       },
       "platform": {
-        "title": "Moderne plattform",
-        "desc": "En profesjonell og brukervennlig plattform bygget med de nyeste teknologiene."
+        "title": "Tydelige bedriftsprofiler",
+        "desc": "Se tjenester åpningstider kontaktinformasjon bilder og annen nyttig informasjon"
       },
       "support": {
-        "title": "Støtt lokale bedrifter",
-        "desc": "Hjelp lokale bedrifter å vokse ved å gjøre dem mer synlige i ditt område."
+        "title": "Profesjonell presentasjon",
+        "desc": "Bedrifter kan vise hvem de er og hva de tilbyr på en tydelig og profesjonell måte"
       }
     },
     "cta": {
-      "heading": "Klar til å komme i gang?",
-      "subtitle": "Enten du er en kunde som leter etter lokale tjenester, eller en bedrift som ønsker å nå flere kunder.",
-      "search": "Søk bedrifter",
-      "register": "Registrer bedrift"
+      "heading": "For kunder og bedrifter",
+      "subtitle": "Finn bedriften du trenger eller opprett en profil for bedriften din",
+      "search": "Finn bedrift",
+      "register": "Registrer bedriften din"
     }
   },
   "contact": {

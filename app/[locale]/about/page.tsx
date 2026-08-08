@@ -22,27 +22,17 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* Mission Section */}
-        <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-4xl font-bold text-gray-900 mb-6 tracking-tight">
-                {t("vision.heading")}
-              </h2>
-              <p className="text-lg text-gray-600 leading-relaxed mb-6">
-                {t("vision.p1")}
-              </p>
-              <p className="text-lg text-gray-600 leading-relaxed">
-                {t("vision.p2")}
-              </p>
-            </div>
-            <div className="bg-gradient-to-br from-primary-100 to-primary-200 rounded-2xl h-80 flex items-center justify-center">
-              <div className="text-center">
-                <div className="text-6xl mb-4">🎯</div>
-                <p className="text-xl font-semibold text-primary-900">{t("tagline")}</p>
-              </div>
-            </div>
-          </div>
+        {/* Vision Section */}
+        <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20">
+          <h2 className="text-4xl font-bold text-gray-900 mb-6 tracking-tight">
+            {t("vision.heading")}
+          </h2>
+          <p className="text-lg text-gray-600 leading-relaxed mb-6">
+            {t("vision.p1")}
+          </p>
+          <p className="text-lg text-gray-600 leading-relaxed">
+            {t("vision.p2")}
+          </p>
         </section>
 
         {/* Features Section */}
@@ -53,7 +43,6 @@ export default function AboutPage() {
             </h2>
             <div className="grid md:grid-cols-3 gap-8">
               <div className="card p-8">
-                <div className="text-4xl mb-4">🔍</div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-3">
                   {t("why.search.title")}
                 </h3>
@@ -62,7 +51,6 @@ export default function AboutPage() {
                 </p>
               </div>
               <div className="card p-8">
-                <div className="text-4xl mb-4">✨</div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-3">
                   {t("why.platform.title")}
                 </h3>
@@ -71,7 +59,6 @@ export default function AboutPage() {
                 </p>
               </div>
               <div className="card p-8">
-                <div className="text-4xl mb-4">🤝</div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-3">
                   {t("why.support.title")}
                 </h3>
@@ -93,7 +80,10 @@ export default function AboutPage() {
               {t("cta.subtitle")}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/search" className="btn btn-primary btn-lg">
+              <Link
+                href="/search"
+                className="inline-flex items-center justify-center px-8 py-4 rounded-xl bg-gray-900 text-white font-semibold text-base hover:bg-gray-800 active:scale-[0.98] transition-all"
+              >
                 {t("cta.search")}
               </Link>
               <Link href="/signup" className="btn btn-outline btn-lg">

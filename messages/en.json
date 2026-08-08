@@ -639,33 +639,32 @@
   },
   "about": {
     "title": "About DinLinks",
-    "subtitle": "We connect local businesses with customers in a simple, modern, and effective way.",
+    "subtitle": "DinLinks makes it easier to find businesses and the information you need",
     "vision": {
       "heading": "Our vision",
-      "p1": "DinLinks was founded with a simple vision: to make it easier for people to find and contact local businesses in their area.",
-      "p2": "We believe in supporting local businesses and helping them grow by giving them a modern, professional platform to reach their customers."
+      "p1": "When people need information about a business DinLinks should be a place they can trust",
+      "p2": "Businesses should be able to present themselves clearly and professionally so customers can easily understand who they are and what they offer"
     },
-    "tagline": "Connecting businesses with customers",
     "why": {
-      "heading": "Why choose DinLinks?",
+      "heading": "Why DinLinks",
       "search": {
-        "title": "Easy search",
-        "desc": "Find local businesses quickly and easily with our intuitive search system."
+        "title": "Find what you need",
+        "desc": "Search for businesses and services and find useful information all in one place"
       },
       "platform": {
-        "title": "Modern platform",
-        "desc": "A professional and user-friendly platform built with the latest technologies."
+        "title": "Clear business profiles",
+        "desc": "See services opening hours contact information photos and other useful information"
       },
       "support": {
-        "title": "Support local businesses",
-        "desc": "Help local businesses grow by making them more visible in your area."
+        "title": "Professional presentation",
+        "desc": "Businesses can show who they are and what they offer clearly and professionally"
       }
     },
     "cta": {
-      "heading": "Ready to get started?",
-      "subtitle": "Whether you're a customer looking for local services, or a business wanting to reach more customers.",
-      "search": "Search businesses",
-      "register": "Register business"
+      "heading": "For customers and businesses",
+      "subtitle": "Find the business you need or create a profile for your business",
+      "search": "Find a business",
+      "register": "Register your business"
     }
   },
   "contact": {
