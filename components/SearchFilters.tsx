@@ -131,14 +131,21 @@ export default function SearchFilters({ categories, cities }: SearchFiltersProps
     </div>
   );
 
-  const categoryTree = () => (
+  // `neutral` (mobile) uses black/gray selected states; the default (desktop)
+  // keeps the existing primary-tint selected states unchanged.
+  const categoryTree = (neutral: boolean) => {
+    const selected = neutral
+      ? "bg-gray-900 text-white font-semibold"
+      : "bg-primary-50 text-primary-700 font-semibold border border-primary-100";
+    const groupSelected = neutral
+      ? "bg-gray-900 text-white"
+      : "bg-primary-50 text-primary-700 border border-primary-100";
+    return (
     <div className="space-y-1 max-h-64 overflow-y-auto pr-1">
       <button
         onClick={() => selectCategory("")}
         className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all ${
-          !currentCategory
-            ? "bg-primary-50 text-primary-700 font-semibold border border-primary-100"
-            : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+          !currentCategory ? selected : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
         }`}
       >
         {t("allCategories")}
@@ -150,9 +157,7 @@ export default function SearchFilters({ categories, cities }: SearchFiltersProps
           <button
             onClick={() => selectCategory(group.slug)}
             className={`w-full text-left px-3 py-2 rounded-lg text-sm font-semibold transition-all ${
-              currentCategory === group.slug
-                ? "bg-primary-50 text-primary-700 border border-primary-100"
-                : "text-gray-900 hover:bg-gray-50"
+              currentCategory === group.slug ? groupSelected : "text-gray-900 hover:bg-gray-50"
             }`}
           >
             {tCat.has(group.slug) ? tCat(group.slug) : group.name}
@@ -164,9 +169,7 @@ export default function SearchFilters({ categories, cities }: SearchFiltersProps
                   key={sub.id}
                   onClick={() => selectCategory(sub.slug)}
                   className={`w-full text-left px-3 py-1.5 rounded-lg text-[13px] transition-all ${
-                    currentCategory === sub.slug
-                      ? "bg-primary-50 text-primary-700 font-semibold border border-primary-100"
-                      : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
+                    currentCategory === sub.slug ? selected : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
                   }`}
                 >
                   {tCat.has(sub.slug) ? tCat(sub.slug) : sub.name}
@@ -177,9 +180,17 @@ export default function SearchFilters({ categories, cities }: SearchFiltersProps
         </div>
       ))}
     </div>
-  );
+    );
+  };
 
-  const cityBox = () => (
+  const cityBox = (neutral: boolean) => {
+    const selected = neutral
+      ? "bg-gray-900 text-white font-semibold"
+      : "bg-primary-50 text-primary-700 font-semibold border border-primary-100";
+    const applyBtn = neutral
+      ? "inline-flex items-center justify-center rounded-lg bg-gray-900 text-white px-3 py-2 text-xs font-medium hover:bg-gray-800 active:scale-[0.98] transition-colors"
+      : "btn btn-primary px-3 py-2 text-xs";
+    return (
     <div>
       <form onSubmit={handleCitySubmit} className="flex gap-2 mb-3">
         <input
@@ -189,27 +200,28 @@ export default function SearchFilters({ categories, cities }: SearchFiltersProps
           placeholder={t("cityPlaceholder")}
           className="input py-2 px-3 text-sm flex-1"
         />
-        <button type="submit" className="btn btn-primary px-3 py-2 text-xs">{t("go")}</button>
+        <button type="submit" className={applyBtn}>{t("go")}</button>
       </form>
 
       {/* Popular cities */}
       {cities.length > 0 && (
         <div className="space-y-1">
           <p className="text-[11px] font-medium text-gray-400 uppercase tracking-wide mb-1.5">{t("popularCities")}</p>
-          {cities.slice(0, 8).map(({ city, count }) => (
-            <button
-              key={city}
-              onClick={() => { setCityInput(city); updateParam({ city }); }}
-              className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-sm transition-all ${
-                currentCity.toLowerCase() === city.toLowerCase()
-                  ? "bg-primary-50 text-primary-700 font-semibold border border-primary-100"
-                  : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-              }`}
-            >
-              <span>{formatCity(city)}</span>
-              <span className="text-xs text-gray-400">{count}</span>
-            </button>
-          ))}
+          {cities.slice(0, 8).map(({ city, count }) => {
+            const isActive = currentCity.toLowerCase() === city.toLowerCase();
+            return (
+              <button
+                key={city}
+                onClick={() => { setCityInput(city); updateParam({ city }); }}
+                className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-sm transition-all ${
+                  isActive ? selected : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                }`}
+              >
+                <span>{formatCity(city)}</span>
+                <span className={`text-xs ${isActive && neutral ? "text-gray-300" : "text-gray-400"}`}>{count}</span>
+              </button>
+            );
+          })}
         </div>
       )}
 
@@ -222,21 +234,22 @@ export default function SearchFilters({ categories, cities }: SearchFiltersProps
         </button>
       )}
     </div>
-  );
+    );
+  };
 
   const sectionHeading = "text-xs font-semibold text-gray-500 uppercase tracking-widest mb-3";
 
   return (
     <>
       {/* ── Mobile: compact control row + panels + active chips (lg:hidden) ── */}
-      <div className="lg:hidden space-y-3">
-        <div className="flex gap-2">
+      <div className="lg:hidden space-y-2.5">
+        <div className="flex gap-2.5">
           <button
             type="button"
             onClick={() => togglePanel("filter")}
             aria-expanded={mobilePanel === "filter"}
             aria-controls="search-mobile-filter-panel"
-            className="flex-1 inline-flex items-center justify-center gap-2 h-12 rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-900 hover:bg-gray-50 active:scale-[0.99] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2"
+            className="flex-1 inline-flex items-center justify-center gap-2 h-11 rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-900 hover:bg-gray-50 active:scale-[0.99] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2"
           >
             <FunnelIcon />
             {t("filters")}
@@ -246,7 +259,7 @@ export default function SearchFilters({ categories, cities }: SearchFiltersProps
             onClick={() => togglePanel("sort")}
             aria-expanded={mobilePanel === "sort"}
             aria-controls="search-mobile-sort-panel"
-            className="flex-1 inline-flex items-center justify-center gap-2 h-12 rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-900 hover:bg-gray-50 active:scale-[0.99] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2"
+            className="flex-1 inline-flex items-center justify-center gap-2 h-11 rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-900 hover:bg-gray-50 active:scale-[0.99] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2"
           >
             <SortIcon />
             {t("sort")}
@@ -263,11 +276,11 @@ export default function SearchFilters({ categories, cities }: SearchFiltersProps
           <div id="search-mobile-filter-panel" className="card p-4 space-y-5">
             <div>
               <h3 className={sectionHeading}>{t("category")}</h3>
-              {categoryTree()}
+              {categoryTree(true)}
             </div>
             <div>
               <h3 className={sectionHeading}>{t("city")}</h3>
-              {cityBox()}
+              {cityBox(true)}
             </div>
             {hasFilters && (
               <button
@@ -318,12 +331,12 @@ export default function SearchFilters({ categories, cities }: SearchFiltersProps
 
         <div className="card p-4">
           <h3 className={sectionHeading}>{t("category")}</h3>
-          {categoryTree()}
+          {categoryTree(false)}
         </div>
 
         <div className="card p-4">
           <h3 className={sectionHeading}>{t("city")}</h3>
-          {cityBox()}
+          {cityBox(false)}
         </div>
 
         {hasFilters && (

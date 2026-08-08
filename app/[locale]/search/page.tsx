@@ -77,7 +77,7 @@ export default async function SearchPage({
 
       {/* Search hero */}
       <div className="bg-white border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-3 lg:pb-8">
           <h1 className="text-2xl font-bold text-gray-900 mb-1 tracking-tight">
             {hasSearch ? t("heading") : t("find")}
           </h1>
@@ -88,8 +88,8 @@ export default async function SearchPage({
         </div>
       </div>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-col lg:flex-row gap-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3 pb-8 lg:pt-8">
+        <div className="flex flex-col lg:flex-row gap-5 lg:gap-8">
           {/* Sidebar */}
           <aside className="w-full lg:w-64 flex-shrink-0">
             <div className="lg:sticky lg:top-6">
