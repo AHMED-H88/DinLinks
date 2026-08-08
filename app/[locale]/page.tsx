@@ -162,7 +162,6 @@ export default async function HomePage() {
                       category={b.category?.name ?? ""}
                       categorySlug={b.category?.slug}
                       city={b.city ?? ""}
-                      verified={b.status === "APPROVED"}
                       logo={b.logo}
                       coverImage={b.coverImage}
                       rating={rating}

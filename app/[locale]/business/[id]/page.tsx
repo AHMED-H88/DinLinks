@@ -277,14 +277,6 @@ export default async function BusinessProfilePage({
                       {business.name}
                     </h1>
 
-                    {/* Verified */}
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/90 text-white border border-emerald-400/40 backdrop-blur-sm">
-                      <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none">
-                        <path d="M10 3L5 8.5 2 5.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                      {t("hero.verified")}
-                    </span>
-
                     {/* Open / Closed */}
                     {openNow !== null && (
                       <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold border backdrop-blur-sm ${
@@ -785,17 +777,6 @@ export default async function BusinessProfilePage({
               <div id="trust" className="scroll-mt-24 rounded-2xl border border-gray-200 bg-white shadow-subtle overflow-hidden">
                 <CardHeader>{t("sidebar.profileInfo")}</CardHeader>
                 <div className="divide-y divide-gray-100">
-
-                  <TrustRow
-                    iconBg="bg-emerald-50"
-                    iconColor="text-emerald-600"
-                    icon={
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                        d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z" />
-                    }
-                    label={t("sidebar.verifiedBusiness")}
-                    sub={t("sidebar.approvedBy")}
-                  />
 
                   <TrustRow
                     iconBg="bg-amber-50"

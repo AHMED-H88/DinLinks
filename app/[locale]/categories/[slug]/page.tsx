@@ -173,7 +173,7 @@ export default async function CategoryDetailPage({
                 <h1 className="text-3xl font-bold text-gray-900 tracking-tight">{catName}</h1>
                 <p className="text-sm text-gray-500 mt-1">
                   <span className="font-medium text-gray-700">{total}</span>{" "}
-                  {total === 1 ? t("verifiedBusinessSingular") : t("verifiedBusinessPlural")}
+                  {total === 1 ? t("businessSingular") : t("businessPlural")}
                   {cities.length > 0 && (
                     <> · {cities.slice(0, 4).map(formatCity).join(", ")}{cities.length > 4 ? ` ${t("andMore")}` : ""}</>
                   )}
@@ -221,7 +221,6 @@ export default async function CategoryDetailPage({
                       category={catName}
                       categorySlug={category.slug}
                       city={b.city ?? ""}
-                      verified={b.status === "APPROVED"}
                       logo={b.logo}
                       coverImage={b.coverImage}
                       rating={avgRating(b.reviews)}
