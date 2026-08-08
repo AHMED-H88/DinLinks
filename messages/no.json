@@ -159,19 +159,19 @@
   },
   "layout": {
     "metaTitle": "DinLinks — Norges bedriftskatalog",
-    "metaDescription": "Finn verifiserte lokale bedrifter i Norge. Nøyaktige åpningstider, kontaktdetaljer, anmeldelser og mer — alt på ett sted.",
+    "metaDescription": "Finn lokale bedrifter i Norge med åpningstider kontaktinformasjon anmeldelser og mer samlet på ett sted",
     "ogTitle": "DinLinks — Norges bedriftskatalog",
-    "ogDescription": "Finn verifiserte lokale bedrifter i Norge med nøyaktig kontaktinfo, åpningstider og kundeanmeldelser.",
-    "twitterDescription": "Finn verifiserte lokale bedrifter i Norge."
+    "ogDescription": "Finn lokale bedrifter i Norge med kontaktinformasjon åpningstider og kundeanmeldelser",
+    "twitterDescription": "Finn lokale bedrifter i Norge."
   },
   "search": {
     "metaTitle": "Søk: {query} | DinLinks",
     "metaDefault": "Søk bedrifter | DinLinks",
-    "metaDescription": "Søk etter norske bedrifter etter navn, kategori eller by. Finn verifiserte lokale bedrifter med nøyaktige åpningstider og kontaktinformasjon.",
+    "metaDescription": "Søk etter norske bedrifter etter navn kategori eller by og finn åpningstider og kontaktinformasjon",
     "inPreposition": "i",
     "heading": "Søkeresultater",
     "find": "Finn bedrifter",
-    "discover": "Oppdag verifiserte bedrifter over hele Norge.",
+    "discover": "Oppdag bedrifter over hele Norge.",
     "placeholder": "Bedriftsnavn, tjeneste eller kategori…"
   },
   "categories": {
@@ -244,19 +244,16 @@
     "allCategories": "Alle kategorier",
     "home": "Hjem",
     "categoriesLabel": "kategorier",
-    "verifiedBusinesses": "verifiserte bedrifter"
+    "businesses": "bedrifter"
   },
   "categoryPage": {
     "metaNotFound": "Ikke funnet | DinLinks",
     "metaTitle": "{category}-bedrifter i Norge | DinLinks",
-    "metaDescription": "Se {count} verifiserte {category}-bedrifter på DinLinks. Finn kontaktinfo, åpningstider og anmeldelser.",
+    "metaDescription": "Se {count} {category}-bedrifter på DinLinks. Finn kontaktinfo, åpningstider og anmeldelser.",
     "ogTitle": "{category}-bedrifter | DinLinks",
-    "ogDescription": "{count} verifiserte {category}-bedrifter.",
+    "ogDescription": "{count} {category}-bedrifter.",
     "home": "Hjem",
     "categories": "Kategorier",
-    "verified": "verifisert",
-    "verifiedBusinessSingular": "verifisert bedrift",
-    "verifiedBusinessPlural": "verifiserte bedrifter",
     "businessSingular": "bedrift",
     "businessPlural": "bedrifter",
     "andMore": "og flere",
@@ -306,7 +303,6 @@
     }
   },
   "businessCard": {
-    "verified": "Verifisert",
     "noReviews": "Ingen anmeldelser ennå"
   },
   "businessForm": {
@@ -790,7 +786,7 @@
       "item1": "At all informasjon du oppgir er sann og nøyaktig",
       "item2": "At du har rett til å representere bedriften",
       "item3": "At du vil holde informasjonen oppdatert",
-      "item4": "At profilen kan bli verifisert før godkjenning"
+      "item4": "At profilen kan gjennomgås før godkjenning"
     },
     "ip": {
       "heading": "5. Immaterielle rettigheter",
@@ -818,11 +814,10 @@
       "categoryFallback": "Bedrift",
       "locationFallback": "Norge",
       "inPreposition": "i",
-      "descriptionFallback": "{name} er en verifisert bedrift på DinLinks. Finn kontaktinfo, åpningstider og anmeldelser.",
+      "descriptionFallback": "{name} er en bedrift på DinLinks. Finn kontaktinfo, åpningstider og anmeldelser.",
       "notFound": "Bedrift ikke funnet | DinLinks"
     },
     "hero": {
-      "verified": "Verifisert",
       "openNow": "Åpent nå",
       "closedNow": "Stengt nå",
       "branchSingular": "lokasjon",
@@ -894,8 +889,6 @@
       "location": "Beliggenhet",
       "openInMaps": "Åpne i kart",
       "profileInfo": "Om denne profilen",
-      "verifiedBusiness": "Verifisert bedrift",
-      "approvedBy": "Gjennomgått og godkjent av DinLinks",
       "genuineRatings": "Vurderinger fra kunder",
       "profileViews": "Profilvisninger",
       "lastUpdated": "Sist oppdatert"

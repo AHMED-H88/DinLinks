@@ -91,7 +91,7 @@ export default async function CategoriesPage() {
             </h1>
             <p className="text-base text-gray-500 max-w-xl mx-auto">
               {categoriesWithMeta.length} {t("categoriesLabel")} ·{" "}
-              <span className="font-medium text-gray-700">{totalBusinesses}</span> {t("verifiedBusinesses")}
+              <span className="font-medium text-gray-700">{totalBusinesses}</span> {t("businesses")}
             </p>
           </div>
         </section>

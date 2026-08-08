@@ -11,7 +11,6 @@ interface BusinessCardProps {
   category: string;
   categorySlug?: string;
   city: string;
-  verified?: boolean;
   logo?: string | null;
   coverImage?: string | null;
   rating?: number | null;
@@ -65,7 +64,6 @@ export default function BusinessCard({
   category,
   categorySlug,
   city,
-  verified = false,
   logo,
   coverImage,
   rating,
@@ -116,17 +114,6 @@ export default function BusinessCard({
           )}
         </div>
 
-        {/* Verified badge, top-right of cover */}
-        {verified && (
-          <div className="absolute top-2.5 right-2.5">
-            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-green-700 bg-green-50/90 backdrop-blur-sm border border-green-200 px-1.5 py-0.5 rounded-full">
-              <svg className="w-2.5 h-2.5" viewBox="0 0 12 12" fill="none">
-                <path d="M10 3L5 8.5 2 5.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              {t("verified")}
-            </span>
-          </div>
-        )}
       </div>
 
       {/* ── Card body ────────────────────────────────────────────────── */}
