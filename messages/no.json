@@ -547,6 +547,9 @@
   },
   "searchFilters": {
     "sortBy": "Sorter etter",
+    "filters": "Filtre",
+    "sort": "Sorter",
+    "remove": "Fjern",
     "mostPopular": "Flest profilvisninger",
     "mostReviewed": "Mest anmeldt",
     "newest": "Nyeste",

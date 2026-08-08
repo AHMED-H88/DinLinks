@@ -547,6 +547,9 @@
   },
   "searchFilters": {
     "sortBy": "Sort by",
+    "filters": "Filters",
+    "sort": "Sort",
+    "remove": "Remove",
     "mostPopular": "Most profile views",
     "mostReviewed": "Most reviewed",
     "newest": "Newest",
