@@ -147,7 +147,6 @@ export default async function SearchResults({ searchParams }: SearchResultsProps
               category={b.category?.name ?? ""}
               categorySlug={b.category?.slug}
               city={b.city ?? ""}
-              verified={b.status === "APPROVED"}
               logo={b.logo}
               coverImage={b.coverImage}
               rating={rating}

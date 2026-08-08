@@ -244,7 +244,7 @@
     "allCategories": "Alle kategorier",
     "home": "Hjem",
     "categoriesLabel": "kategorier",
-    "verifiedBusinesses": "verifiserte bedrifter"
+    "businesses": "bedrifter"
   },
   "categoryPage": {
     "metaNotFound": "Ikke funnet | DinLinks",
@@ -255,8 +255,6 @@
     "home": "Hjem",
     "categories": "Kategorier",
     "verified": "verifisert",
-    "verifiedBusinessSingular": "verifisert bedrift",
-    "verifiedBusinessPlural": "verifiserte bedrifter",
     "businessSingular": "bedrift",
     "businessPlural": "bedrifter",
     "andMore": "og flere",
@@ -306,7 +304,6 @@
     }
   },
   "businessCard": {
-    "verified": "Verifisert",
     "noReviews": "Ingen anmeldelser ennå"
   },
   "businessForm": {
@@ -818,11 +815,10 @@
       "categoryFallback": "Bedrift",
       "locationFallback": "Norge",
       "inPreposition": "i",
-      "descriptionFallback": "{name} er en verifisert bedrift på DinLinks. Finn kontaktinfo, åpningstider og anmeldelser.",
+      "descriptionFallback": "{name} er en bedrift på DinLinks. Finn kontaktinfo, åpningstider og anmeldelser.",
       "notFound": "Bedrift ikke funnet | DinLinks"
     },
     "hero": {
-      "verified": "Verifisert",
       "openNow": "Åpent nå",
       "closedNow": "Stengt nå",
       "branchSingular": "lokasjon",
@@ -894,8 +890,6 @@
       "location": "Beliggenhet",
       "openInMaps": "Åpne i kart",
       "profileInfo": "Om denne profilen",
-      "verifiedBusiness": "Verifisert bedrift",
-      "approvedBy": "Gjennomgått og godkjent av DinLinks",
       "genuineRatings": "Vurderinger fra kunder",
       "profileViews": "Profilvisninger",
       "lastUpdated": "Sist oppdatert"
