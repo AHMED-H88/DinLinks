@@ -75,12 +75,19 @@ export default function Footer() {
 
           {/* Contact — its own group, not under Legal */}
           <div>
-            <Link
-              href="/contact"
-              className="text-xs font-semibold text-gray-900 uppercase tracking-widest hover:text-gray-600 transition-colors"
-            >
+            <h3 className="text-xs font-semibold text-gray-900 mb-4 uppercase tracking-widest">
               {t("contact")}
-            </Link>
+            </h3>
+            <ul className="space-y-3">
+              <li>
+                <Link
+                  href="/contact"
+                  className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
+                >
+                  {t("contactUs")}
+                </Link>
+              </li>
+            </ul>
           </div>
         </div>
 
