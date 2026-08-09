@@ -198,7 +198,9 @@ export default function SearchFilters({ categories, cities }: SearchFiltersProps
           value={cityInput}
           onChange={(e) => setCityInput(e.target.value)}
           placeholder={t("cityPlaceholder")}
-          className="input py-2 px-3 text-sm flex-1"
+          // Neutral focus on desktop only; the `lg:` variants do not apply on
+          // mobile, so the mobile filter panel keeps its existing focus.
+          className="input py-2 px-3 text-sm flex-1 lg:focus:border-gray-900 lg:focus:ring-gray-200"
         />
         <button type="submit" className={applyBtn}>{t("go")}</button>
       </form>
@@ -322,7 +324,8 @@ export default function SearchFilters({ categories, cities }: SearchFiltersProps
         )}
       </div>
 
-      {/* ── Desktop: full expanded sidebar (hidden lg:block) — unchanged ────── */}
+      {/* ── Desktop: full expanded sidebar (hidden lg:block) — neutral selected
+             states + black Apply, same layout/behavior ─────────────────────── */}
       <div className="hidden lg:block space-y-4">
         <div className="card p-4">
           <h3 className={sectionHeading}>{t("sortBy")}</h3>
@@ -331,12 +334,12 @@ export default function SearchFilters({ categories, cities }: SearchFiltersProps
 
         <div className="card p-4">
           <h3 className={sectionHeading}>{t("category")}</h3>
-          {categoryTree(false)}
+          {categoryTree(true)}
         </div>
 
         <div className="card p-4">
           <h3 className={sectionHeading}>{t("city")}</h3>
-          {cityBox(false)}
+          {cityBox(true)}
         </div>
 
         {hasFilters && (
