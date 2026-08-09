@@ -14,9 +14,11 @@ export async function POST(req: Request) {
     const body = await req.json();
     const parsed = signupSchema.safeParse(body);
 
+    // Stable machine-readable codes only — the client maps these to localized
+    // copy so no raw English reaches the UI, and no internals leak.
     if (!parsed.success) {
       return NextResponse.json(
-        { error: "Invalid input data" },
+        { error: "INVALID_INPUT" },
         { status: 400 }
       );
     }
@@ -29,7 +31,7 @@ export async function POST(req: Request) {
 
     if (existingUser) {
       return NextResponse.json(
-        { error: "User already exists" },
+        { error: "EMAIL_EXISTS" },
         { status: 400 }
       );
     }
@@ -52,7 +54,7 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error("Signup error:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "SERVER_ERROR" },
       { status: 500 }
     );
   }
