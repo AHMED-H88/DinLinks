@@ -685,7 +685,8 @@
       "location": "Oslo, Norway",
       "hours": "Opening hours",
       "weekdays": "Monday – Friday: 09:00 – 17:00",
-      "weekend": "Saturday – Sunday: Closed"
+      "weekend": "Saturday – Sunday: Closed",
+      "security": "Security"
     },
     "form": {
       "heading": "Send us a message",

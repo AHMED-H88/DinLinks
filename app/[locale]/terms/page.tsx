@@ -134,8 +134,8 @@ export default function TermsPage() {
             </h2>
             <p className="text-gray-600 leading-relaxed">
               {t("contact.text")}{" "}
-              <a href="mailto:support@dinlinks.no" className="text-primary-600 hover:text-primary-700 font-medium">
-                support@dinlinks.no
+              <a href="mailto:support@dinlinks.com" className="text-primary-600 hover:text-primary-700 font-medium">
+                support@dinlinks.com
               </a>
             </p>
           </section>

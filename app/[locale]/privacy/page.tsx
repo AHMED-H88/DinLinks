@@ -129,8 +129,8 @@ export default function PrivacyPage() {
             </h2>
             <p className="text-gray-600 leading-relaxed">
               {t("contact.text")}{" "}
-              <a href="mailto:privacy@dinlinks.no" className="text-primary-600 hover:text-primary-700 font-medium">
-                privacy@dinlinks.no
+              <a href="mailto:privacy@dinlinks.com" className="text-primary-600 hover:text-primary-700 font-medium">
+                privacy@dinlinks.com
               </a>
             </p>
           </section>
