@@ -831,6 +831,11 @@
       "reviews": "Reviews",
       "similar": "Similar businesses"
     },
+    "nav": {
+      "overview": "Overview",
+      "services": "Services / Products",
+      "ariaLabel": "Profile sections"
+    },
     "about": {
       "empty": "No description provided yet."
     },

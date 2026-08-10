@@ -45,7 +45,7 @@ export default function ProfileGallery({ images, businessName }: ProfileGalleryP
   const remaining   = validImages.length - MAX_VISIBLE;
 
   return (
-    <section id="photos" className="scroll-mt-24">
+    <section id="photos" className="scroll-mt-32">
       {/* Header */}
       <div className="flex items-center gap-3 mb-4">
         <h2 className="text-lg font-bold text-gray-900">{t("sections.photos")}</h2>

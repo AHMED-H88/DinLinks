@@ -831,6 +831,11 @@
       "reviews": "Anmeldelser",
       "similar": "Lignende bedrifter"
     },
+    "nav": {
+      "overview": "Oversikt",
+      "services": "Tjenester / Produkter",
+      "ariaLabel": "Profilseksjoner"
+    },
     "about": {
       "empty": "Ingen beskrivelse lagt til ennå."
     },
