@@ -57,7 +57,7 @@ export default async function BranchesSection({ locations, locale }: BranchesSec
   };
 
   return (
-    <section id="branches" className="scroll-mt-24">
+    <section id="locations" className="scroll-mt-32">
       <div className="flex items-center gap-3 mb-5">
         <h2 className="text-lg font-bold text-gray-900">
           {t("locations.heading")} ({locations.length})

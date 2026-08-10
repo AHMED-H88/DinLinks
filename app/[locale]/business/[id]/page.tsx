@@ -12,6 +12,7 @@ import ReviewForm from "@/components/ReviewForm";
 import BranchesSection from "@/components/BranchesSection";
 import ProfileGallery from "@/components/ProfileGallery";
 import ProfileShareButton from "@/components/ProfileShareButton";
+import ProfileNav, { type ProfileNavItem } from "@/components/ProfileNav";
 import type { ServiceItem } from "@/components/BusinessForm";
 import type { Branch } from "@/components/BranchManager";
 import { getTranslations } from "next-intl/server";
@@ -169,6 +170,17 @@ export default async function BusinessProfilePage({
   const openNow       = hasHours ? isOpenNow(openingHours) : null;
   const profileUrl    = `${SITE_URL}/${locale}/business/${id}`;
 
+  // Section navigation — only for sections that are actually rendered below.
+  // Order follows the approved Company Profile V2 sequence. History / Team /
+  // Why-choose-us are intentionally omitted until their sections are built.
+  const navItems: ProfileNavItem[] = [
+    { id: "overview", label: t("nav.overview") },
+    ...(services.length > 0        ? [{ id: "services",  label: t("nav.services") }]      : []),
+    ...(galleryImages.length > 0   ? [{ id: "photos",    label: t("sections.photos") }]   : []),
+    ...(displayLocations.length > 0 ? [{ id: "locations", label: t("sections.branches") }] : []),
+    { id: "reviews", label: t("sections.reviews") },
+  ];
+
   // ── JSON-LD ───────────────────────────────────────────────────────────────
   const openingHoursSpec = Object.entries(openingHours)
     .filter(([, h]: [string, any]) => !h?.closed)
@@ -225,7 +237,7 @@ export default async function BusinessProfilePage({
         {/* ══════════════════════════════════════════════════════════════════
             HERO — full-bleed cover with identity overlay at bottom
         ══════════════════════════════════════════════════════════════════ */}
-        <div className="relative w-full h-72 sm:h-80 md:h-[28rem] overflow-hidden bg-gray-900">
+        <div className="relative w-full h-64 sm:h-72 md:h-96 overflow-hidden bg-gray-900">
           {/* Cover image */}
           {business.coverImage ? (
             <Image
@@ -246,7 +258,7 @@ export default async function BusinessProfilePage({
           )}
 
           {/* Gradient veil — bottom-heavy so text is always legible */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-black/10" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent" />
 
           {/* ── Identity block — overlaid at the bottom of the cover ── */}
           <div className="absolute bottom-0 left-0 right-0 px-4 sm:px-6 lg:px-8 pb-6 pt-20">
@@ -429,6 +441,9 @@ export default async function BusinessProfilePage({
           </div>
         </div>
 
+        {/* ── Section navigation — sticky below the Header, mobile-scrollable ── */}
+        <ProfileNav items={navItems} ariaLabel={t("nav.ariaLabel")} />
+
         {/* ══════════════════════════════════════════════════════════════════
             MAIN — two-column layout: content (left) + sidebar (right)
         ══════════════════════════════════════════════════════════════════ */}
@@ -438,9 +453,9 @@ export default async function BusinessProfilePage({
             {/* ── Left: main content ──────────────────────────────────── */}
             <div className="flex-1 min-w-0 space-y-10">
 
-              {/* ── Om bedriften ──────────────────────────────────────── */}
-              <section id="about" className="scroll-mt-24">
-                <SectionHeading>{t("sections.about")}</SectionHeading>
+              {/* ── Oversikt (Overview) ───────────────────────────────── */}
+              <section id="overview" className="scroll-mt-32">
+                <SectionHeading>{t("nav.overview")}</SectionHeading>
                 {business.description ? (
                   <div className="text-gray-700 leading-relaxed text-[0.9375rem] space-y-3">
                     {business.description.split("\n").map((p, i) =>
@@ -454,22 +469,9 @@ export default async function BusinessProfilePage({
                 )}
               </section>
 
-              {/* ── Bilder ────────────────────────────────────────────── */}
-              {galleryImages.length > 0 && (
-                <ProfileGallery
-                  images={galleryImages}
-                  businessName={business.name ?? ""}
-                />
-              )}
-
-              {/* ── Filialer ──────────────────────────────────────────── */}
-              {displayLocations.length > 0 && (
-                <BranchesSection locations={displayLocations} locale={locale} />
-              )}
-
-              {/* ── Tjenester ─────────────────────────────────────────── */}
+              {/* ── Tjenester / Produkter (Services) ───────────────────── */}
               {services.length > 0 && (
-                <section id="services" className="scroll-mt-24">
+                <section id="services" className="scroll-mt-32">
                   <SectionHeading>{t("sections.services")}</SectionHeading>
                   <div className="grid sm:grid-cols-2 gap-3">
                     {services.map((svc) => (
@@ -494,8 +496,21 @@ export default async function BusinessProfilePage({
                 </section>
               )}
 
-              {/* ── Anmeldelser ───────────────────────────────────────── */}
-              <section id="reviews" className="scroll-mt-24">
+              {/* ── Bilder (Photos) ───────────────────────────────────── */}
+              {galleryImages.length > 0 && (
+                <ProfileGallery
+                  images={galleryImages}
+                  businessName={business.name ?? ""}
+                />
+              )}
+
+              {/* ── Lokasjoner (Locations) ────────────────────────────── */}
+              {displayLocations.length > 0 && (
+                <BranchesSection locations={displayLocations} locale={locale} />
+              )}
+
+              {/* ── Anmeldelser (Reviews) ─────────────────────────────── */}
+              <section id="reviews" className="scroll-mt-32">
                 <div className="flex items-start justify-between gap-4 mb-5">
                   <div>
                     <SectionHeading className="mb-0">
@@ -621,7 +636,7 @@ export default async function BusinessProfilePage({
             </div>{/* /main content */}
 
             {/* ── Right: sticky sidebar ───────────────────────────────── */}
-            <aside className="w-full lg:w-72 xl:w-80 flex-shrink-0 space-y-4 lg:sticky lg:top-24">
+            <aside className="w-full lg:w-72 xl:w-80 flex-shrink-0 space-y-4 lg:sticky lg:top-32">
 
               {/* ── Contact card ────────────────────────────────────── */}
               <div id="contact" className="scroll-mt-24 rounded-2xl border border-gray-200 bg-white shadow-subtle overflow-hidden">
