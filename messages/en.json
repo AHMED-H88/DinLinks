@@ -833,8 +833,14 @@
     },
     "nav": {
       "overview": "Overview",
+      "history": "History",
+      "whyChooseUs": "Why choose us",
+      "benefits": "Benefits",
       "services": "Services / Products",
       "ariaLabel": "Profile sections"
+    },
+    "history": {
+      "founded": "Founded {year}"
     },
     "about": {
       "empty": "No description provided yet."
