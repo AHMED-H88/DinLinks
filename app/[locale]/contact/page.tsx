@@ -38,8 +38,8 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-900 mb-1">{t("info.email")}</h3>
-                    <a href="mailto:support@dinlinks.no" className="text-primary-600 hover:text-primary-700 transition-colors">
-                      support@dinlinks.no
+                    <a href="mailto:hello@dinlinks.com" className="text-primary-600 hover:text-primary-700 transition-colors">
+                      hello@dinlinks.com
                     </a>
                   </div>
                 </div>
@@ -72,6 +72,20 @@ export default function ContactPage() {
                       {t("info.weekdays")}<br />
                       {t("info.weekend")}
                     </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <svg className="w-6 h-6 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 mb-1">{t("info.security")}</h3>
+                    <a href="mailto:security@dinlinks.com" className="text-primary-600 hover:text-primary-700 transition-colors">
+                      security@dinlinks.com
+                    </a>
                   </div>
                 </div>
               </div>

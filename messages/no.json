@@ -685,7 +685,8 @@
       "location": "Oslo, Norge",
       "hours": "Åpningstider",
       "weekdays": "Mandag – fredag: 09:00 – 17:00",
-      "weekend": "Lørdag – søndag: Stengt"
+      "weekend": "Lørdag – søndag: Stengt",
+      "security": "Sikkerhet"
     },
     "form": {
       "heading": "Send oss en melding",
