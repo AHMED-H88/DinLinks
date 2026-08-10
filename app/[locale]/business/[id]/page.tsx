@@ -240,7 +240,7 @@ export default async function BusinessProfilePage({
             <div
               className="absolute inset-0"
               style={{
-                background: "linear-gradient(135deg, #1E3A8A 0%, #2563EB 50%, #1d4ed8 100%)",
+                background: "linear-gradient(135deg, #1f2937 0%, #111827 100%)",
               }}
             />
           )}
@@ -264,7 +264,7 @@ export default async function BusinessProfilePage({
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <span className="text-xl font-bold text-primary-600 select-none">
+                    <span className="text-xl font-bold text-gray-700 select-none">
                       {(business.name ?? "?").slice(0, 2).toUpperCase()}
                     </span>
                   )}
@@ -349,7 +349,7 @@ export default async function BusinessProfilePage({
                   href={business.bookingLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary-600 text-white text-sm font-semibold hover:bg-primary-700 transition-colors shadow-soft flex-shrink-0"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-900 text-white text-sm font-semibold hover:bg-gray-800 transition-colors shadow-soft flex-shrink-0"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -484,7 +484,7 @@ export default async function BusinessProfilePage({
                           )}
                         </div>
                         {svc.price && (
-                          <span className="flex-shrink-0 text-sm font-semibold text-primary-700 bg-primary-50 border border-primary-100 px-3 py-1 rounded-lg">
+                          <span className="flex-shrink-0 text-sm font-semibold text-gray-900 bg-gray-100 border border-gray-200 px-3 py-1 rounded-lg">
                             {svc.price}
                           </span>
                         )}
@@ -531,7 +531,7 @@ export default async function BusinessProfilePage({
 
                 {!session?.user && (
                   <div className="mb-6 p-4 rounded-xl border border-gray-200 bg-white text-sm text-gray-500 shadow-subtle">
-                    <a href={`/${locale}/login`} className="font-semibold text-primary-600 hover:text-primary-700">
+                    <a href={`/${locale}/login`} className="font-semibold text-gray-900 underline underline-offset-2 hover:text-gray-700">
                       {t("reviews.signIn")}
                     </a>{" "}
                     {t("reviews.signInToReview")}
@@ -567,10 +567,10 @@ export default async function BusinessProfilePage({
                         <Link
                           key={sb.id}
                           href={`/${locale}/business/${sb.id}`}
-                          className="group flex flex-col rounded-2xl border border-gray-200 bg-white shadow-subtle hover:border-primary-200 hover:shadow-soft transition-all duration-200 overflow-hidden"
+                          className="group flex flex-col rounded-2xl border border-gray-200 bg-white shadow-subtle hover:border-gray-300 hover:shadow-soft transition-all duration-200 overflow-hidden"
                         >
                           {/* Mini cover */}
-                          <div className="relative h-28 bg-gradient-to-br from-primary-50 to-primary-100 overflow-hidden">
+                          <div className="relative h-28 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
                             {sb.coverImage ? (
                               <Image
                                 src={sb.coverImage}
@@ -579,14 +579,14 @@ export default async function BusinessProfilePage({
                                 className="object-cover group-hover:scale-105 transition-transform duration-300"
                               />
                             ) : (
-                              <div className="absolute inset-0 bg-gradient-to-br from-primary-100 to-primary-200" />
+                              <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200" />
                             )}
                             {/* Logo badge */}
                             <div className="absolute bottom-2 left-3 w-9 h-9 rounded-xl border-2 border-white bg-white shadow-subtle overflow-hidden flex items-center justify-center">
                               {sb.logo ? (
                                 <Image src={sb.logo} alt={sb.name ?? ""} width={36} height={36} className="object-cover w-full h-full" />
                               ) : (
-                                <span className="text-xs font-bold text-primary-600">
+                                <span className="text-xs font-bold text-gray-700">
                                   {(sb.name ?? "?").slice(0, 2).toUpperCase()}
                                 </span>
                               )}
@@ -594,7 +594,7 @@ export default async function BusinessProfilePage({
                           </div>
 
                           <div className="p-3.5 flex-1">
-                            <p className="font-semibold text-gray-900 text-sm group-hover:text-primary-700 transition-colors leading-snug mb-1">
+                            <p className="font-semibold text-gray-900 text-sm group-hover:text-gray-700 transition-colors leading-snug mb-1">
                               {sb.name}
                             </p>
                             <div className="flex items-center gap-2 flex-wrap">
@@ -671,7 +671,7 @@ export default async function BusinessProfilePage({
                         href={business.bookingLink}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="block w-full text-center px-4 py-2.5 rounded-xl bg-primary-600 text-white text-sm font-semibold hover:bg-primary-700 transition-colors"
+                        className="block w-full text-center px-4 py-2.5 rounded-xl bg-gray-900 text-white text-sm font-semibold hover:bg-gray-800 transition-colors"
                       >
                         {t("actions.bookNow")}
                       </a>
@@ -745,15 +745,15 @@ export default async function BusinessProfilePage({
                     rel="noopener noreferrer"
                     className="flex items-start gap-3 px-4 py-4 hover:bg-gray-50/60 transition-colors group"
                   >
-                    <div className="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <svg className="w-4 h-4 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <svg className="w-4 h-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75}
                           d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
                       </svg>
                     </div>
                     <div className="flex-1 min-w-0">
                       {business.address && (
-                        <p className="text-sm font-semibold text-gray-900 group-hover:text-primary-700 transition-colors">
+                        <p className="text-sm font-semibold text-gray-900 group-hover:text-gray-700 transition-colors">
                           {business.address}
                         </p>
                       )}
@@ -762,7 +762,7 @@ export default async function BusinessProfilePage({
                           {[business.postalCode, business.city].filter(Boolean).join(" ")}
                         </p>
                       )}
-                      <span className="inline-flex items-center gap-1 mt-2 text-xs font-medium text-primary-600">
+                      <span className="inline-flex items-center gap-1 mt-2 text-xs font-medium text-gray-700">
                         {t("sidebar.openInMaps")}
                         <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
@@ -882,14 +882,14 @@ function ContactRow({
       {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
       className="flex items-center gap-3 px-4 py-3.5 hover:bg-gray-50/60 transition-colors group"
     >
-      <div className="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center flex-shrink-0">
-        <svg className="w-4 h-4 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
+        <svg className="w-4 h-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           {icon}
         </svg>
       </div>
       <div className="min-w-0 flex-1">
         <p className="text-[11px] text-gray-400 font-medium">{label}</p>
-        <p className={`text-sm font-semibold text-gray-900 group-hover:text-primary-700 transition-colors ${truncate ? "truncate" : ""}`}>
+        <p className={`text-sm font-semibold text-gray-900 group-hover:text-gray-700 transition-colors ${truncate ? "truncate" : ""}`}>
           {value}
         </p>
       </div>
