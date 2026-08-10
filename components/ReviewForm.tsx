@@ -137,7 +137,7 @@ export default function ReviewForm({ businessId }: ReviewFormProps) {
       <button
         type="submit"
         disabled={loading}
-        className="btn btn-primary w-full disabled:opacity-50"
+        className="btn w-full bg-gray-900 text-white hover:bg-gray-800 disabled:opacity-50"
       >
         {loading ? (
           <span className="flex items-center gap-2">

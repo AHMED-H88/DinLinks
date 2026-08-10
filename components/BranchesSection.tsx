@@ -70,7 +70,7 @@ export default async function BranchesSection({ locations, locale }: BranchesSec
             key={branch.key}
             className={`rounded-2xl border p-5 ${
               branch.isMain
-                ? "border-primary-200 bg-primary-50/40"
+                ? "border-gray-300 bg-white"
                 : "border-gray-100 bg-gray-50"
             }`}
           >
@@ -79,7 +79,7 @@ export default async function BranchesSection({ locations, locale }: BranchesSec
                 {branch.name}
               </h3>
               {branch.isMain && (
-                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary-700 bg-primary-100 px-2 py-0.5 rounded-full flex-shrink-0">
+                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-white bg-gray-900 px-2 py-0.5 rounded-full flex-shrink-0">
                   <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none">
                     <path d="M10 3L5 8.5 2 5.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
@@ -100,10 +100,10 @@ export default async function BranchesSection({ locations, locale }: BranchesSec
                   }
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-start gap-2 text-xs text-gray-600 hover:text-primary-700 transition-colors group"
+                  className="flex items-start gap-2 text-xs text-gray-600 hover:text-gray-900 transition-colors group"
                 >
                   <svg
-                    className="w-3.5 h-3.5 text-gray-400 group-hover:text-primary-600 flex-shrink-0 mt-0.5"
+                    className="w-3.5 h-3.5 text-gray-400 group-hover:text-gray-700 flex-shrink-0 mt-0.5"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -125,7 +125,7 @@ export default async function BranchesSection({ locations, locale }: BranchesSec
               {branch.phone && (
                 <a
                   href={`tel:${branch.phone}`}
-                  className="flex items-center gap-2 text-xs text-gray-600 hover:text-primary-700 transition-colors"
+                  className="flex items-center gap-2 text-xs text-gray-600 hover:text-gray-900 transition-colors"
                 >
                   <svg className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -138,7 +138,7 @@ export default async function BranchesSection({ locations, locale }: BranchesSec
               {branch.email && (
                 <a
                   href={`mailto:${branch.email}`}
-                  className="flex items-center gap-2 text-xs text-gray-600 hover:text-primary-700 transition-colors"
+                  className="flex items-center gap-2 text-xs text-gray-600 hover:text-gray-900 transition-colors"
                 >
                   <svg className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}

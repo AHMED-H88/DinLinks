@@ -39,7 +39,7 @@ export default function FavoriteButton({ businessId, initialIsFavorite }: Favori
     <button
       onClick={toggleFavorite}
       disabled={loading}
-      className={`btn btn-sm ${isFavorite ? "btn-primary" : "btn-outline"} min-w-[120px]`}
+      className={`btn btn-sm ${isFavorite ? "bg-gray-900 text-white hover:bg-gray-800" : "btn-outline"} min-w-[120px]`}
     >
       {isFavorite ? `❤️ ${t("saved")}` : `🤍 ${t("save")}`}
     </button>
