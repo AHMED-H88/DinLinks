@@ -108,6 +108,8 @@ export default async function BusinessProfilePage({
   const { id, locale } = await params;
   const t = await getTranslations({ locale, namespace: "profile" });
   const tCat = await getTranslations({ locale, namespace: "categories" });
+  // Reused for the Why-choose-us highlight labels (same source the owner form edits).
+  const tForm = await getTranslations({ locale, namespace: "businessForm" });
 
   const DAY_LABELS: Record<string, string> = {
     monday:    t("days.monday"),
@@ -170,13 +172,26 @@ export default async function BusinessProfilePage({
   const openNow       = hasHours ? isOpenNow(openingHours) : null;
   const profileUrl    = `${SITE_URL}/${locale}/business/${id}`;
 
+  // History — companyStory (long text) + foundedYear. Section renders only when
+  // at least one is present. Both are owner-editable in the dashboard form.
+  const historyText    = business.companyStory?.trim() || "";
+  const foundedYear    = business.foundedYear ?? null;
+  const hasHistory     = historyText.length > 0 || foundedYear != null;
+
+  // Why choose us — the owner's selected highlight codes (fixed, editable list).
+  // Labels reuse the businessForm.highlight.* namespace; no fabricated claims.
+  const highlightCodes = business.highlightCodes ?? [];
+  const hasWhyChooseUs = highlightCodes.length > 0;
+
   // Section navigation — only for sections that are actually rendered below.
-  // Order follows the approved Company Profile V2 sequence. History / Team /
-  // Why-choose-us are intentionally omitted until their sections are built.
+  // Order follows the approved Company Profile V2 sequence. Team is intentionally
+  // omitted until its section is built (no honest data source yet).
   const navItems: ProfileNavItem[] = [
     { id: "overview", label: t("nav.overview") },
-    ...(services.length > 0        ? [{ id: "services",  label: t("nav.services") }]      : []),
-    ...(galleryImages.length > 0   ? [{ id: "photos",    label: t("sections.photos") }]   : []),
+    ...(hasHistory                  ? [{ id: "history",       label: t("nav.history") }]     : []),
+    ...(hasWhyChooseUs              ? [{ id: "why-choose-us", label: t("nav.benefits") }]     : []),
+    ...(services.length > 0         ? [{ id: "services",  label: t("nav.services") }]      : []),
+    ...(galleryImages.length > 0    ? [{ id: "photos",    label: t("sections.photos") }]   : []),
     ...(displayLocations.length > 0 ? [{ id: "locations", label: t("sections.branches") }] : []),
     { id: "reviews", label: t("sections.reviews") },
   ];
@@ -468,6 +483,39 @@ export default async function BusinessProfilePage({
                   </EmptyState>
                 )}
               </section>
+
+              {/* ── Historie (History) ────────────────────────────────── */}
+              {hasHistory && (
+                <section id="history" className="scroll-mt-32">
+                  <SectionHeading>{t("nav.history")}</SectionHeading>
+                  {foundedYear != null && (
+                    <p className="text-sm text-gray-500 mb-3">
+                      {t("history.founded", { year: foundedYear })}
+                    </p>
+                  )}
+                  {historyText && (
+                    <div className="text-gray-700 leading-relaxed text-[0.9375rem] space-y-3">
+                      {historyText.split("\n").map((p, i) =>
+                        p.trim() ? <p key={i}>{p}</p> : null
+                      )}
+                    </div>
+                  )}
+                </section>
+              )}
+
+              {/* ── Hvorfor velge oss (Why choose us) ──────────────────── */}
+              {hasWhyChooseUs && (
+                <section id="why-choose-us" className="scroll-mt-32">
+                  <SectionHeading>{t("nav.whyChooseUs")}</SectionHeading>
+                  <div className="grid grid-cols-2 gap-x-6 gap-y-2">
+                    {highlightCodes.map((code) => (
+                      <div key={code} className="text-[0.9375rem] text-gray-700">
+                        {tForm(`highlight.${code}` as any)}
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              )}
 
               {/* ── Tjenester / Produkter (Services) ───────────────────── */}
               {services.length > 0 && (

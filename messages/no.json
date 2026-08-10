@@ -833,8 +833,14 @@
     },
     "nav": {
       "overview": "Oversikt",
+      "history": "Historie",
+      "whyChooseUs": "Hvorfor velge oss",
+      "benefits": "Fordeler",
       "services": "Tjenester / Produkter",
       "ariaLabel": "Profilseksjoner"
+    },
+    "history": {
+      "founded": "Grunnlagt {year}"
     },
     "about": {
       "empty": "Ingen beskrivelse lagt til ennå."
