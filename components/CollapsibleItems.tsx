@@ -36,9 +36,16 @@ export default function CollapsibleItems({
           type="button"
           onClick={() => setExpanded((v) => !v)}
           aria-expanded={expanded}
-          className="mt-3 text-sm font-medium text-gray-900 underline underline-offset-2 hover:text-gray-600"
+          className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors"
         >
-          {expanded ? lessLabel : moreLabel}
+          {expanded ? (
+            lessLabel
+          ) : (
+            <>
+              {moreLabel}
+              <span aria-hidden="true">→</span>
+            </>
+          )}
         </button>
       )}
     </div>

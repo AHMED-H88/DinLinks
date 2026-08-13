@@ -28,9 +28,16 @@ export default function CollapsibleReveal({
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
-        className="mt-4 text-sm font-medium text-gray-900 underline underline-offset-2 hover:text-gray-600"
+        className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors"
       >
-        {open ? lessLabel : moreLabel}
+        {open ? (
+          lessLabel
+        ) : (
+          <>
+            {moreLabel}
+            <span aria-hidden="true">→</span>
+          </>
+        )}
       </button>
     </div>
   );
