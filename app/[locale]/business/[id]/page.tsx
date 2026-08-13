@@ -13,6 +13,9 @@ import BranchesSection from "@/components/BranchesSection";
 import ProfileGallery from "@/components/ProfileGallery";
 import ProfileShareButton from "@/components/ProfileShareButton";
 import ProfileNav, { type ProfileNavItem } from "@/components/ProfileNav";
+import ExpandableText from "@/components/ExpandableText";
+import CollapsibleItems from "@/components/CollapsibleItems";
+import CollapsibleReveal from "@/components/CollapsibleReveal";
 import type { ServiceItem } from "@/components/BusinessForm";
 import type { Branch } from "@/components/BranchManager";
 import { getTranslations } from "next-intl/server";
@@ -195,6 +198,21 @@ export default async function BusinessProfilePage({
     ...(displayLocations.length > 0 ? [{ id: "locations", label: t("sections.branches") }] : []),
     { id: "reviews", label: t("sections.reviews") },
   ];
+
+  // Localized labels for the progressive-disclosure controls (passed to the
+  // client components so they stay presentation-only).
+  const dsc = {
+    readMore:     t("disclosure.readMore"),
+    showLess:     t("disclosure.showLess"),
+    viewAll:      t("disclosure.viewAll"),
+    details:      t("disclosure.details"),
+    seeAllReviews: t("disclosure.seeAllReviews"),
+  };
+
+  // Reviews: show a small preview by default, reveal the rest on demand.
+  const REVIEW_PREVIEW = 2;
+  const previewReviews = business.reviews.slice(0, REVIEW_PREVIEW);
+  const extraReviews   = business.reviews.slice(REVIEW_PREVIEW);
 
   // ── JSON-LD ───────────────────────────────────────────────────────────────
   const openingHoursSpec = Object.entries(openingHours)
@@ -472,11 +490,12 @@ export default async function BusinessProfilePage({
               <section id="overview" className="scroll-mt-32">
                 <SectionHeading>{t("nav.overview")}</SectionHeading>
                 {business.description ? (
-                  <div className="text-gray-700 leading-relaxed text-[0.9375rem] space-y-3">
-                    {business.description.split("\n").map((p, i) =>
-                      p.trim() ? <p key={i}>{p}</p> : null
-                    )}
-                  </div>
+                  <ExpandableText
+                    text={business.description}
+                    clampClass="line-clamp-4"
+                    moreLabel={dsc.readMore}
+                    lessLabel={dsc.showLess}
+                  />
                 ) : (
                   <EmptyState>
                     {t("about.empty")}
@@ -494,11 +513,12 @@ export default async function BusinessProfilePage({
                     </p>
                   )}
                   {historyText && (
-                    <div className="text-gray-700 leading-relaxed text-[0.9375rem] space-y-3">
-                      {historyText.split("\n").map((p, i) =>
-                        p.trim() ? <p key={i}>{p}</p> : null
-                      )}
-                    </div>
+                    <ExpandableText
+                      text={historyText}
+                      clampClass="line-clamp-3"
+                      moreLabel={dsc.readMore}
+                      lessLabel={dsc.showLess}
+                    />
                   )}
                 </section>
               )}
@@ -507,13 +527,18 @@ export default async function BusinessProfilePage({
               {hasWhyChooseUs && (
                 <section id="why-choose-us" className="scroll-mt-32">
                   <SectionHeading>{t("nav.whyChooseUs")}</SectionHeading>
-                  <div className="grid grid-cols-2 gap-x-6 gap-y-2">
+                  <CollapsibleItems
+                    initialCount={4}
+                    moreLabel={dsc.viewAll}
+                    lessLabel={dsc.showLess}
+                    containerClassName="grid grid-cols-2 gap-x-6 gap-y-2"
+                  >
                     {highlightCodes.map((code) => (
                       <div key={code} className="text-[0.9375rem] text-gray-700">
                         {tForm(`highlight.${code}` as any)}
                       </div>
                     ))}
-                  </div>
+                  </CollapsibleItems>
                 </section>
               )}
 
@@ -521,7 +546,12 @@ export default async function BusinessProfilePage({
               {services.length > 0 && (
                 <section id="services" className="scroll-mt-32">
                   <SectionHeading>{t("sections.services")}</SectionHeading>
-                  <div className="grid sm:grid-cols-2 gap-3">
+                  <CollapsibleItems
+                    initialCount={4}
+                    moreLabel={dsc.viewAll}
+                    lessLabel={dsc.showLess}
+                    containerClassName="grid sm:grid-cols-2 gap-3"
+                  >
                     {services.map((svc) => (
                       <div
                         key={svc.id}
@@ -530,7 +560,13 @@ export default async function BusinessProfilePage({
                         <div className="flex-1 min-w-0">
                           <p className="font-semibold text-gray-900 text-sm">{svc.name}</p>
                           {svc.description && (
-                            <p className="text-xs text-gray-500 mt-1 leading-relaxed">{svc.description}</p>
+                            <ExpandableText
+                              text={svc.description}
+                              clampClass="line-clamp-2"
+                              moreLabel={dsc.details}
+                              lessLabel={dsc.showLess}
+                              textClassName="text-xs text-gray-500 leading-relaxed mt-1"
+                            />
                           )}
                         </div>
                         {svc.price && (
@@ -540,7 +576,7 @@ export default async function BusinessProfilePage({
                         )}
                       </div>
                     ))}
-                  </div>
+                  </CollapsibleItems>
                 </section>
               )}
 
@@ -615,7 +651,17 @@ export default async function BusinessProfilePage({
                     </p>
                   </div>
                 ) : (
-                  <ReviewList reviews={business.reviews} locale={locale} />
+                  <>
+                    <ReviewList reviews={previewReviews} locale={locale} />
+                    {extraReviews.length > 0 && (
+                      <CollapsibleReveal
+                        moreLabel={`${dsc.seeAllReviews} (${business.reviews.length})`}
+                        lessLabel={dsc.showLess}
+                      >
+                        <ReviewList reviews={extraReviews} locale={locale} />
+                      </CollapsibleReveal>
+                    )}
+                  </>
                 )}
               </section>
 

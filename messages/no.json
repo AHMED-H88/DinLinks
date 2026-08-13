@@ -842,6 +842,13 @@
     "history": {
       "founded": "Grunnlagt {year}"
     },
+    "disclosure": {
+      "readMore": "Les mer",
+      "showLess": "Vis mindre",
+      "viewAll": "Vis alle",
+      "details": "Detaljer",
+      "seeAllReviews": "Se alle anmeldelser"
+    },
     "about": {
       "empty": "Ingen beskrivelse lagt til ennå."
     },
