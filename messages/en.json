@@ -842,6 +842,13 @@
     "history": {
       "founded": "Founded {year}"
     },
+    "disclosure": {
+      "readMore": "Read more",
+      "showLess": "Show less",
+      "viewAll": "View all",
+      "details": "Details",
+      "seeAllReviews": "See all reviews"
+    },
     "about": {
       "empty": "No description provided yet."
     },
