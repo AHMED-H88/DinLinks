@@ -276,7 +276,43 @@
     "photos": "Photos",
     "approved": "✓ Approved",
     "pending": "⏳ Pending",
-    "rejected": "✕ Rejected"
+    "rejected": "✕ Rejected",
+    "nav": {
+      "overview": "Overview",
+      "businessProfile": "Business profile",
+      "reviews": "Reviews",
+      "locations": "Locations",
+      "settings": "Settings",
+      "help": "Help & support",
+      "menuLabel": "Dashboard menu"
+    },
+    "status": {
+      "published": "Profile published",
+      "inReview": "In review",
+      "notPublished": "Not published"
+    },
+    "overview": {
+      "welcome": "Welcome back, {name}",
+      "needBusinessTitle": "Create your business profile",
+      "needBusinessBody": "You need to create a business profile before you can use this page."
+    },
+    "reviewsPage": {
+      "subtitle": "See what customers say about your business",
+      "empty": "No reviews yet"
+    },
+    "locationsPage": {
+      "subtitle": "Manage your business locations",
+      "primaryNote": "Your main business address also counts as a location on your public profile — {count, plural, one {# location} other {# locations}} in total."
+    },
+    "settingsPage": {
+      "subtitle": "Manage your account, security and subscription",
+      "accountSecurity": "Account & security",
+      "email": "Email",
+      "securityUnavailable": "Changing password, email and two-factor authentication are not available yet.",
+      "planBilling": "Plan & billing",
+      "peopleAccess": "People & access",
+      "peopleAccessPlanned": "Planned for a future update."
+    }
   },
   "admin": {
     "title": "Business management",
@@ -410,8 +446,8 @@
       "serviceName": "Service name",
       "price": "Price",
       "companyStory": "Company story",
-      "identitySummaryNo": "Short introduction (Norwegian)",
-      "identitySummaryEn": "Short introduction (English)",
+      "identitySummaryNo": "Short business description (Norwegian)",
+      "identitySummaryEn": "Short business description (English)",
       "foundedYear": "Founded year",
       "employeeCount": "Number of employees",
       "companySize": "Company size",
@@ -457,7 +493,7 @@
       "openingHours": "Set your weekly schedule. Toggle 'Closed' for days you're not open.",
       "services": "List what you offer. Customers will see these on your profile.",
       "companyStory": "This is separate from the short description above.",
-      "identitySummary": "One short, factual sentence explaining what the business is. Not a slogan.",
+      "identitySummary": "Appears below the business name on your public profile. Keep it short and factual.",
       "organizationNumber": "9 digits. Spaces are removed automatically.",
       "highlightCodes": "Short badges shown on your profile."
     },

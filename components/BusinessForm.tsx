@@ -541,31 +541,8 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
               />
               <p className="text-xs text-gray-400 mt-1">{description.length} / 1000</p>
             </div>
-          </div>
-        </section>
 
-        {/* ── Company information (Step A1) ─────────────────────────── */}
-        <section>
-          <SectionHeading
-            id="company"
-            title={t("sections.company")}
-            subtitle={t("subtitles.company")}
-          />
-          <div className="space-y-5">
-            {/* Company story */}
-            <div>
-              <FieldLabel>{t("labels.companyStory")}</FieldLabel>
-              <textarea
-                value={companyStory}
-                onChange={(e) => setCompanyStory(e.target.value)}
-                className="input min-h-[120px] resize-y"
-                rows={5}
-                placeholder={t("placeholders.companyStory")}
-              />
-              <p className="text-xs text-gray-400 mt-1">{t("hints.companyStory")}</p>
-            </div>
-
-            {/* Business identity summary (NO / EN) — short factual statement */}
+            {/* Short business description (NO / EN) — appears below the business name on the public profile */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
                 <FieldLabel>{t("labels.identitySummaryNo")}</FieldLabel>
@@ -595,6 +572,29 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
                   {t("hints.identitySummary")} · {identitySummaryEn.trim().length}/{IDENTITY_SUMMARY_MAX}
                 </p>
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Company information (Step A1) ─────────────────────────── */}
+        <section>
+          <SectionHeading
+            id="company"
+            title={t("sections.company")}
+            subtitle={t("subtitles.company")}
+          />
+          <div className="space-y-5">
+            {/* Company story */}
+            <div>
+              <FieldLabel>{t("labels.companyStory")}</FieldLabel>
+              <textarea
+                value={companyStory}
+                onChange={(e) => setCompanyStory(e.target.value)}
+                className="input min-h-[120px] resize-y"
+                rows={5}
+                placeholder={t("placeholders.companyStory")}
+              />
+              <p className="text-xs text-gray-400 mt-1">{t("hints.companyStory")}</p>
             </div>
 
             {/* Founded year + employee count */}

@@ -276,7 +276,43 @@
     "photos": "Bilder",
     "approved": "✓ Godkjent",
     "pending": "⏳ Venter",
-    "rejected": "✕ Avvist"
+    "rejected": "✕ Avvist",
+    "nav": {
+      "overview": "Oversikt",
+      "businessProfile": "Bedriftsprofil",
+      "reviews": "Anmeldelser",
+      "locations": "Lokasjoner",
+      "settings": "Innstillinger",
+      "help": "Hjelp og støtte",
+      "menuLabel": "Dashbordmeny"
+    },
+    "status": {
+      "published": "Profil publisert",
+      "inReview": "Til gjennomgang",
+      "notPublished": "Ikke publisert"
+    },
+    "overview": {
+      "welcome": "Velkommen tilbake, {name}",
+      "needBusinessTitle": "Opprett bedriftsprofilen din",
+      "needBusinessBody": "Du må opprette en bedriftsprofil før du kan bruke denne siden."
+    },
+    "reviewsPage": {
+      "subtitle": "Se hva kunder sier om bedriften",
+      "empty": "Ingen anmeldelser ennå"
+    },
+    "locationsPage": {
+      "subtitle": "Administrer bedriftens lokasjoner",
+      "primaryNote": "Hovedadressen din teller også som en lokasjon på den offentlige profilen — totalt {count, plural, one {# lokasjon} other {# lokasjoner}}."
+    },
+    "settingsPage": {
+      "subtitle": "Administrer konto, sikkerhet og abonnement",
+      "accountSecurity": "Konto og sikkerhet",
+      "email": "E-post",
+      "securityUnavailable": "Endring av passord, e-post og totrinnsbekreftelse er ikke tilgjengelig ennå.",
+      "planBilling": "Abonnement og betaling",
+      "peopleAccess": "Personer og tilgang",
+      "peopleAccessPlanned": "Planlagt i en senere oppdatering."
+    }
   },
   "admin": {
     "title": "Bedriftsadministrasjon",
@@ -410,8 +446,8 @@
       "serviceName": "Tjenestenavn",
       "price": "Pris",
       "companyStory": "Bedriftshistorie",
-      "identitySummaryNo": "Kort presentasjon (norsk)",
-      "identitySummaryEn": "Kort presentasjon (engelsk)",
+      "identitySummaryNo": "Kort bedriftsbeskrivelse (norsk)",
+      "identitySummaryEn": "Kort bedriftsbeskrivelse (engelsk)",
       "foundedYear": "Etableringsår",
       "employeeCount": "Antall ansatte",
       "companySize": "Bedriftsstørrelse",
@@ -457,7 +493,7 @@
       "openingHours": "Sett ukeplanen din. Bruk «Stengt» for dager du ikke holder åpent.",
       "services": "List opp hva du tilbyr. Kundene ser disse på profilen din.",
       "companyStory": "Dette er atskilt fra den korte beskrivelsen ovenfor.",
-      "identitySummary": "En kort, faktabasert setning som forklarer hva bedriften er. Ikke en slogan.",
+      "identitySummary": "Vises under bedriftsnavnet på den offentlige profilen. Hold den kort og faktabasert.",
       "organizationNumber": "9 siffer. Mellomrom fjernes automatisk.",
       "highlightCodes": "Korte merker som vises på profilen din."
     },
