@@ -8,6 +8,7 @@ import {
   COMPANY_SIZES,
   SERVICE_MODES,
   HIGHLIGHT_CODES,
+  IDENTITY_SUMMARY_MAX,
 } from "@/lib/business-fields";
 import { topLevelOrder, subOrder } from "@/lib/taxonomy-v1";
 
@@ -44,6 +45,8 @@ interface Business {
   status: "PENDING" | "APPROVED" | "REJECTED";
   // Step A1 — company information
   companyStory?: string | null;
+  identitySummaryNo?: string | null;
+  identitySummaryEn?: string | null;
   foundedYear?: number | null;
   companySize?: string | null;
   employeeCount?: number | null;
@@ -221,6 +224,8 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
 
   // ── Step A1 — company information state (all optional) ────────────────────────
   const [companyStory,       setCompanyStory]       = useState(business?.companyStory ?? "");
+  const [identitySummaryNo,  setIdentitySummaryNo]  = useState(business?.identitySummaryNo ?? "");
+  const [identitySummaryEn,  setIdentitySummaryEn]  = useState(business?.identitySummaryEn ?? "");
   const [foundedYear,        setFoundedYear]        = useState(business?.foundedYear != null ? String(business.foundedYear) : "");
   const [companySize,        setCompanySize]        = useState(business?.companySize ?? "");
   const [employeeCount,      setEmployeeCount]      = useState(business?.employeeCount != null ? String(business.employeeCount) : "");
@@ -383,6 +388,8 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
         openingHours,
         // Step A1 — company information (optional; server validates + normalises)
         companyStory:       companyStory.trim() || null,
+        identitySummaryNo:  identitySummaryNo.trim() || null,
+        identitySummaryEn:  identitySummaryEn.trim() || null,
         foundedYear:        foundedYear.trim()   === "" ? null : Number(foundedYear),
         companySize:        companySize || null,
         employeeCount:      employeeCount.trim() === "" ? null : Number(employeeCount),
@@ -556,6 +563,38 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
                 placeholder={t("placeholders.companyStory")}
               />
               <p className="text-xs text-gray-400 mt-1">{t("hints.companyStory")}</p>
+            </div>
+
+            {/* Business identity summary (NO / EN) — short factual statement */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div>
+                <FieldLabel>{t("labels.identitySummaryNo")}</FieldLabel>
+                <textarea
+                  value={identitySummaryNo}
+                  onChange={(e) => setIdentitySummaryNo(e.target.value)}
+                  className="input min-h-[72px] resize-y"
+                  rows={2}
+                  maxLength={IDENTITY_SUMMARY_MAX}
+                  placeholder={t("placeholders.identitySummaryNo")}
+                />
+                <p className="text-xs text-gray-400 mt-1">
+                  {t("hints.identitySummary")} · {identitySummaryNo.trim().length}/{IDENTITY_SUMMARY_MAX}
+                </p>
+              </div>
+              <div>
+                <FieldLabel>{t("labels.identitySummaryEn")}</FieldLabel>
+                <textarea
+                  value={identitySummaryEn}
+                  onChange={(e) => setIdentitySummaryEn(e.target.value)}
+                  className="input min-h-[72px] resize-y"
+                  rows={2}
+                  maxLength={IDENTITY_SUMMARY_MAX}
+                  placeholder={t("placeholders.identitySummaryEn")}
+                />
+                <p className="text-xs text-gray-400 mt-1">
+                  {t("hints.identitySummary")} · {identitySummaryEn.trim().length}/{IDENTITY_SUMMARY_MAX}
+                </p>
+              </div>
             </div>
 
             {/* Founded year + employee count */}

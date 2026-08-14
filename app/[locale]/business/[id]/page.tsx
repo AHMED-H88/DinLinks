@@ -175,6 +175,11 @@ export default async function BusinessProfilePage({
   const openNow       = hasHours ? isOpenNow(openingHours) : null;
   const profileUrl    = `${SITE_URL}/${locale}/business/${id}`;
 
+  // Identity summary — short factual statement shown in the hero, in the
+  // page's language. Falls back to nothing (no empty gap) when absent.
+  const identitySummary =
+    (isNo ? business.identitySummaryNo : business.identitySummaryEn)?.trim() || null;
+
   // History — companyStory (long text) + foundedYear. Section renders only when
   // at least one is present. Both are owner-editable in the dashboard form.
   const historyText    = business.companyStory?.trim() || "";
@@ -334,6 +339,13 @@ export default async function BusinessProfilePage({
                       </span>
                     )}
                   </div>
+
+                  {/* Identity summary — factual, below the name, above metadata */}
+                  {identitySummary && (
+                    <p className="text-sm sm:text-base text-white/90 leading-snug mb-2 max-w-2xl line-clamp-2 drop-shadow">
+                      {identitySummary}
+                    </p>
+                  )}
 
                   {/* Meta row */}
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1">

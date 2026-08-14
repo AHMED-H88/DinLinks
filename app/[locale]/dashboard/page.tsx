@@ -186,6 +186,8 @@ export default async function DashboardPage({
                         openingHours: business.openingHours,
                         status:       business.status,
                         companyStory:       business.companyStory,
+                        identitySummaryNo:  business.identitySummaryNo,
+                        identitySummaryEn:  business.identitySummaryEn,
                         foundedYear:        business.foundedYear,
                         companySize:        business.companySize,
                         employeeCount:      business.employeeCount,

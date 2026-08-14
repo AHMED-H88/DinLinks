@@ -89,6 +89,12 @@ model Business {
   organizationType   String?
   highlightCodes     String[]     @default([])
 
+  // ── Business identity summary — short factual statement shown in the hero ──
+  // Localized (NO/EN), optional, backward-compatible. Not a slogan, marketing
+  // copy, companyStory, or a category label.
+  identitySummaryNo String?
+  identitySummaryEn String?
+
   address    String?
   latitude   Float?
   longitude  Float?

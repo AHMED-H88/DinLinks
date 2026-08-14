@@ -38,6 +38,9 @@ export type HighlightCode = (typeof HIGHLIGHT_CODES)[number];
 
 const FOUNDED_YEAR_MIN = 1800;
 
+/** Application-level max length for the short business identity summary. */
+export const IDENTITY_SUMMARY_MAX = 180;
+
 // ── Result helper ─────────────────────────────────────────────────────────────
 
 export type FieldError = { field: string; message: string };
@@ -78,6 +81,24 @@ export function validateBusinessExtras(
     if (v === null || v === "") data.companyStory = null;
     else if (typeof v === "string") data.companyStory = v.trim() || null;
     else errors.push({ field: "companyStory", message: "invalidType" });
+  }
+
+  // identitySummaryNo / identitySummaryEn — optional short factual statement.
+  // Trimmed; empty stored as null; capped at IDENTITY_SUMMARY_MAX characters.
+  for (const key of ["identitySummaryNo", "identitySummaryEn"] as const) {
+    if (!has(key)) continue;
+    const v = body[key];
+    if (v === null || v === "") {
+      data[key] = null;
+    } else if (typeof v === "string") {
+      const trimmed = v.trim();
+      if (trimmed.length === 0) data[key] = null;
+      else if (trimmed.length > IDENTITY_SUMMARY_MAX) {
+        errors.push({ field: key, message: "identitySummaryTooLong" });
+      } else data[key] = trimmed;
+    } else {
+      errors.push({ field: key, message: "invalidType" });
+    }
   }
 
   // legalName — optional string
