@@ -39,26 +39,24 @@ export default async function DashboardReviewsPage({
         <p className="text-sm text-gray-500 mt-0.5">{t("reviewsPage.subtitle")}</p>
       </div>
 
-      <div className="rounded-2xl border border-gray-200 bg-white p-5 sm:p-6">
-        {reviews.length === 0 ? (
-          <p className="text-sm text-gray-500 py-6 text-center">{t("reviewsPage.empty")}</p>
-        ) : (
-          <>
-            <div className="flex items-center gap-3 pb-5 mb-5 border-b border-gray-100">
-              {avg && (
-                <span className="flex items-center gap-1.5">
-                  <span className="text-amber-400 text-lg">★</span>
-                  <span className="text-lg font-bold text-gray-900">{avg}</span>
-                </span>
-              )}
-              <span className="text-sm text-gray-500">
-                {reviews.length} {t("reviews").toLowerCase()}
+      {reviews.length === 0 ? (
+        <p className="text-sm text-gray-500">{t("reviewsPage.empty")}</p>
+      ) : (
+        <div>
+          <div className="flex items-center gap-3 pb-5 mb-6 border-b border-gray-200">
+            {avg && (
+              <span className="flex items-center gap-1.5">
+                <span className="text-amber-400 text-lg">★</span>
+                <span className="text-lg font-bold text-gray-900">{avg}</span>
               </span>
-            </div>
-            <ReviewList reviews={reviews} locale={locale} />
-          </>
-        )}
-      </div>
+            )}
+            <span className="text-sm text-gray-500">
+              {reviews.length} {t("reviews").toLowerCase()}
+            </span>
+          </div>
+          <ReviewList reviews={reviews} locale={locale} />
+        </div>
+      )}
     </div>
   );
 }

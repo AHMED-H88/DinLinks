@@ -81,14 +81,14 @@ export default function SubscriptionCard({ subscription, businessId }: Subscript
         <button
           onClick={() => handleSubscribe("MONTHLY")}
           disabled={loading}
-          className="w-full btn btn-primary"
+          className="w-full btn bg-gray-900 text-white hover:bg-gray-800"
         >
           {t("monthly.subscribe")}
         </button>
       </div>
 
-      <div className="card p-6 border-2 border-blue-500">
-        <div className="bg-blue-500 text-white text-xs font-semibold px-3 py-1 rounded-full inline-block mb-3">
+      <div className="card p-6 border-2 border-gray-900">
+        <div className="bg-gray-900 text-white text-xs font-semibold px-3 py-1 rounded-full inline-block mb-3">
           {t("yearly.badge")}
         </div>
         <h3 className="text-xl font-semibold text-gray-900 mb-4">{t("yearly.title")}</h3>
@@ -103,7 +103,7 @@ export default function SubscriptionCard({ subscription, businessId }: Subscript
         <button
           onClick={() => handleSubscribe("YEARLY")}
           disabled={loading}
-          className="w-full btn btn-primary"
+          className="w-full btn bg-gray-900 text-white hover:bg-gray-800"
         >
           {t("yearly.subscribe")}
         </button>

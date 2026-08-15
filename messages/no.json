@@ -302,7 +302,10 @@
     },
     "locationsPage": {
       "subtitle": "Administrer bedriftens lokasjoner",
-      "primaryNote": "Hovedadressen din teller også som en lokasjon på den offentlige profilen — totalt {count, plural, one {# lokasjon} other {# lokasjoner}}."
+      "mainLocation": "Hovedlokasjon",
+      "mainLocationHint": "Rediger under Bedriftsprofil → Kontakt. Hovedadressen teller som en lokasjon på den offentlige profilen.",
+      "noMainLocation": "Ingen hovedadresse ennå. Legg den til under Bedriftsprofil.",
+      "branches": "Filialer"
     },
     "settingsPage": {
       "subtitle": "Administrer konto, sikkerhet og abonnement",

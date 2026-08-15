@@ -1,13 +1,25 @@
 "use client";
 
+import Image from "next/image";
 import { Link, usePathname } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
+import { formatCity } from "@/lib/format";
 
 interface NavItem {
   key:   string;
   href:  string;
   label: string;
   icon:  React.ReactNode;
+}
+
+export interface DashboardBusinessIdentity {
+  id:           string;
+  name:         string | null;
+  logo:         string | null;
+  city:         string | null;
+  status:       string;
+  categorySlug: string | null;
+  categoryName: string | null;
 }
 
 const icons: Record<string, React.ReactNode> = {
@@ -48,9 +60,44 @@ function MobileTab({ href, label, active }: { href: string; label: string; activ
   );
 }
 
-export default function DashboardNav() {
+function Identity({
+  business,
+  categoryLabel,
+  compact = false,
+}: {
+  business:      DashboardBusinessIdentity;
+  categoryLabel: string | null;
+  compact?:      boolean;
+}) {
+  const size = compact ? "w-9 h-9" : "w-10 h-10";
+  const meta = [categoryLabel, business.city ? formatCity(business.city) : null].filter(Boolean).join(" · ");
+  return (
+    <div className="flex items-center gap-3 min-w-0">
+      <div className={`${size} rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center flex-shrink-0 overflow-hidden`}>
+        {business.logo ? (
+          <Image src={business.logo} alt={business.name ?? ""} width={40} height={40} className="w-full h-full object-cover" />
+        ) : (
+          <span className="text-sm font-bold text-gray-500 select-none">
+            {(business.name ?? "?").slice(0, 2).toUpperCase()}
+          </span>
+        )}
+      </div>
+      <div className="min-w-0">
+        <p className="text-sm font-semibold text-gray-900 truncate">{business.name ?? "—"}</p>
+        {meta && <p className="text-xs text-gray-500 truncate">{meta}</p>}
+      </div>
+    </div>
+  );
+}
+
+export default function DashboardNav({ business }: { business: DashboardBusinessIdentity | null }) {
   const t = useTranslations("dashboard");
+  const tCat = useTranslations("categories");
   const pathname = usePathname();
+
+  const categoryLabel = business?.categorySlug
+    ? (tCat.has(business.categorySlug) ? tCat(business.categorySlug) : business.categoryName)
+    : business?.categoryName ?? null;
 
   const items: NavItem[] = [
     { key: "overview",  href: "/dashboard",           label: t("nav.overview"),        icon: icons.overview },
@@ -69,6 +116,22 @@ export default function DashboardNav() {
     <>
       {/* Desktop — persistent sidebar */}
       <aside className="hidden lg:flex lg:flex-col lg:w-60 flex-shrink-0 lg:sticky lg:top-24 self-start">
+        {business && (
+          <div className="mb-5 pb-5 border-b border-gray-200">
+            <Identity business={business} categoryLabel={categoryLabel} />
+            {business.status === "APPROVED" && (
+              <Link
+                href={`/business/${business.id}` as any}
+                className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors"
+              >
+                {t("viewPublicProfile")}
+                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                </svg>
+              </Link>
+            )}
+          </div>
+        )}
         <nav aria-label={t("nav.menuLabel")} className="flex flex-col gap-1">
           {items.map((it) => (
             <DesktopLink key={it.key} href={it.href} label={it.label} icon={it.icon} active={isActive(it.href)} />
@@ -79,15 +142,22 @@ export default function DashboardNav() {
         </div>
       </aside>
 
-      {/* Mobile — dedicated compact horizontal navigation */}
-      <nav aria-label={t("nav.menuLabel")} className="lg:hidden -mx-4 sm:-mx-6 px-4 sm:px-6 mb-6 border-b border-gray-200">
-        <div className="flex gap-1 overflow-x-auto scrollbar-hide">
-          {items.map((it) => (
-            <MobileTab key={it.key} href={it.href} label={it.label} active={isActive(it.href)} />
-          ))}
-          <MobileTab href={helpHref} label={t("nav.help")} active={false} />
-        </div>
-      </nav>
+      {/* Mobile — dedicated compact navigation (identity + horizontal tabs) */}
+      <div className="lg:hidden mb-6">
+        {business && (
+          <div className="mb-3">
+            <Identity business={business} categoryLabel={categoryLabel} compact />
+          </div>
+        )}
+        <nav aria-label={t("nav.menuLabel")} className="-mx-4 sm:-mx-6 px-4 sm:px-6 border-b border-gray-200">
+          <div className="flex gap-1 overflow-x-auto scrollbar-hide">
+            {items.map((it) => (
+              <MobileTab key={it.key} href={it.href} label={it.label} active={isActive(it.href)} />
+            ))}
+            <MobileTab href={helpHref} label={t("nav.help")} active={false} />
+          </div>
+        </nav>
+      </div>
     </>
   );
 }

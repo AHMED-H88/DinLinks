@@ -38,8 +38,7 @@ export default async function DashboardBusinessProfilePage({
         </p>
       </div>
 
-      <div className="rounded-2xl border border-gray-200 bg-white p-5 sm:p-8">
-        <BusinessForm
+      <BusinessForm
           business={
             business
               ? {
@@ -80,7 +79,6 @@ export default async function DashboardBusinessProfilePage({
           }
           categories={categories}
         />
-      </div>
     </div>
   );
 }

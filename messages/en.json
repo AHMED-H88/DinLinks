@@ -302,7 +302,10 @@
     },
     "locationsPage": {
       "subtitle": "Manage your business locations",
-      "primaryNote": "Your main business address also counts as a location on your public profile — {count, plural, one {# location} other {# locations}} in total."
+      "mainLocation": "Main location",
+      "mainLocationHint": "Edit under Business profile → Contact. Your main address counts as one location on your public profile.",
+      "noMainLocation": "No main address yet. Add it under Business profile.",
+      "branches": "Branches"
     },
     "settingsPage": {
       "subtitle": "Manage your account, security and subscription",

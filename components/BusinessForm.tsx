@@ -437,32 +437,30 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
 
   // ── Render ──────────────────────────────────────────────────────────────────
   return (
-    <div className="flex flex-col lg:flex-row gap-8">
-      {/* ── Sticky section nav ─────────────────────────────────────────── */}
-      <nav className="hidden lg:block w-44 flex-shrink-0">
-        <div className="sticky top-24 space-y-0.5">
-          {SECTIONS.map((s) => (
-            <button
-              key={s.id}
-              type="button"
-              onClick={() => {
-                setActiveSection(s.id);
-                document.getElementById(s.id)?.scrollIntoView({ behavior: "smooth" });
-              }}
-              className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all ${
-                activeSection === s.id
-                  ? "bg-gray-100 text-gray-900 font-semibold"
-                  : "text-gray-500 hover:text-gray-800 hover:bg-gray-50"
-              }`}
-            >
-              {t(`tabs.${s.labelKey}`)}
-            </button>
-          ))}
-        </div>
+    <div>
+      {/* ── Subtle horizontal section navigation (desktop) ─────────────── */}
+      <nav className="hidden lg:flex items-center gap-1 mb-8 border-b border-gray-200 overflow-x-auto scrollbar-hide">
+        {SECTIONS.map((s) => (
+          <button
+            key={s.id}
+            type="button"
+            onClick={() => {
+              setActiveSection(s.id);
+              document.getElementById(s.id)?.scrollIntoView({ behavior: "smooth" });
+            }}
+            className={`whitespace-nowrap px-3 py-2.5 -mb-px border-b-2 text-sm transition-colors ${
+              activeSection === s.id
+                ? "border-gray-900 text-gray-900 font-semibold"
+                : "border-transparent text-gray-500 hover:text-gray-900"
+            }`}
+          >
+            {t(`tabs.${s.labelKey}`)}
+          </button>
+        ))}
       </nav>
 
       {/* ── Form body ──────────────────────────────────────────────────── */}
-      <form onSubmit={handleSubmit} className="flex-1 min-w-0 space-y-10">
+      <form onSubmit={handleSubmit} className="min-w-0 space-y-10">
         {/* Status / feedback banners */}
         <StatusBanners business={business} error={error} success={success} />
 

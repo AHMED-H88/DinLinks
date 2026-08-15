@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import DashboardNav from "@/components/DashboardNav";
@@ -20,13 +21,34 @@ export default async function DashboardLayout({
   const session = await auth();
   if (!session?.user) redirect("/login");
 
+  // Minimal identity for the sidebar header — existing data only.
+  const business = await prisma.business.findUnique({
+    where:  { userId: session.user.id },
+    select: {
+      id: true, name: true, logo: true, city: true, status: true,
+      category: { select: { slug: true, name: true } },
+    },
+  });
+
+  const identity = business
+    ? {
+        id:           business.id,
+        name:         business.name,
+        logo:         business.logo,
+        city:         business.city,
+        status:       business.status,
+        categorySlug: business.category?.slug ?? null,
+        categoryName: business.category?.name ?? null,
+      }
+    : null;
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Header />
 
       <div className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
         <div className="lg:flex lg:gap-10 lg:items-start">
-          <DashboardNav />
+          <DashboardNav business={identity} />
           <main className="flex-1 min-w-0">{children}</main>
         </div>
       </div>
