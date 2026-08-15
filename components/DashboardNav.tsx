@@ -29,6 +29,8 @@ const icons: Record<string, React.ReactNode> = {
   locations: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.6} d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />,
   settings:  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.6} d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.281z M15 12a3 3 0 11-6 0 3 3 0 016 0z" />,
   help:      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.6} d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />,
+  general:   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.6} d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />,
+  billing:   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.6} d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3M3.75 19.5h16.5A2.25 2.25 0 0022.5 17.25V6.75A2.25 2.25 0 0020.25 4.5H3.75A2.25 2.25 0 001.5 6.75v10.5A2.25 2.25 0 003.75 19.5z" />,
 };
 
 function DesktopLink({ href, label, icon, active }: { href: string; label: string; icon: React.ReactNode; active: boolean }) {
@@ -90,6 +92,12 @@ function Identity({
   );
 }
 
+interface NavGroup {
+  key:   string;
+  label: string;
+  items: NavItem[];
+}
+
 export default function DashboardNav({ business }: { business: DashboardBusinessIdentity | null }) {
   const t = useTranslations("dashboard");
   const tCat = useTranslations("categories");
@@ -99,12 +107,25 @@ export default function DashboardNav({ business }: { business: DashboardBusiness
     ? (tCat.has(business.categorySlug) ? tCat(business.categorySlug) : business.categoryName)
     : business?.categoryName ?? null;
 
-  const items: NavItem[] = [
-    { key: "overview",  href: "/dashboard",           label: t("nav.overview"),        icon: icons.overview },
-    { key: "profile",   href: "/dashboard/profile",   label: t("nav.businessProfile"), icon: icons.profile },
-    { key: "reviews",   href: "/dashboard/reviews",   label: t("nav.reviews"),         icon: icons.reviews },
-    { key: "locations", href: "/dashboard/locations", label: t("nav.locations"),       icon: icons.locations },
-    { key: "settings",  href: "/dashboard/settings",  label: t("nav.settings"),        icon: icons.settings },
+  const groups: NavGroup[] = [
+    {
+      key:   "business",
+      label: t("nav.groups.business"),
+      items: [
+        { key: "overview",  href: "/dashboard",           label: t("nav.overview"),  icon: icons.overview },
+        { key: "profile",   href: "/dashboard/profile",   label: t("nav.profile"),   icon: icons.profile },
+        { key: "reviews",   href: "/dashboard/reviews",   label: t("nav.reviews"),   icon: icons.reviews },
+        { key: "locations", href: "/dashboard/locations", label: t("nav.locations"), icon: icons.locations },
+      ],
+    },
+    {
+      key:   "account",
+      label: t("nav.groups.account"),
+      items: [
+        { key: "general", href: "/dashboard/account/general", label: t("nav.general"), icon: icons.general },
+        { key: "billing", href: "/dashboard/account/billing", label: t("nav.billing"), icon: icons.billing },
+      ],
+    },
   ];
 
   const isActive = (href: string) =>
@@ -114,7 +135,7 @@ export default function DashboardNav({ business }: { business: DashboardBusiness
 
   return (
     <>
-      {/* Desktop — persistent sidebar */}
+      {/* Desktop — persistent grouped sidebar */}
       <aside className="hidden lg:flex lg:flex-col lg:w-60 flex-shrink-0 lg:sticky lg:top-24 self-start">
         {business && (
           <div className="mb-5 pb-5 border-b border-gray-200">
@@ -132,30 +153,49 @@ export default function DashboardNav({ business }: { business: DashboardBusiness
             )}
           </div>
         )}
-        <nav aria-label={t("nav.menuLabel")} className="flex flex-col gap-1">
-          {items.map((it) => (
-            <DesktopLink key={it.key} href={it.href} label={it.label} icon={it.icon} active={isActive(it.href)} />
+        <nav aria-label={t("nav.menuLabel")} className="space-y-6">
+          {groups.map((g) => (
+            <div key={g.key}>
+              <p className="px-3 mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-gray-400">{g.label}</p>
+              <div className="flex flex-col gap-1">
+                {g.items.map((it) => (
+                  <DesktopLink key={it.key} href={it.href} label={it.label} icon={it.icon} active={isActive(it.href)} />
+                ))}
+              </div>
+            </div>
           ))}
         </nav>
-        <div className="mt-4 pt-4 border-t border-gray-200">
+        <div className="mt-6 pt-4 border-t border-gray-200">
           <DesktopLink href={helpHref} label={t("nav.help")} icon={icons.help} active={false} />
         </div>
       </aside>
 
-      {/* Mobile — dedicated compact navigation (identity + horizontal tabs) */}
+      {/* Mobile — grouped compact navigation (identity + labelled group rows) */}
       <div className="lg:hidden mb-6">
         {business && (
-          <div className="mb-3">
+          <div className="mb-4">
             <Identity business={business} categoryLabel={categoryLabel} compact />
           </div>
         )}
-        <nav aria-label={t("nav.menuLabel")} className="-mx-4 sm:-mx-6 px-4 sm:px-6 border-b border-gray-200">
-          <div className="flex gap-1 overflow-x-auto scrollbar-hide">
-            {items.map((it) => (
-              <MobileTab key={it.key} href={it.href} label={it.label} active={isActive(it.href)} />
-            ))}
-            <MobileTab href={helpHref} label={t("nav.help")} active={false} />
-          </div>
+        <nav aria-label={t("nav.menuLabel")} className="space-y-3">
+          {groups.map((g) => (
+            <div key={g.key}>
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-1">{g.label}</p>
+              <div className="-mx-4 sm:-mx-6 px-4 sm:px-6 border-b border-gray-200">
+                <div className="flex gap-1 overflow-x-auto scrollbar-hide">
+                  {g.items.map((it) => (
+                    <MobileTab key={it.key} href={it.href} label={it.label} active={isActive(it.href)} />
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+          <Link
+            href={helpHref as any}
+            className="inline-flex items-center gap-1.5 pt-1 text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors"
+          >
+            {t("nav.help")}
+          </Link>
         </nav>
       </div>
     </>

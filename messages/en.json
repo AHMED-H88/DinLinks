@@ -279,12 +279,17 @@
     "rejected": "✕ Rejected",
     "nav": {
       "overview": "Overview",
-      "businessProfile": "Business profile",
+      "profile": "Profile",
       "reviews": "Reviews",
       "locations": "Locations",
-      "settings": "Settings",
+      "general": "General",
+      "billing": "Billing",
       "help": "Help & support",
-      "menuLabel": "Dashboard menu"
+      "menuLabel": "Workspace menu",
+      "groups": {
+        "business": "Business",
+        "account": "Account"
+      }
     },
     "status": {
       "published": "Profile published",
@@ -307,14 +312,22 @@
       "noMainLocation": "No main address yet. Add it under Business profile.",
       "branches": "Branches"
     },
-    "settingsPage": {
-      "subtitle": "Manage your account, security and subscription",
-      "accountSecurity": "Account & security",
+    "generalPage": {
+      "subtitle": "Your personal account information",
+      "name": "Name",
       "email": "Email",
-      "securityUnavailable": "Changing password, email and two-factor authentication are not available yet.",
-      "planBilling": "Plan & billing",
-      "peopleAccess": "People & access",
-      "peopleAccessPlanned": "Planned for a future update."
+      "noName": "Not set"
+    },
+    "billingPage": {
+      "subtitle": "Manage your subscription",
+      "plan": "Plan",
+      "status": "Status",
+      "active": "Active",
+      "renews": "Next renewal",
+      "cadenceMonthly": "Monthly",
+      "cadenceAnnual": "Annual",
+      "noSubscription": "No active subscription",
+      "viewPlans": "View plans"
     }
   },
   "admin": {

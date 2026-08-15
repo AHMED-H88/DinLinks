@@ -279,12 +279,17 @@
     "rejected": "✕ Avvist",
     "nav": {
       "overview": "Oversikt",
-      "businessProfile": "Bedriftsprofil",
+      "profile": "Profil",
       "reviews": "Anmeldelser",
       "locations": "Lokasjoner",
-      "settings": "Innstillinger",
+      "general": "Generelt",
+      "billing": "Fakturering",
       "help": "Hjelp og støtte",
-      "menuLabel": "Dashbordmeny"
+      "menuLabel": "Arbeidsområdemeny",
+      "groups": {
+        "business": "Bedrift",
+        "account": "Konto"
+      }
     },
     "status": {
       "published": "Profil publisert",
@@ -307,14 +312,22 @@
       "noMainLocation": "Ingen hovedadresse ennå. Legg den til under Bedriftsprofil.",
       "branches": "Filialer"
     },
-    "settingsPage": {
-      "subtitle": "Administrer konto, sikkerhet og abonnement",
-      "accountSecurity": "Konto og sikkerhet",
+    "generalPage": {
+      "subtitle": "Din personlige kontoinformasjon",
+      "name": "Navn",
       "email": "E-post",
-      "securityUnavailable": "Endring av passord, e-post og totrinnsbekreftelse er ikke tilgjengelig ennå.",
-      "planBilling": "Abonnement og betaling",
-      "peopleAccess": "Personer og tilgang",
-      "peopleAccessPlanned": "Planlagt i en senere oppdatering."
+      "noName": "Ikke angitt"
+    },
+    "billingPage": {
+      "subtitle": "Administrer abonnementet ditt",
+      "plan": "Plan",
+      "status": "Status",
+      "active": "Aktiv",
+      "renews": "Neste fornyelse",
+      "cadenceMonthly": "Månedlig",
+      "cadenceAnnual": "Årlig",
+      "noSubscription": "Ingen aktivt abonnement",
+      "viewPlans": "Se planer"
     }
   },
   "admin": {
