@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import {
   COMPANY_SIZES,
   SERVICE_MODES,
@@ -153,9 +153,9 @@ function SectionHeading({ id, title, subtitle }: { id: string; title: string; su
 
 function FieldLabel({ children, required }: { children: React.ReactNode; required?: boolean }) {
   return (
-    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+    <label className="block text-sm font-semibold text-gray-800 mb-1.5">
       {children}
-      {required && <span className="text-red-400 ml-0.5">*</span>}
+      {required && <span className="text-gray-400 ml-0.5 font-normal">*</span>}
     </label>
   );
 }
@@ -179,6 +179,7 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
   const router  = useRouter();
   const t       = useTranslations("businessForm");
   const tCat    = useTranslations("categories");
+  const locale  = useLocale();
   const isEdit  = !!business;
 
   // Stable UUID for new businesses — used as the storage folder path before
@@ -529,19 +530,8 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
               </div>
             </div>
 
-            <div>
-              <FieldLabel>{t("labels.description")}</FieldLabel>
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="input min-h-[120px] resize-y"
-                rows={4}
-                placeholder={t("placeholders.description")}
-              />
-              <p className="text-xs text-gray-400 mt-1">{description.length} / 1000</p>
-            </div>
-
-            {/* Short business description (NO / EN) — appears below the business name on the public profile */}
+            {/* Short business description (NO / EN) — shown directly below the business
+                name on the public profile; the primary customer-facing summary */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
                 <FieldLabel>{t("labels.identitySummaryNo")}</FieldLabel>
@@ -571,6 +561,19 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
                   {t("hints.identitySummary")} · {identitySummaryEn.trim().length}/{IDENTITY_SUMMARY_MAX}
                 </p>
               </div>
+            </div>
+
+            {/* Full description — longer, secondary to the short summary above */}
+            <div className="pt-6 border-t border-gray-100">
+              <FieldLabel>{t("labels.description")}</FieldLabel>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="input min-h-[120px] resize-y"
+                rows={4}
+                placeholder={t("placeholders.description")}
+              />
+              <p className="text-xs text-gray-400 mt-1">{description.length} / 1000</p>
             </div>
           </div>
         </section>
@@ -1032,18 +1035,16 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
             title={t("sections.hours")}
             subtitle={t("hints.openingHours")}
           />
-          <div className="space-y-2">
+          <div className="divide-y divide-gray-100 border-t border-gray-100">
             {DAYS.map((day) => {
               const h = openingHours[day] ?? { open: "", close: "", closed: false };
               return (
                 <div
                   key={day}
-                  className={`flex flex-col sm:flex-row sm:items-center gap-3 p-4 rounded-xl border transition-colors ${
-                    h.closed ? "bg-gray-50 border-gray-100" : "bg-white border-gray-200"
-                  }`}
+                  className="flex flex-col sm:flex-row sm:items-center gap-3 py-3"
                 >
                   {/* Day name */}
-                  <span className={`w-28 text-sm font-semibold flex-shrink-0 ${h.closed ? "text-gray-400" : "text-gray-800"}`}>
+                  <span className={`w-28 text-sm font-medium flex-shrink-0 ${h.closed ? "text-gray-400" : "text-gray-800"}`}>
                     {t(`days.${day}`)}
                   </span>
 
@@ -1094,74 +1095,71 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
             title={t("sections.services")}
             subtitle={t("hints.services")}
           />
-          <div className="space-y-3">
+          <div>
             {services.length === 0 && (
-              <div className="text-center py-8 rounded-xl border-2 border-dashed border-gray-200 text-gray-400">
-                <svg className="w-8 h-8 mx-auto mb-2 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                </svg>
-                <p className="text-sm">{t("noServices")}</p>
-              </div>
+              <p className="text-sm text-gray-400 py-1">{t("noServices")}</p>
             )}
 
-            {services.map((svc, idx) => (
-              <div key={svc.id} className="group relative border border-gray-200 rounded-xl p-4 bg-white hover:border-gray-300 transition-colors">
-                <div className="flex items-start gap-3">
-                  <span className="w-6 h-6 rounded-full bg-gray-100 text-gray-500 text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
-                    {idx + 1}
-                  </span>
-                  <div className="flex-1 space-y-3">
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      <div className="sm:col-span-2">
-                        <FieldLabel>{t("labels.serviceName")}</FieldLabel>
-                        <input
-                          type="text"
-                          value={svc.name}
-                          onChange={(e) => updateService(svc.id, "name", e.target.value)}
-                          className="input text-sm"
-                          placeholder={t("placeholders.serviceName")}
-                        />
+            {services.length > 0 && (
+              <div className="divide-y divide-gray-100 border-t border-gray-100">
+                {services.map((svc, idx) => (
+                  <div key={svc.id} className="group relative flex items-start gap-4 py-5">
+                    <span className="w-6 flex-shrink-0 pt-2.5 text-xs font-semibold text-gray-400 tabular-nums">
+                      {String(idx + 1).padStart(2, "0")}
+                    </span>
+                    <div className="flex-1 min-w-0 space-y-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div className="sm:col-span-2">
+                          <FieldLabel>{t("labels.serviceName")}</FieldLabel>
+                          <input
+                            type="text"
+                            value={svc.name}
+                            onChange={(e) => updateService(svc.id, "name", e.target.value)}
+                            className="input"
+                            placeholder={t("placeholders.serviceName")}
+                          />
+                        </div>
+                        <div>
+                          <FieldLabel>{t("labels.price")}</FieldLabel>
+                          <input
+                            type="text"
+                            value={svc.price}
+                            onChange={(e) => updateService(svc.id, "price", e.target.value)}
+                            className="input"
+                            placeholder={t("placeholders.servicePrice")}
+                          />
+                        </div>
                       </div>
                       <div>
-                        <FieldLabel>{t("labels.price")}</FieldLabel>
+                        <FieldLabel>{t("labels.description")}</FieldLabel>
                         <input
                           type="text"
-                          value={svc.price}
-                          onChange={(e) => updateService(svc.id, "price", e.target.value)}
-                          className="input text-sm"
-                          placeholder={t("placeholders.servicePrice")}
+                          value={svc.description}
+                          onChange={(e) => updateService(svc.id, "description", e.target.value)}
+                          className="input"
+                          placeholder={t("placeholders.serviceDescription")}
                         />
                       </div>
                     </div>
-                    <div>
-                      <FieldLabel>{t("labels.description")}</FieldLabel>
-                      <input
-                        type="text"
-                        value={svc.description}
-                        onChange={(e) => updateService(svc.id, "description", e.target.value)}
-                        className="input text-sm"
-                        placeholder={t("placeholders.serviceDescription")}
-                      />
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeService(svc.id)}
+                      className="w-8 h-8 mt-1.5 rounded-lg flex items-center justify-center text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors flex-shrink-0"
+                      title={t("actions.removeService")}
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => removeService(svc.id)}
-                    className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all opacity-0 group-hover:opacity-100 flex-shrink-0"
-                    title={t("actions.removeService")}
-                  >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
-                </div>
+                ))}
               </div>
-            ))}
+            )}
 
             <button
               type="button"
               onClick={addService}
-              className="w-full py-3 rounded-xl border-2 border-dashed border-gray-200 text-sm font-medium text-gray-500 hover:border-gray-400 hover:text-gray-900 hover:bg-gray-50 transition-all flex items-center justify-center gap-2"
+              className="inline-flex items-center gap-2 mt-5 px-3.5 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-700 hover:border-gray-300 hover:bg-gray-50 transition-colors"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -1172,11 +1170,11 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
         </section>
 
         {/* ── Save bar ───────────────────────────────────────────────── */}
-        <div className="sticky bottom-0 -mx-4 sm:-mx-0 bg-white/95 backdrop-blur border-t border-gray-100 py-4 px-4 sm:px-0 flex items-center gap-4">
+        <div className="sticky bottom-0 -mx-4 sm:-mx-0 bg-gray-50/90 backdrop-blur border-t border-gray-200 py-3 px-4 sm:px-0 flex items-center gap-3">
           <button
             type="submit"
             disabled={loading}
-            className="btn btn-primary btn-lg flex-1 sm:flex-none sm:min-w-[180px] disabled:opacity-50 disabled:cursor-not-allowed"
+            className="btn btn-primary flex-1 sm:flex-none sm:min-w-[160px] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? (
               <span className="flex items-center justify-center gap-2">
@@ -1191,10 +1189,10 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
 
           {isEdit && business.status === "APPROVED" && (
             <a
-              href={`/en/business/${business.id}`}
+              href={`/${locale}/business/${business.id}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="btn btn-secondary btn-lg hidden sm:inline-flex items-center gap-2"
+              className="btn btn-secondary hidden sm:inline-flex items-center gap-2"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
@@ -1240,51 +1238,4 @@ function FormFeedback({
       )}
     </div>
   );
-}
-
-function ApprovalBanner({ status }: { status: "PENDING" | "APPROVED" | "REJECTED" }) {
-  const t = useTranslations("businessForm");
-  if (status === "APPROVED") {
-    return (
-      <div className="flex items-center gap-3 p-4 rounded-xl bg-green-50 border border-green-200 text-green-800 text-sm">
-        <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-        </svg>
-        <div>
-          <span className="font-semibold">{t("status.approved")}</span>
-          <span className="text-green-700 ml-2">— {t("status.approvedDesc")}</span>
-        </div>
-      </div>
-    );
-  }
-
-  if (status === "PENDING") {
-    return (
-      <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-sm">
-        <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <div>
-          <span className="font-semibold">{t("status.pending")}</span>
-          <span className="text-amber-700 ml-2">— {t("status.pendingDesc")}</span>
-        </div>
-      </div>
-    );
-  }
-
-  if (status === "REJECTED") {
-    return (
-      <div className="flex items-start gap-3 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm">
-        <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <div>
-          <span className="font-semibold">{t("status.rejected")}</span>
-          <span className="text-red-600 ml-2">— {t("status.rejectedDesc")}</span>
-        </div>
-      </div>
-    );
-  }
-
-  return null;
 }

@@ -34,7 +34,7 @@
 .editor :global(.input) {
   height: 44px;
   border-radius: 10px;
-  border: 1px solid #d1d5db;         /* gray-300 */
+  border: 1px solid #e5e7eb;         /* gray-200 — light default, less chrome */
   background-color: #ffffff;
   box-shadow: none;
   padding: 0 14px;
@@ -42,6 +42,13 @@
   line-height: 1.4;
   color: #111827;                    /* gray-900 */
   transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+.editor :global(.input):hover:not(:disabled):not(:focus) {
+  border-color: #d1d5db;             /* gray-300 — stronger only on hover */
+}
+/* Native checkboxes render charcoal (not the browser default accent) */
+.editor input[type="checkbox"] {
+  accent-color: #111827;
 }
 .editor :global(textarea.input) {
   height: auto;
