@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useTranslations, useLocale } from "next-intl";
@@ -94,10 +94,9 @@ const defaultOpeningHours = {
 
 const SECTIONS = [
   { id: "basics",   labelKey: "basicInfo" },
-  { id: "company",  labelKey: "company" },
+  { id: "company",  labelKey: "about" },
   { id: "media",    labelKey: "media" },
-  { id: "location", labelKey: "location" },
-  { id: "contact",  labelKey: "contact" },
+  { id: "location", labelKey: "locationContact" },
   { id: "hours",    labelKey: "openingHours" },
   { id: "services", labelKey: "services" },
 ] as const;
@@ -144,7 +143,7 @@ async function deleteStorageFile(url: string): Promise<void> {
 
 function SectionHeading({ id, title, subtitle }: { id: string; title: string; subtitle?: string }) {
   return (
-    <div id={id} className="scroll-mt-28">
+    <div id={id}>
       <h3 className="text-base font-semibold text-gray-900 tracking-tight">{title}</h3>
       {subtitle && <p className="text-sm text-gray-500 mt-1.5 leading-relaxed">{subtitle}</p>}
     </div>
@@ -248,52 +247,9 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
   const [imageUploading,  setImageUploading]  = useState(false);
   const [error,           setError]           = useState("");
   const [success,         setSuccess]         = useState("");
-  const [activeSection,   setActiveSection]   = useState("basics");
-
-  // Scroll-spy: the active section is the LAST one whose heading has scrolled up
-  // past the reading line just below the sticky Header + section nav. This is
-  // deterministic (no off-by-one: a section only activates once it actually
-  // reaches the reading zone, not when the next one barely enters the viewport)
-  // and flicker-free. Clicking a tab still updates immediately + smooth-scrolls.
-  useEffect(() => {
-    // Header (64px) + section nav (~48px) + a small reading buffer.
-    const READING_LINE = 160;
-    const ids = SECTIONS.map((s) => s.id);
-
-    const update = () => {
-      let current = ids[0];
-      for (const id of ids) {
-        const el = document.getElementById(id);
-        if (!el) continue;
-        if (el.getBoundingClientRect().top <= READING_LINE) current = id;
-        else break; // sections are ordered top-to-bottom
-      }
-      // Bottom-of-page guard so the last section (Services) reliably activates
-      // even when it is too short to push its heading past the reading line.
-      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) {
-        current = ids[ids.length - 1];
-      }
-      setActiveSection((prev) => (prev === current ? prev : current));
-    };
-
-    let raf = 0;
-    const onScroll = () => {
-      if (raf) return;
-      raf = requestAnimationFrame(() => {
-        raf = 0;
-        update();
-      });
-    };
-
-    update();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-      if (raf) cancelAnimationFrame(raf);
-    };
-  }, []);
+  const [activeSection,   setActiveSection]   = useState<string>("basics");
+  const activeIndex   = SECTIONS.findIndex((s) => s.id === activeSection);
+  const isLastSection = activeIndex === SECTIONS.length - 1;
 
   const logoInputRef   = useRef<HTMLInputElement>(null);
   const coverInputRef  = useRef<HTMLInputElement>(null);
@@ -394,22 +350,21 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
   }
 
   // ── Submit ──────────────────────────────────────────────────────────────────
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function doSave(): Promise<boolean> {
     setError("");
     setSuccess("");
 
     if (!name.trim()) {
       setError(t("errors.nameRequired"));
-      document.getElementById("basics")?.scrollIntoView({ behavior: "smooth" });
-      return;
+      setActiveSection("basics");
+      return false;
     }
 
     // A business must belong to exactly one Subcategory (never a top-level).
     if (!categoryId || !allSubcategories.some((c) => c.id === categoryId)) {
       setError(t("subcategoryRequired"));
-      document.getElementById("basics")?.scrollIntoView({ behavior: "smooth" });
-      return;
+      setActiveSection("basics");
+      return false;
     }
 
     setLoading(true);
@@ -468,33 +423,42 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
             ? t(`errors.${data.fields[0].message}` as any)
             : null;
         setError(categoryMsg ?? fieldMsg ?? data.error ?? t("errors.generic"));
-      } else {
-        setSuccess(
-          isEdit ? t("success.updated") : t("success.created")
-        );
-        router.refresh();
-        window.scrollTo({ top: 0, behavior: "smooth" });
+        return false;
       }
+
+      setSuccess(isEdit ? t("success.updated") : t("success.created"));
+      router.refresh();
+      return true;
     } catch {
       setError(t("errors.network"));
+      return false;
     } finally {
       setLoading(false);
+    }
+  }
+
+  // Primary action: save with the existing behaviour, then (for sections 1–5)
+  // advance to the next section. Direct tab clicks never trigger a save.
+  async function handlePrimary(e: React.FormEvent) {
+    e.preventDefault();
+    const ok = await doSave();
+    if (ok && !isLastSection) {
+      setActiveSection(SECTIONS[activeIndex + 1].id);
     }
   }
 
   // ── Render ──────────────────────────────────────────────────────────────────
   return (
     <div className={styles.editor}>
-      {/* ── Thin, text-led section navigation (desktop), sticky under header ── */}
-      <nav className="hidden lg:flex items-center gap-7 border-b border-gray-200 overflow-x-auto scrollbar-hide sticky top-16 z-30 bg-gray-50">
+      {/* ── Thin, text-led section navigation — switches the active section.
+             Horizontally scrollable on mobile, same model on desktop. ── */}
+      <nav className="flex items-center gap-6 lg:gap-7 border-b border-gray-200 overflow-x-auto scrollbar-hide mb-8">
         {SECTIONS.map((s) => (
           <button
             key={s.id}
             type="button"
-            onClick={() => {
-              setActiveSection(s.id);
-              document.getElementById(s.id)?.scrollIntoView({ behavior: "smooth" });
-            }}
+            onClick={() => setActiveSection(s.id)}
+            aria-current={activeSection === s.id ? "true" : undefined}
             className={`whitespace-nowrap py-3 -mb-px border-b-2 text-sm transition-colors ${
               activeSection === s.id
                 ? "border-gray-900 text-gray-900 font-semibold"
@@ -506,13 +470,13 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
         ))}
       </nav>
 
-      {/* ── Form body ──────────────────────────────────────────────────── */}
-      <form onSubmit={handleSubmit} className="min-w-0">
+      {/* ── Form body — one section rendered at a time ─────────────────── */}
+      <form onSubmit={handlePrimary} className="min-w-0">
         {/* Validation / save feedback (publication state lives in the page header) */}
         <FormFeedback error={error} success={success} />
 
         {/* ── 1. Basic info ─────────────────────────────────────────── */}
-        <section className={styles.section}>
+        <section className={activeSection === "basics" ? styles.section : "hidden"}>
           <SectionHeading
             id="basics"
             title={t("sections.basics")}
@@ -624,10 +588,10 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
         </section>
 
         {/* ── Company information (Step A1) ─────────────────────────── */}
-        <section className={styles.section}>
+        <section className={activeSection === "company" ? styles.section : "hidden"}>
           <SectionHeading
             id="company"
-            title={t("sections.company")}
+            title={t("sections.about")}
             subtitle={t("subtitles.company")}
           />
           <div className="space-y-5">
@@ -765,7 +729,7 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
         </section>
 
         {/* ── 2. Media ──────────────────────────────────────────────── */}
-        <section className={styles.section}>
+        <section className={activeSection === "media" ? styles.section : "hidden"}>
           <SectionHeading
             id="media"
             title={t("sections.media")}
@@ -929,10 +893,10 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
         </section>
 
         {/* ── 3. Location ───────────────────────────────────────────── */}
-        <section className={styles.section}>
+        <section className={activeSection === "location" ? styles.section : "hidden"}>
           <SectionHeading
             id="location"
-            title={t("sections.location")}
+            title={t("sections.locationContact")}
             subtitle={t("subtitles.location")}
           />
           <div className="space-y-5">
@@ -1014,67 +978,60 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
                 </div>
               </div>
             </details>
-          </div>
-        </section>
+            {/* Contact — same section, subtle divider between Location and Contact */}
+            <div className="pt-6 mt-2 border-t border-gray-100 space-y-5">
+              <h4 className="text-sm font-semibold text-gray-800">{t("sections.contact")}</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div>
+                  <FieldLabel>{t("labels.phone")}</FieldLabel>
+                  <input
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="input"
+                    placeholder={t("placeholders.phone")}
+                  />
+                </div>
+                <div>
+                  <FieldLabel>{t("labels.email")}</FieldLabel>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="input"
+                    placeholder={t("placeholders.email")}
+                  />
+                </div>
+              </div>
 
-        {/* ── 4. Contact ────────────────────────────────────────────── */}
-        <section className={styles.section}>
-          <SectionHeading
-            id="contact"
-            title={t("sections.contact")}
-            subtitle={t("subtitles.contact")}
-          />
-          <div className="space-y-5">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
-                <FieldLabel>{t("labels.phone")}</FieldLabel>
+                <FieldLabel>{t("labels.website")}</FieldLabel>
                 <input
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  type="url"
+                  value={website}
+                  onChange={(e) => setWebsite(e.target.value)}
                   className="input"
-                  placeholder={t("placeholders.phone")}
+                  placeholder={t("placeholders.website")}
                 />
               </div>
+
               <div>
-                <FieldLabel>{t("labels.email")}</FieldLabel>
+                <FieldLabel>{t("labels.bookingUrl")}</FieldLabel>
                 <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  type="url"
+                  value={bookingLink}
+                  onChange={(e) => setBookingLink(e.target.value)}
                   className="input"
-                  placeholder={t("placeholders.email")}
+                  placeholder={t("placeholders.bookingUrl")}
                 />
+                <p className="text-xs text-gray-500 mt-1">A direct link for customers to book appointments or reservations.</p>
               </div>
-            </div>
-
-            <div>
-              <FieldLabel>{t("labels.website")}</FieldLabel>
-              <input
-                type="url"
-                value={website}
-                onChange={(e) => setWebsite(e.target.value)}
-                className="input"
-                placeholder={t("placeholders.website")}
-              />
-            </div>
-
-            <div>
-              <FieldLabel>{t("labels.bookingUrl")}</FieldLabel>
-              <input
-                type="url"
-                value={bookingLink}
-                onChange={(e) => setBookingLink(e.target.value)}
-                className="input"
-                placeholder={t("placeholders.bookingUrl")}
-              />
-              <p className="text-xs text-gray-500 mt-1">A direct link for customers to book appointments or reservations.</p>
             </div>
           </div>
         </section>
 
         {/* ── 5. Opening hours ──────────────────────────────────────── */}
-        <section className={styles.section}>
+        <section className={activeSection === "hours" ? styles.section : "hidden"}>
           <SectionHeading
             id="hours"
             title={t("sections.hours")}
@@ -1134,7 +1091,7 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
         </section>
 
         {/* ── 6. Services ───────────────────────────────────────────── */}
-        <section className={styles.section}>
+        <section className={activeSection === "services" ? styles.section : "hidden"}>
           <SectionHeading
             id="services"
             title={t("sections.services")}
@@ -1214,37 +1171,49 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
           </div>
         </section>
 
-        {/* ── Save bar ───────────────────────────────────────────────── */}
-        <div className="sticky bottom-0 -mx-4 sm:-mx-0 bg-gray-50/90 backdrop-blur border-t border-gray-200 py-3 px-4 sm:px-0 flex items-center gap-3">
-          <button
-            type="submit"
-            disabled={loading}
-            className="btn btn-primary flex-1 sm:flex-none sm:min-w-[160px] disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? (
-              <span className="flex items-center justify-center gap-2">
-                <Spinner small /> {t("savingState")}
-              </span>
-            ) : isEdit ? (
-              t("actions.save")
-            ) : (
-              t("actions.create")
-            )}
-          </button>
-
-          {isEdit && business.status === "APPROVED" && (
-            <a
-              href={`/${locale}/business/${business.id}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn btn-secondary hidden sm:inline-flex items-center gap-2"
+        {/* ── Section action area — Previous / Save (and continue) / Preview ── */}
+        <div className="flex flex-wrap items-center gap-3 pt-6 mt-10 border-t border-gray-200">
+          {activeIndex > 0 && (
+            <button
+              type="button"
+              onClick={() => setActiveSection(SECTIONS[activeIndex - 1].id)}
+              className="btn btn-secondary"
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-              </svg>
-              {t("actions.preview")}
-            </a>
+              {t("actions.previous")}
+            </button>
           )}
+
+          <div className="ml-auto flex items-center gap-3">
+            {isEdit && business.status === "APPROVED" && (
+              <a
+                href={`/${locale}/business/${business.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-secondary hidden sm:inline-flex items-center gap-2"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                </svg>
+                {t("actions.preview")}
+              </a>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn btn-primary sm:min-w-[160px] disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <Spinner small /> {t("savingState")}
+                </span>
+              ) : isLastSection ? (
+                isEdit ? t("actions.save") : t("actions.create")
+              ) : (
+                t("actions.saveAndContinue")
+              )}
+            </button>
+          </div>
         </div>
       </form>
     </div>

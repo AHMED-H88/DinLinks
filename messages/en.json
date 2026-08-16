@@ -349,9 +349,11 @@
     "sections": {
       "basics": "Basic information",
       "company": "Company information",
+      "about": "About the business",
       "media": "Media",
       "location": "Location",
       "contact": "Contact information",
+      "locationContact": "Location & contact",
       "hours": "Opening hours",
       "services": "Services & offers"
     },
@@ -387,9 +389,11 @@
     "tabs": {
       "basicInfo": "Basic info",
       "company": "Company",
+      "about": "About the business",
       "media": "Media",
       "location": "Location",
       "contact": "Contact",
+      "locationContact": "Location & contact",
       "openingHours": "Opening hours",
       "services": "Services"
     },
@@ -515,6 +519,8 @@
     },
     "actions": {
       "save": "Save changes",
+      "saveAndContinue": "Save and continue",
+      "previous": "Previous",
       "create": "Create profile",
       "preview": "Preview profile",
       "changeLogo": "Change logo",

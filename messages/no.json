@@ -349,9 +349,11 @@
     "sections": {
       "basics": "Grunnleggende informasjon",
       "company": "Bedriftsinformasjon",
+      "about": "Om bedriften",
       "media": "Media",
       "location": "Beliggenhet",
       "contact": "Kontaktinformasjon",
+      "locationContact": "Beliggenhet og kontakt",
       "hours": "Åpningstider",
       "services": "Tjenester og tilbud"
     },
@@ -387,9 +389,11 @@
     "tabs": {
       "basicInfo": "Grunnleggende info",
       "company": "Bedrift",
+      "about": "Om bedriften",
       "media": "Media",
       "location": "Beliggenhet",
       "contact": "Kontakt",
+      "locationContact": "Beliggenhet og kontakt",
       "openingHours": "Åpningstider",
       "services": "Tjenester"
     },
@@ -515,6 +519,8 @@
     },
     "actions": {
       "save": "Lagre endringer",
+      "saveAndContinue": "Lagre og fortsett",
+      "previous": "Forrige",
       "create": "Opprett profil",
       "preview": "Forhåndsvis profil",
       "changeLogo": "Endre logo",
