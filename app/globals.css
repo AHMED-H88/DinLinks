@@ -3,6 +3,13 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    /* Height of the sticky site header: the h-16 row in components/Header.tsx
+       plus the border-b that .navbar adds. Anything sticking beneath the
+       header offsets by this so the two stay in step. */
+    --app-header-height: 65px;
+  }
+
   * {
     @apply border-gray-200;
   }

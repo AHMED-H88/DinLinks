@@ -151,9 +151,10 @@ export default function Header() {
 
               {/* Auth actions */}
               {session?.user ? (
-                // Min side is the business workspace; Konto is the DinLinks
-                // account. Business profile is not listed here — it lives
-                // inside Min side.
+                // This menu is the way into the workspace and back out of the
+                // product. Account is not listed: inside the workspace it is
+                // already a bottom-navigation destination, and Business profile
+                // likewise lives inside Min side.
                 <div className="space-y-2">
                   <Link
                     href="/dashboard"
@@ -161,13 +162,6 @@ export default function Header() {
                     className="flex items-center justify-center w-full px-4 py-2.5 text-sm font-medium text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-all"
                   >
                     {t("dashboard")}
-                  </Link>
-                  <Link
-                    href="/dashboard/account"
-                    onClick={() => setMobileOpen(false)}
-                    className="flex items-center justify-center w-full px-4 py-2.5 text-sm font-medium text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-all"
-                  >
-                    {t("account")}
                   </Link>
                   <button
                     onClick={() => { setMobileOpen(false); signOut({ callbackUrl: "/" }); }}

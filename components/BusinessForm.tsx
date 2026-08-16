@@ -335,17 +335,34 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
   const pullRef              = useRef(0);
   const lastTouchY           = useRef<number | null>(null);
   const advanceLock          = useRef(false);
-  const revealOnNextSection  = useRef(false);
 
-  // Only a gesture-driven change repositions the page. Tab taps, Previous and
-  // Save and continue keep their existing behaviour untouched.
+  // Bring the start of the new section into view when the section changes —
+  // by gesture, tab tap, Previous or Save and continue. Two guards keep it
+  // unobtrusive: it runs only below lg, where the strip is sticky and desktop
+  // behaviour is therefore untouched, and only when the editor has already
+  // scrolled up past the header, so a user still near the top is never yanked
+  // and the page heading is never forced out of view for no reason.
+  //
+  // The target is the sticky offset rather than viewport zero: aligning the
+  // editor top with the header leaves the strip exactly where it sticks, with
+  // the section content beginning just below it instead of behind it.
   useEffect(() => {
-    if (!revealOnNextSection.current) return;
-    revealOnNextSection.current = false;
+    const editor = editorRef.current;
+    if (!editor) return;
+    if (!window.matchMedia("(max-width: 1023.98px)").matches) return;
+
+    const headerOffset =
+      parseFloat(
+        getComputedStyle(document.documentElement).getPropertyValue("--app-header-height"),
+      ) || 0;
+
+    const top = editor.getBoundingClientRect().top;
+    if (top >= headerOffset - 1) return; // already at or below the sticky stack
+
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    editorRef.current?.scrollIntoView({
+    window.scrollTo({
+      top: window.scrollY + top - headerOffset,
       behavior: reduceMotion ? "auto" : "smooth",
-      block: "start",
     });
   }, [activeSection]);
 
@@ -391,9 +408,8 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
 
       advanceLock.current = true;
       reset();
-      // Reveal after React has swapped the section in — scrolling here would
-      // measure the outgoing section's layout and land somewhere arbitrary.
-      revealOnNextSection.current = true;
+      // The reveal runs from the effect above, after React has swapped the
+      // section in — scrolling here would measure the outgoing layout.
       setActiveSection(SECTIONS[activeIndex + 1].id);
 
       // Hold the lock past the reveal so one gesture advances exactly one
@@ -669,10 +685,17 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
   return (
     <div ref={editorRef} className={styles.editor}>
       {/* ── Thin, text-led section navigation — switches the active section.
-             Horizontally scrollable on mobile, same model on desktop. ── */}
+             Horizontally scrollable on mobile, same model on desktop.
+
+             Below lg it sticks directly under the site header so a long
+             section never hides which section is being edited. Opaque
+             background (matching the workspace surface) so fields do not read
+             through it, and it sits under the header's z-50 but over content.
+             Desktop keeps the existing static strip — the sidebar is already
+             sticky there and a second sticky bar would fight it. ── */}
       <nav
         ref={navRef}
-        className="flex items-center gap-5 sm:gap-6 lg:gap-7 border-b border-gray-200 overflow-x-auto scrollbar-hide mb-8"
+        className="sticky lg:static top-[var(--app-header-height)] lg:top-auto z-30 bg-gray-50 flex items-center gap-5 sm:gap-6 lg:gap-7 border-b border-gray-200 overflow-x-auto scrollbar-hide mb-8"
       >
         {SECTIONS.map((s) => (
           <button
