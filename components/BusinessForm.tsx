@@ -250,29 +250,49 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
   const [success,         setSuccess]         = useState("");
   const [activeSection,   setActiveSection]   = useState("basics");
 
-  // Scroll-spy: keep the editor section nav in sync with the visible section.
-  // Clicking a tab still smooth-scrolls (handled on the button); this only
-  // reflects natural scrolling. The top margin clears the sticky Header + nav;
-  // the bottom margin biases "active" to the section nearest the top, which
-  // avoids flicker around section boundaries.
+  // Scroll-spy: the active section is the LAST one whose heading has scrolled up
+  // past the reading line just below the sticky Header + section nav. This is
+  // deterministic (no off-by-one: a section only activates once it actually
+  // reaches the reading zone, not when the next one barely enters the viewport)
+  // and flicker-free. Clicking a tab still updates immediately + smooth-scrolls.
   useEffect(() => {
-    const els = SECTIONS
-      .map((s) => document.getElementById(s.id))
-      .filter((el): el is HTMLElement => el !== null);
-    if (els.length === 0) return;
+    // Header (64px) + section nav (~48px) + a small reading buffer.
+    const READING_LINE = 160;
+    const ids = SECTIONS.map((s) => s.id);
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((e) => e.isIntersecting)
-          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
-        if (visible[0]) setActiveSection(visible[0].target.id);
-      },
-      { rootMargin: "-140px 0px -55% 0px", threshold: 0 },
-    );
+    const update = () => {
+      let current = ids[0];
+      for (const id of ids) {
+        const el = document.getElementById(id);
+        if (!el) continue;
+        if (el.getBoundingClientRect().top <= READING_LINE) current = id;
+        else break; // sections are ordered top-to-bottom
+      }
+      // Bottom-of-page guard so the last section (Services) reliably activates
+      // even when it is too short to push its heading past the reading line.
+      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) {
+        current = ids[ids.length - 1];
+      }
+      setActiveSection((prev) => (prev === current ? prev : current));
+    };
 
-    els.forEach((el) => observer.observe(el));
-    return () => observer.disconnect();
+    let raf = 0;
+    const onScroll = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        update();
+      });
+    };
+
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (raf) cancelAnimationFrame(raf);
+    };
   }, []);
 
   const logoInputRef   = useRef<HTMLInputElement>(null);
