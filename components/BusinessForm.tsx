@@ -428,6 +428,87 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
     };
   }, [activeIndex, isLastSection]);
 
+  // ── The same continuation for mouse and trackpad ────────────────────────────
+  // The touch handler above cannot fire on a desktop, so a fine pointer used to
+  // reach the end of a section and stop there. This is the wheel equivalent:
+  // deltas that arrive while the page is already at the bottom accumulate, and
+  // past a deliberate threshold the editor advances one section. Navigation
+  // only — nothing is saved, exactly as on touch.
+  //
+  // A trackpad keeps emitting wheel events after the fingers lift, and there is
+  // no "gesture ended" signal to read. So the lock is released by silence
+  // rather than by a timer: every wheel event while locked pushes the release
+  // further out, which means a momentum tail — however long — can never
+  // cascade into a second section. The same silence rule starts a fresh
+  // accumulation, so two idle nudges minutes apart do not add up to a gesture.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    // Touch devices are handled above; this is the fine-pointer path only.
+    if (window.matchMedia("(pointer: coarse)").matches) return;
+    if (isLastSection) return;
+
+    const BOTTOM_SLACK    = 4;
+    const WHEEL_THRESHOLD = 180; // accumulated px of scrolling past the bottom
+    const QUIET_MS        = 600; // wheel silence that ends a gesture
+
+    let accumulated = 0;
+    let locked = false;
+    let lastEventAt = 0;
+    let releaseTimer: number | undefined;
+
+    const atBottom = () =>
+      window.scrollY + window.innerHeight >=
+      document.documentElement.scrollHeight - BOTTOM_SLACK;
+
+    // Normalise line- and page-mode wheels so the threshold means the same
+    // thing whatever the device reports.
+    const toPixels = (e: WheelEvent) =>
+      e.deltaMode === 1 ? e.deltaY * 16
+      : e.deltaMode === 2 ? e.deltaY * window.innerHeight
+      : e.deltaY;
+
+    const releaseAfterSilence = () => {
+      window.clearTimeout(releaseTimer);
+      releaseTimer = window.setTimeout(() => {
+        locked = false;
+        accumulated = 0;
+      }, QUIET_MS);
+    };
+
+    const onWheel = (e: WheelEvent) => {
+      if (locked) {
+        releaseAfterSilence(); // momentum still arriving — stay locked
+        return;
+      }
+
+      const delta = toPixels(e);
+      const now = e.timeStamp;
+      if (now - lastEventAt > QUIET_MS) accumulated = 0; // a new gesture
+      lastEventAt = now;
+
+      // Only scrolling made while already at the bottom counts, so the actions
+      // can be reached, read and clicked without the section changing.
+      if (delta <= 0 || !atBottom()) {
+        accumulated = 0;
+        return;
+      }
+
+      accumulated += delta;
+      if (accumulated < WHEEL_THRESHOLD) return;
+
+      locked = true;
+      accumulated = 0;
+      setActiveSection(SECTIONS[activeIndex + 1].id);
+      releaseAfterSilence();
+    };
+
+    window.addEventListener("wheel", onWheel, { passive: true });
+    return () => {
+      window.removeEventListener("wheel", onWheel);
+      window.clearTimeout(releaseTimer);
+    };
+  }, [activeIndex, isLastSection]);
+
   // ── Opening hours helper ────────────────────────────────────────────────────
   function updateHours(day: string, field: string, value: string | boolean) {
     setOpeningHours((prev) => ({

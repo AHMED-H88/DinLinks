@@ -9,8 +9,12 @@
   color-scheme: light;
 }
 
-/* ── Editorial two-column sections ─────────────────────────────────────────── */
-/* Mobile: single column (label above fields). Desktop: label | fields grid. */
+/* ── Section flow ──────────────────────────────────────────────────────────── */
+/* Heading, then description, then fields — one column at every width. Desktop
+   used to set the heading beside the fields in a side column, but that column
+   holds only a heading and a line of context, so it read as a permanent empty
+   strip that pushed the editable content to the right. The fields carry their
+   own internal grids (category pairs, NO/EN descriptions) where pairing helps. */
 .section {
   display: flex;
   flex-direction: column;
@@ -21,17 +25,10 @@
   border-top: 1px solid #e5e7eb; /* gray-200 divider between major sections */
 }
 @media (min-width: 1024px) {
+  /* A touch more air between the section context and the first control, now
+     that they sit in one column rather than side by side. */
   .section {
-    display: grid;
-    /* A compact editorial column: it holds a heading and a line of context, so
-       reserving more only pushes the fields right without earning anything. */
-    grid-template-columns: 200px minmax(0, 1fr);
-    /* row-gap, not the `gap` shorthand — `gap: 0` here silently reset the
-       column-gap above it, so the two columns rendered flush against each
-       other and the fields ran the full width of the workspace. */
-    row-gap: 0;
-    column-gap: 40px;
-    align-items: start;
+    gap: 28px;
   }
 }
 
