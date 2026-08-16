@@ -1,10 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
 import { Link, usePathname } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
-import { formatCity } from "@/lib/format";
+import DashboardIdentity, { type DashboardBusinessIdentity } from "@/components/DashboardIdentity";
 
 interface NavItem {
   key:   string;
@@ -13,17 +11,10 @@ interface NavItem {
   icon:  React.ReactNode;
 }
 
-export interface DashboardBusinessIdentity {
-  id:           string;
-  name:         string | null;
-  logo:         string | null;
-  city:         string | null;
-  status:       string;
-  categorySlug: string | null;
-  categoryName: string | null;
-}
+export type { DashboardBusinessIdentity };
 
-const icons: Record<string, React.ReactNode> = {
+/** Shared with the mobile bottom navigation so both use one icon set. */
+export const icons: Record<string, React.ReactNode> = {
   overview:  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.6} d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25A2.25 2.25 0 018.25 10.5H6A2.25 2.25 0 013.75 8.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 018.25 20.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25A2.25 2.25 0 0113.5 8.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />,
   profile:   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.6} d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008z" />,
   reviews:   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.6} d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.562.562 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />,
@@ -46,55 +37,6 @@ function DesktopLink({ href, label, icon, active }: { href: string; label: strin
       <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">{icon}</svg>
       {label}
     </Link>
-  );
-}
-
-/** Workspace-level tab. Deliberately quieter than the Profile section tabs
- *  that sit below it — normal weight when idle, medium when active — so the
- *  two rows read as different levels rather than two copies of one bar. */
-function MobileTab({ href, label, active }: { href: string; label: string; active: boolean }) {
-  return (
-    <Link
-      href={href as any}
-      aria-current={active ? "page" : undefined}
-      className={`whitespace-nowrap px-1 py-2.5 text-sm border-b-2 transition-colors ${
-        active
-          ? "border-gray-900 text-gray-900 font-medium"
-          : "border-transparent text-gray-500 font-normal hover:text-gray-900"
-      }`}
-    >
-      {label}
-    </Link>
-  );
-}
-
-function Identity({
-  business,
-  categoryLabel,
-  compact = false,
-}: {
-  business:      DashboardBusinessIdentity;
-  categoryLabel: string | null;
-  compact?:      boolean;
-}) {
-  const size = compact ? "w-9 h-9" : "w-10 h-10";
-  const meta = [categoryLabel, business.city ? formatCity(business.city) : null].filter(Boolean).join(" · ");
-  return (
-    <div className="flex items-center gap-3 min-w-0">
-      <div className={`${size} rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center flex-shrink-0 overflow-hidden`}>
-        {business.logo ? (
-          <Image src={business.logo} alt={business.name ?? ""} width={40} height={40} className="w-full h-full object-cover" />
-        ) : (
-          <span className="text-sm font-bold text-gray-500 select-none">
-            {(business.name ?? "?").slice(0, 2).toUpperCase()}
-          </span>
-        )}
-      </div>
-      <div className="min-w-0">
-        <p className="text-sm font-semibold text-gray-900 truncate">{business.name ?? "—"}</p>
-        {meta && <p className="text-xs text-gray-500 truncate">{meta}</p>}
-      </div>
-    </div>
   );
 }
 
@@ -139,62 +81,13 @@ export default function DashboardNav({ business }: { business: DashboardBusiness
 
   const helpHref = "/contact";
 
-  // ── Mobile "More" menu ──────────────────────────────────────────────────────
-  // Mobile keeps three primary destinations plus More. Locations joins the
-  // Account entries and Help behind the menu: four labels fit a 320px row
-  // without scrolling, five do not, and a half-clipped label is worse than a
-  // destination one tap away. Desktop still lists everything in the sidebar.
-  const [moreOpen, setMoreOpen] = useState(false);
-  const moreRef = useRef<HTMLDivElement>(null);
-
-  const byKey = (key: string) =>
-    groups.flatMap((g) => g.items).find((it) => it.key === key)!;
-
-  const primaryItems = ["overview", "profile", "reviews"].map(byKey);
-
-  // Rendered as separate blocks with a hairline between them: the workspace
-  // destination, then the account pair, then Help, which leaves the workspace.
-  const moreGroups = [
-    [byKey("locations")],
-    [byKey("general"), byKey("billing")],
-    [{ key: "help", href: helpHref, label: t("nav.help"), icon: icons.help }],
-  ];
-
-  const moreActive =
-    pathname.startsWith("/dashboard/account") || pathname.startsWith("/dashboard/locations");
-
-  // Close on navigation — Link keeps this component mounted across routes.
-  useEffect(() => setMoreOpen(false), [pathname]);
-
-  useEffect(() => {
-    if (!moreOpen) return;
-    const onPointerDown = (e: MouseEvent | TouchEvent) => {
-      if (!moreRef.current?.contains(e.target as Node)) setMoreOpen(false);
-    };
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setMoreOpen(false);
-    };
-    document.addEventListener("mousedown", onPointerDown);
-    document.addEventListener("touchstart", onPointerDown);
-    document.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.removeEventListener("mousedown", onPointerDown);
-      document.removeEventListener("touchstart", onPointerDown);
-      document.removeEventListener("keydown", onKeyDown);
-    };
-  }, [moreOpen]);
-
-  // No auto-scroll here any more: with four labels the row fits every
-  // supported width, so there is nothing to scroll into view. The Profile
-  // section strip keeps its own auto-scroll, which has many more tabs.
-
   return (
     <>
       {/* Desktop — persistent grouped sidebar */}
       <aside className="hidden lg:flex lg:flex-col lg:w-60 flex-shrink-0 lg:sticky lg:top-24 self-start">
         {business && (
           <div className="mb-5 pb-5 border-b border-gray-200">
-            <Identity business={business} categoryLabel={categoryLabel} />
+            <DashboardIdentity business={business} categoryLabel={categoryLabel} />
             {business.status === "APPROVED" && (
               <Link
                 href={`/business/${business.id}` as any}
@@ -225,85 +118,6 @@ export default function DashboardNav({ business }: { business: DashboardBusiness
         </div>
       </aside>
 
-      {/* Mobile — compact identity above a single primary row. The group labels
-          and the standalone Help block are desktop-only; on a phone they cost
-          most of the first screen before any page content appears. */}
-      <div className="lg:hidden mb-4">
-        {business && (
-          <div className="mb-2.5">
-            <Identity business={business} categoryLabel={categoryLabel} compact />
-          </div>
-        )}
-        <nav
-          aria-label={t("nav.menuLabel")}
-          className="-mx-4 sm:-mx-6 px-4 sm:px-6 border-b border-gray-200"
-        >
-          {/* All four fit every supported width, so the row is spread rather
-              than scrolled — nothing is ever half-clipped, and with no overflow
-              container the menu cannot be clipped either. */}
-          <div className="flex items-stretch justify-between gap-2">
-            {primaryItems.map((it) => (
-              <MobileTab key={it.key} href={it.href} label={it.label} active={isActive(it.href)} />
-            ))}
-
-            <div ref={moreRef} className="relative flex-shrink-0">
-              <button
-                type="button"
-                onClick={() => setMoreOpen((open) => !open)}
-                aria-haspopup="menu"
-                aria-expanded={moreOpen}
-                aria-current={moreActive ? "page" : undefined}
-                className={`flex h-full items-center gap-1 whitespace-nowrap px-1 py-2.5 text-sm border-b-2 transition-colors ${
-                  moreActive
-                    ? "border-gray-900 text-gray-900 font-medium"
-                    : "border-transparent text-gray-500 font-normal hover:text-gray-900"
-                }`}
-              >
-                {t("nav.more")}
-                <svg
-                  className={`w-3.5 h-3.5 transition-transform ${moreOpen ? "rotate-180" : ""}`}
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-
-              {moreOpen && (
-                <div
-                  role="menu"
-                  className="absolute right-0 top-full z-20 mt-1.5 w-[13.5rem] rounded-md border border-gray-200 bg-white py-1 shadow-subtle"
-                >
-                  {moreGroups.map((group, i) => (
-                    <div
-                      key={group[0].key}
-                      className={i > 0 ? "mt-1 pt-1 border-t border-gray-100" : undefined}
-                    >
-                      {group.map((it) => (
-                        <Link
-                          key={it.key}
-                          role="menuitem"
-                          href={it.href as any}
-                          aria-current={isActive(it.href) ? "page" : undefined}
-                          onClick={() => setMoreOpen(false)}
-                          className={`block px-3.5 py-2 text-sm transition-colors ${
-                            isActive(it.href)
-                              ? "font-medium text-gray-900 bg-gray-50"
-                              : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                          }`}
-                        >
-                          {it.label}
-                        </Link>
-                      ))}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </nav>
-      </div>
     </>
   );
 }

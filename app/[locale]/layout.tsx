@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations } from "next-intl/server";
@@ -11,6 +11,15 @@ const inter = Inter({ subsets: ["latin"] });
 
 const SITE_URL  = process.env.NEXTAUTH_URL ?? "https://dinlinks.no";
 const SITE_NAME = "DinLinks";
+
+// viewport-fit=cover is what makes env(safe-area-inset-*) report real values on
+// iPhone; without it the insets are always 0 and the fixed workspace bottom bar
+// would sit under the home indicator.
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
 
 export async function generateMetadata({
   params,

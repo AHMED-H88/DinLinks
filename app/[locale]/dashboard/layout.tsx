@@ -1,8 +1,11 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getTranslations } from "next-intl/server";
 import Header from "@/components/Header";
 import DashboardNav from "@/components/DashboardNav";
+import DashboardBottomNav from "@/components/DashboardBottomNav";
+import DashboardIdentity from "@/components/DashboardIdentity";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +22,8 @@ export default async function DashboardLayout({
 }) {
   const session = await auth();
   if (!session?.user) redirect("/login");
+
+  const tCat = await getTranslations("categories");
 
   // Minimal identity for the sidebar header — existing data only.
   const business = await prisma.business.findUnique({
@@ -41,9 +46,26 @@ export default async function DashboardLayout({
       }
     : null;
 
+  const categoryLabel = identity?.categorySlug
+    ? (tCat.has(identity.categorySlug) ? tCat(identity.categorySlug) : identity.categoryName)
+    : identity?.categoryName ?? null;
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      <Header />
+      {/* The public Header is desktop-only inside the workspace: on a phone it
+          made the workspace read as the marketing site wrapped around a
+          dashboard. Everything it offered a signed-in user — language, sign
+          out, support — is reachable under Account. */}
+      <div className="hidden lg:block">
+        <Header />
+      </div>
+
+      {/* Mobile workspace header — the business being managed, nothing else. */}
+      {identity && (
+        <div className="lg:hidden border-b border-gray-200 bg-white px-4 py-3">
+          <DashboardIdentity business={identity} categoryLabel={categoryLabel} compact />
+        </div>
+      )}
 
       <div className="flex-1 w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-10 py-5 sm:py-10">
         <div className="lg:flex lg:gap-16 lg:items-start">
@@ -51,6 +73,16 @@ export default async function DashboardLayout({
           <main className="flex-1 min-w-0">{children}</main>
         </div>
       </div>
+
+      {/* Clears the fixed bottom bar (plus the home indicator) so no page ever
+          hides its last control behind it. Desktop has no bar, so no spacer. */}
+      <div
+        className="lg:hidden"
+        style={{ height: "calc(4.25rem + env(safe-area-inset-bottom, 0px))" }}
+        aria-hidden
+      />
+      <DashboardBottomNav />
+
       {/* No public Footer here: the workspace ends with workspace content.
           The marketing Footer stays on the public pages that render it. */}
     </div>

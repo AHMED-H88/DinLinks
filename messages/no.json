@@ -8,6 +8,7 @@
     "signIn": "Logg inn",
     "signOut": "Logg ut",
     "dashboard": "Min side",
+    "account": "Konto",
     "registerBusiness": "Registrer bedrift",
     "openMenu": "Åpne meny",
     "closeMenu": "Lukk meny",
@@ -281,12 +282,13 @@
       "overview": "Oversikt",
       "profile": "Profil",
       "reviews": "Anmeldelser",
-      "locations": "Lokasjoner",
+      "locations": "Avdelinger",
       "general": "Generelt",
       "billing": "Fakturering",
       "help": "Hjelp og støtte",
-      "more": "Mer",
+      "account": "Konto",
       "menuLabel": "Arbeidsområdemeny",
+      "workspaceLabel": "Arbeidsområde",
       "groups": {
         "business": "Bedrift",
         "account": "Konto"
@@ -306,8 +308,16 @@
       "subtitle": "Se hva kunder sier om bedriften",
       "empty": "Ingen anmeldelser ennå"
     },
+    "accountPage": {
+      "subtitle": "Administrer DinLinks-kontoen din",
+      "groups": {
+        "account": "Konto",
+        "preferences": "Innstillinger",
+        "support": "Support"
+      }
+    },
     "locationsPage": {
-      "subtitle": "Administrer bedriftens lokasjoner",
+      "subtitle": "Administrer bedriftens avdelinger",
       "mainLocation": "Hovedlokasjon",
       "mainLocationHint": "Rediger under Bedriftsprofil → Kontakt. Hovedadressen teller som en lokasjon på den offentlige profilen.",
       "noMainLocation": "Ingen hovedadresse ennå. Legg den til under Bedriftsprofil.",

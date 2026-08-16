@@ -8,6 +8,7 @@
     "signIn": "Sign in",
     "signOut": "Sign out",
     "dashboard": "Dashboard",
+    "account": "Account",
     "registerBusiness": "Register business",
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
@@ -285,8 +286,9 @@
       "general": "General",
       "billing": "Billing",
       "help": "Help & support",
-      "more": "More",
+      "account": "Account",
       "menuLabel": "Workspace menu",
+      "workspaceLabel": "Workspace",
       "groups": {
         "business": "Business",
         "account": "Account"
@@ -305,6 +307,14 @@
     "reviewsPage": {
       "subtitle": "See what customers say about your business",
       "empty": "No reviews yet"
+    },
+    "accountPage": {
+      "subtitle": "Manage your DinLinks account",
+      "groups": {
+        "account": "Account",
+        "preferences": "Preferences",
+        "support": "Support"
+      }
     },
     "locationsPage": {
       "subtitle": "Manage your business locations",
