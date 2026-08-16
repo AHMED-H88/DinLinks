@@ -23,8 +23,8 @@
 @media (min-width: 1024px) {
   .section {
     display: grid;
-    grid-template-columns: 200px minmax(0, 1fr);
-    column-gap: 56px;
+    grid-template-columns: 225px minmax(0, 1fr);
+    column-gap: 48px;
     gap: 0;
     align-items: start;
   }

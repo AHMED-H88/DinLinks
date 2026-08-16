@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useTranslations, useLocale } from "next-intl";
@@ -250,6 +250,31 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
   const [success,         setSuccess]         = useState("");
   const [activeSection,   setActiveSection]   = useState("basics");
 
+  // Scroll-spy: keep the editor section nav in sync with the visible section.
+  // Clicking a tab still smooth-scrolls (handled on the button); this only
+  // reflects natural scrolling. The top margin clears the sticky Header + nav;
+  // the bottom margin biases "active" to the section nearest the top, which
+  // avoids flicker around section boundaries.
+  useEffect(() => {
+    const els = SECTIONS
+      .map((s) => document.getElementById(s.id))
+      .filter((el): el is HTMLElement => el !== null);
+    if (els.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+        if (visible[0]) setActiveSection(visible[0].target.id);
+      },
+      { rootMargin: "-140px 0px -55% 0px", threshold: 0 },
+    );
+
+    els.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
+
   const logoInputRef   = useRef<HTMLInputElement>(null);
   const coverInputRef  = useRef<HTMLInputElement>(null);
   const imagesInputRef = useRef<HTMLInputElement>(null);
@@ -441,7 +466,7 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
   return (
     <div className={styles.editor}>
       {/* ── Thin, text-led section navigation (desktop), sticky under header ── */}
-      <nav className="hidden lg:flex items-center gap-7 border-b border-gray-200 overflow-x-auto scrollbar-hide sticky top-16 z-20 bg-gray-50">
+      <nav className="hidden lg:flex items-center gap-7 border-b border-gray-200 overflow-x-auto scrollbar-hide sticky top-16 z-30 bg-gray-50">
         {SECTIONS.map((s) => (
           <button
             key={s.id}
@@ -543,7 +568,7 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
                   maxLength={IDENTITY_SUMMARY_MAX}
                   placeholder={t("placeholders.identitySummaryNo")}
                 />
-                <p className="text-xs text-gray-400 mt-1">
+                <p className="text-xs text-gray-500 mt-1">
                   {t("hints.identitySummary")} · {identitySummaryNo.trim().length}/{IDENTITY_SUMMARY_MAX}
                 </p>
               </div>
@@ -557,7 +582,7 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
                   maxLength={IDENTITY_SUMMARY_MAX}
                   placeholder={t("placeholders.identitySummaryEn")}
                 />
-                <p className="text-xs text-gray-400 mt-1">
+                <p className="text-xs text-gray-500 mt-1">
                   {t("hints.identitySummary")} · {identitySummaryEn.trim().length}/{IDENTITY_SUMMARY_MAX}
                 </p>
               </div>
@@ -573,7 +598,7 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
                 rows={4}
                 placeholder={t("placeholders.description")}
               />
-              <p className="text-xs text-gray-400 mt-1">{description.length} / 1000</p>
+              <p className="text-xs text-gray-500 mt-1">{description.length} / 1000</p>
             </div>
           </div>
         </section>
@@ -596,7 +621,7 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
                 rows={5}
                 placeholder={t("placeholders.companyStory")}
               />
-              <p className="text-xs text-gray-400 mt-1">{t("hints.companyStory")}</p>
+              <p className="text-xs text-gray-500 mt-1">{t("hints.companyStory")}</p>
             </div>
 
             {/* Founded year + employee count */}
@@ -665,7 +690,7 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
                   className="input"
                   placeholder={t("placeholders.organizationNumber")}
                 />
-                <p className="text-xs text-gray-400 mt-1">{t("hints.organizationNumber")}</p>
+                <p className="text-xs text-gray-500 mt-1">{t("hints.organizationNumber")}</p>
               </div>
             </div>
 
@@ -701,7 +726,7 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
             {/* Highlights */}
             <fieldset>
               <legend className="block text-sm font-medium text-gray-700 mb-1.5">{t("labels.highlightCodes")}</legend>
-              <p className="text-xs text-gray-400 mb-2">{t("hints.highlightCodes")}</p>
+              <p className="text-xs text-gray-500 mb-2">{t("hints.highlightCodes")}</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-2">
                 {HIGHLIGHT_CODES.map((code) => (
                   <label key={code} className="flex items-center gap-2 text-sm text-gray-700">
@@ -730,7 +755,7 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
             {/* Logo */}
             <div>
               <FieldLabel>{t("labels.logo")}</FieldLabel>
-              <p className="text-xs text-gray-400 mb-3">{t("hints.logo")}</p>
+              <p className="text-xs text-gray-500 mb-3">{t("hints.logo")}</p>
               <div className="flex items-center gap-5">
                 {/* Preview */}
                 <div className="w-20 h-20 rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 flex items-center justify-center flex-shrink-0 overflow-hidden">
@@ -779,7 +804,7 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
             {/* Cover image */}
             <div>
               <FieldLabel>{t("labels.cover")}</FieldLabel>
-              <p className="text-xs text-gray-400 mb-3">{t("hints.cover")}</p>
+              <p className="text-xs text-gray-500 mb-3">{t("hints.cover")}</p>
               <div className="space-y-3">
                 <div className="w-full h-36 rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 flex items-center justify-center overflow-hidden">
                   {coverImage ? (
@@ -789,7 +814,7 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
                       <svg className="w-8 h-8 text-gray-300 mx-auto mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
                       </svg>
-                      <span className="text-xs text-gray-400">{t("actions.noCoverImage")}</span>
+                      <span className="text-xs text-gray-500">{t("actions.noCoverImage")}</span>
                     </div>
                   )}
                 </div>
@@ -829,7 +854,7 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
             {/* Gallery */}
             <div>
               <FieldLabel>{t("photoGallery")}</FieldLabel>
-              <p className="text-xs text-gray-400 mb-3">{t("hints.photos")}</p>
+              <p className="text-xs text-gray-500 mb-3">{t("hints.photos")}</p>
               <input
                 ref={imagesInputRef}
                 type="file"
@@ -934,7 +959,7 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
                 className="input"
                 placeholder="https://maps.google.com/..."
               />
-              <p className="text-xs text-gray-400 mt-1">{t("placeholders.mapsUrlHint")}</p>
+              <p className="text-xs text-gray-500 mt-1">{t("placeholders.mapsUrlHint")}</p>
             </div>
 
             <details className="group">
@@ -1023,7 +1048,7 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
                 className="input"
                 placeholder={t("placeholders.bookingUrl")}
               />
-              <p className="text-xs text-gray-400 mt-1">A direct link for customers to book appointments or reservations.</p>
+              <p className="text-xs text-gray-500 mt-1">A direct link for customers to book appointments or reservations.</p>
             </div>
           </div>
         </section>
@@ -1144,7 +1169,7 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
                     <button
                       type="button"
                       onClick={() => removeService(svc.id)}
-                      className="w-8 h-8 mt-1.5 rounded-lg flex items-center justify-center text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors flex-shrink-0"
+                      className="w-8 h-8 mt-1.5 rounded-lg flex items-center justify-center text-gray-500 hover:text-red-600 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-200 focus:text-red-600 transition-colors flex-shrink-0"
                       title={t("actions.removeService")}
                     >
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
