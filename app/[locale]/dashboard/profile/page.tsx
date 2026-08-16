@@ -28,7 +28,13 @@ export default async function DashboardBusinessProfilePage({
   });
 
   return (
-    <div className="space-y-8">
+    // One centred frame for the whole editor — heading, status, section tabs,
+    // fields and actions all share it, so the page reads as a single column
+    // instead of the tabs and fields running the full width of the workspace
+    // while the heading sits short. Centred within the main area rather than
+    // the viewport, so the sidebar is not counted. Desktop only: below lg the
+    // approved mobile composition is untouched.
+    <div className="space-y-8 lg:max-w-[880px] lg:mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">

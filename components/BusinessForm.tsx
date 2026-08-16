@@ -337,11 +337,11 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
   const advanceLock          = useRef(false);
 
   // Bring the start of the new section into view when the section changes —
-  // by gesture, tab tap, Previous or Save and continue. Two guards keep it
-  // unobtrusive: it runs only below lg, where the strip is sticky and desktop
-  // behaviour is therefore untouched, and only when the editor has already
-  // scrolled up past the header, so a user still near the top is never yanked
-  // and the page heading is never forced out of view for no reason.
+  // by gesture, tab tap, Previous or Save and continue. The strip is sticky at
+  // every width now, so this runs at every width too. It stays unobtrusive by
+  // firing only when the editor has already scrolled up past the header: a
+  // user still near the top is never yanked, and the page heading is never
+  // forced out of view for no reason.
   //
   // The target is the sticky offset rather than viewport zero: aligning the
   // editor top with the header leaves the strip exactly where it sticks, with
@@ -349,7 +349,6 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
   useEffect(() => {
     const editor = editorRef.current;
     if (!editor) return;
-    if (!window.matchMedia("(max-width: 1023.98px)").matches) return;
 
     const headerOffset =
       parseFloat(
@@ -687,15 +686,15 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
       {/* ── Thin, text-led section navigation — switches the active section.
              Horizontally scrollable on mobile, same model on desktop.
 
-             Below lg it sticks directly under the site header so a long
-             section never hides which section is being edited. Opaque
+             It sticks directly under the site header at every width, so a
+             long section never hides which section is being edited. Opaque
              background (matching the workspace surface) so fields do not read
              through it, and it sits under the header's z-50 but over content.
-             Desktop keeps the existing static strip — the sidebar is already
-             sticky there and a second sticky bar would fight it. ── */}
+             On desktop it spans the centred editor frame only, leaving the
+             sidebar's own sticky column alone. ── */}
       <nav
         ref={navRef}
-        className="sticky lg:static top-[var(--app-header-height)] lg:top-auto z-30 bg-gray-50 flex items-center gap-5 sm:gap-6 lg:gap-7 border-b border-gray-200 overflow-x-auto scrollbar-hide mb-8"
+        className="sticky top-[var(--app-header-height)] z-30 bg-gray-50 flex items-center gap-5 sm:gap-6 lg:gap-7 border-b border-gray-200 overflow-x-auto scrollbar-hide mb-8"
       >
         {SECTIONS.map((s) => (
           <button

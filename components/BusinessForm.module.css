@@ -23,9 +23,14 @@
 @media (min-width: 1024px) {
   .section {
     display: grid;
-    grid-template-columns: 225px minmax(0, 1fr);
-    column-gap: 48px;
-    gap: 0;
+    /* A compact editorial column: it holds a heading and a line of context, so
+       reserving more only pushes the fields right without earning anything. */
+    grid-template-columns: 200px minmax(0, 1fr);
+    /* row-gap, not the `gap` shorthand — `gap: 0` here silently reset the
+       column-gap above it, so the two columns rendered flush against each
+       other and the fields ran the full width of the workspace. */
+    row-gap: 0;
+    column-gap: 40px;
     align-items: start;
   }
 }
