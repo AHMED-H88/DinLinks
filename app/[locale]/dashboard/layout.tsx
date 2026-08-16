@@ -46,8 +46,8 @@ export default async function DashboardLayout({
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Header />
 
-      <div className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
-        <div className="lg:flex lg:gap-10 lg:items-start">
+      <div className="flex-1 w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-10 py-6 sm:py-10">
+        <div className="lg:flex lg:gap-16 lg:items-start">
           <DashboardNav business={identity} />
           <main className="flex-1 min-w-0">{children}</main>
         </div>

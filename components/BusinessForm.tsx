@@ -11,6 +11,7 @@ import {
   IDENTITY_SUMMARY_MAX,
 } from "@/lib/business-fields";
 import { topLevelOrder, subOrder } from "@/lib/taxonomy-v1";
+import styles from "./BusinessForm.module.css";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -143,9 +144,9 @@ async function deleteStorageFile(url: string): Promise<void> {
 
 function SectionHeading({ id, title, subtitle }: { id: string; title: string; subtitle?: string }) {
   return (
-    <div id={id} className="scroll-mt-24 pb-3 border-b border-gray-100 mb-6">
-      <h3 className="text-base font-semibold text-gray-900">{title}</h3>
-      {subtitle && <p className="text-sm text-gray-500 mt-0.5">{subtitle}</p>}
+    <div id={id} className="scroll-mt-28">
+      <h3 className="text-base font-semibold text-gray-900 tracking-tight">{title}</h3>
+      {subtitle && <p className="text-sm text-gray-500 mt-1.5 leading-relaxed">{subtitle}</p>}
     </div>
   );
 }
@@ -437,9 +438,9 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
 
   // ── Render ──────────────────────────────────────────────────────────────────
   return (
-    <div>
-      {/* ── Subtle horizontal section navigation (desktop) ─────────────── */}
-      <nav className="hidden lg:flex items-center gap-1 mb-8 border-b border-gray-200 overflow-x-auto scrollbar-hide">
+    <div className={styles.editor}>
+      {/* ── Thin, text-led section navigation (desktop), sticky under header ── */}
+      <nav className="hidden lg:flex items-center gap-7 border-b border-gray-200 overflow-x-auto scrollbar-hide sticky top-16 z-20 bg-gray-50">
         {SECTIONS.map((s) => (
           <button
             key={s.id}
@@ -448,7 +449,7 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
               setActiveSection(s.id);
               document.getElementById(s.id)?.scrollIntoView({ behavior: "smooth" });
             }}
-            className={`whitespace-nowrap px-3 py-2.5 -mb-px border-b-2 text-sm transition-colors ${
+            className={`whitespace-nowrap py-3 -mb-px border-b-2 text-sm transition-colors ${
               activeSection === s.id
                 ? "border-gray-900 text-gray-900 font-semibold"
                 : "border-transparent text-gray-500 hover:text-gray-900"
@@ -460,12 +461,12 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
       </nav>
 
       {/* ── Form body ──────────────────────────────────────────────────── */}
-      <form onSubmit={handleSubmit} className="min-w-0 space-y-10">
-        {/* Status / feedback banners */}
-        <StatusBanners business={business} error={error} success={success} />
+      <form onSubmit={handleSubmit} className="min-w-0">
+        {/* Validation / save feedback (publication state lives in the page header) */}
+        <FormFeedback error={error} success={success} />
 
         {/* ── 1. Basic info ─────────────────────────────────────────── */}
-        <section>
+        <section className={styles.section}>
           <SectionHeading
             id="basics"
             title={t("sections.basics")}
@@ -575,7 +576,7 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
         </section>
 
         {/* ── Company information (Step A1) ─────────────────────────── */}
-        <section>
+        <section className={styles.section}>
           <SectionHeading
             id="company"
             title={t("sections.company")}
@@ -686,7 +687,7 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
                       type="checkbox"
                       checked={serviceModes.includes(mode)}
                       onChange={() => toggleInList(serviceModes, setServiceModes, mode)}
-                      className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                      className="rounded border-gray-300 text-gray-900 focus:ring-gray-300"
                     />
                     {t(`serviceMode.${mode}` as any)}
                   </label>
@@ -705,7 +706,7 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
                       type="checkbox"
                       checked={highlightCodes.includes(code)}
                       onChange={() => toggleInList(highlightCodes, setHighlightCodes, code)}
-                      className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                      className="rounded border-gray-300 text-gray-900 focus:ring-gray-300"
                     />
                     {t(`highlight.${code}` as any)}
                   </label>
@@ -716,7 +717,7 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
         </section>
 
         {/* ── 2. Media ──────────────────────────────────────────────── */}
-        <section>
+        <section className={styles.section}>
           <SectionHeading
             id="media"
             title={t("sections.media")}
@@ -880,7 +881,7 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
         </section>
 
         {/* ── 3. Location ───────────────────────────────────────────── */}
-        <section>
+        <section className={styles.section}>
           <SectionHeading
             id="location"
             title={t("sections.location")}
@@ -969,7 +970,7 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
         </section>
 
         {/* ── 4. Contact ────────────────────────────────────────────── */}
-        <section>
+        <section className={styles.section}>
           <SectionHeading
             id="contact"
             title={t("sections.contact")}
@@ -1025,7 +1026,7 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
         </section>
 
         {/* ── 5. Opening hours ──────────────────────────────────────── */}
-        <section>
+        <section className={styles.section}>
           <SectionHeading
             id="hours"
             title={t("sections.hours")}
@@ -1050,11 +1051,11 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
                   <label className="flex items-center gap-2 cursor-pointer select-none flex-shrink-0">
                     <div
                       onClick={() => updateHours(day, "closed", !h.closed)}
-                      className={`relative w-9 h-5 rounded-full transition-colors ${h.closed ? "bg-gray-300" : "bg-primary-600"}`}
+                      className={`relative w-9 h-5 rounded-full transition-colors ${h.closed ? "bg-gray-300" : "bg-gray-900"}`}
                     >
                       <div className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${h.closed ? "" : "translate-x-4"}`} />
                     </div>
-                    <span className={`text-xs font-medium ${h.closed ? "text-gray-400" : "text-primary-700"}`}>
+                    <span className={`text-xs font-medium ${h.closed ? "text-gray-400" : "text-gray-900"}`}>
                       {h.closed ? t("openState.closed") : t("openState.open")}
                     </span>
                   </label>
@@ -1087,7 +1088,7 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
         </section>
 
         {/* ── 6. Services ───────────────────────────────────────────── */}
-        <section>
+        <section className={styles.section}>
           <SectionHeading
             id="services"
             title={t("sections.services")}
@@ -1160,7 +1161,7 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
             <button
               type="button"
               onClick={addService}
-              className="w-full py-3 rounded-xl border-2 border-dashed border-gray-200 text-sm font-medium text-gray-500 hover:border-primary-300 hover:text-primary-700 hover:bg-primary-50 transition-all flex items-center justify-center gap-2"
+              className="w-full py-3 rounded-xl border-2 border-dashed border-gray-200 text-sm font-medium text-gray-500 hover:border-gray-400 hover:text-gray-900 hover:bg-gray-50 transition-all flex items-center justify-center gap-2"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -1209,22 +1210,15 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
 
 // ─── Status banners sub-component ─────────────────────────────────────────────
 
-function StatusBanners({
-  business,
+function FormFeedback({
   error,
   success,
 }: {
-  business: Business | null;
   error: string;
   success: string;
 }) {
   return (
-    <div className="space-y-3">
-      {/* Approval status */}
-      {business && (
-        <ApprovalBanner status={business.status} />
-      )}
-
+    <div className="space-y-3 empty:hidden mb-2">
       {/* Success */}
       {success && (
         <div className="flex items-start gap-3 p-4 rounded-xl bg-green-50 border border-green-200 text-green-800 text-sm">

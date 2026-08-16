@@ -28,14 +28,17 @@ export default async function DashboardBusinessProfilePage({
   });
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
-          {business ? t("editProfile") : t("createProfile")}
-        </h1>
-        <p className="text-sm text-gray-500 mt-0.5">
-          {business ? t("editSubtitle") : t("createSubtitle")}
-        </p>
+    <div className="space-y-8">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
+            {business ? t("editProfile") : t("createProfile")}
+          </h1>
+          <p className="text-sm text-gray-500 mt-1">
+            {business ? t("editSubtitle") : t("createSubtitle")}
+          </p>
+        </div>
+        {business && <PublicationStatus status={business.status} t={t} />}
       </div>
 
       <BusinessForm
@@ -79,6 +82,21 @@ export default async function DashboardBusinessProfilePage({
           }
           categories={categories}
         />
+    </div>
+  );
+}
+
+function PublicationStatus({ status, t }: { status: string; t: (k: string) => string }) {
+  const map: Record<string, { label: string; dot: string }> = {
+    APPROVED: { label: t("status.published"),    dot: "bg-emerald-500" },
+    PENDING:  { label: t("status.inReview"),     dot: "bg-amber-500" },
+    REJECTED: { label: t("status.notPublished"), dot: "bg-gray-400" },
+  };
+  const s = map[status] ?? map.PENDING;
+  return (
+    <div className="flex items-center gap-2 flex-shrink-0 sm:pt-1">
+      <span className={`w-2 h-2 rounded-full ${s.dot}`} />
+      <span className="text-sm text-gray-600">{s.label}</span>
     </div>
   );
 }
