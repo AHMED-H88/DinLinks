@@ -52,15 +52,14 @@ export default async function DashboardLayout({
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* The public Header is desktop-only inside the workspace: on a phone it
-          made the workspace read as the marketing site wrapped around a
-          dashboard. Everything it offered a signed-in user — language, sign
-          out, support — is reachable under Account. */}
-      <div className="hidden lg:block">
-        <Header />
-      </div>
+      {/* The shared site Header, at every width. It is what keeps the
+          workspace recognisably part of DinLinks and carries the existing
+          menu — public navigation, language, Min side, Konto, sign out — so
+          the workspace needs no header of its own. */}
+      <Header />
 
-      {/* Mobile workspace header — the business being managed, nothing else. */}
+      {/* Level two: the business being managed, directly under the DinLinks
+          identity. Workspace destinations live in the bottom navigation. */}
       {identity && (
         <div className="lg:hidden border-b border-gray-200 bg-white px-4 py-3">
           <DashboardIdentity business={identity} categoryLabel={categoryLabel} compact />
