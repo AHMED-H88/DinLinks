@@ -485,13 +485,18 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
           <div className="space-y-5">
             <div>
               <FieldLabel required>{t("labels.name")}</FieldLabel>
+              {/* No native `required`: inactive sections stay mounted but hidden,
+                  and the browser refuses to submit a form with an empty required
+                  control it cannot focus — which silently dead-ends Save from
+                  sections 2–6. doSave() validates the name itself, shows a
+                  localised error and returns to this section. */}
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="input"
                 placeholder={t("placeholders.name")}
-                required
+                aria-required="true"
               />
             </div>
 
@@ -1024,7 +1029,7 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
                   className="input"
                   placeholder={t("placeholders.bookingUrl")}
                 />
-                <p className="text-xs text-gray-500 mt-1">A direct link for customers to book appointments or reservations.</p>
+                <p className="text-xs text-gray-500 mt-1">{t("hints.bookingUrl")}</p>
               </div>
             </div>
           </div>
