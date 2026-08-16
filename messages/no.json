@@ -377,7 +377,13 @@
       "orgNumberInvalid": "Organisasjonsnummeret må være 9 siffer.",
       "serviceModesInvalid": "En eller flere valgte leveringsmåter er ugyldige.",
       "highlightCodesInvalid": "Ett eller flere valgte kjennetegn er ugyldige.",
-      "invalidType": "Ett av feltene har en ugyldig verdi."
+      "invalidType": "Ett av feltene har en ugyldig verdi.",
+      "emailInvalid": "Oppgi en gyldig e-postadresse.",
+      "websiteInvalid": "Oppgi en gyldig nettadresse som starter med http:// eller https://.",
+      "bookingUrlInvalid": "Oppgi en gyldig bestillingslenke som starter med http:// eller https://.",
+      "mapsUrlInvalid": "Oppgi en gyldig Google Maps-lenke som starter med http:// eller https://.",
+      "latitudeRange": "Breddegrad må være mellom -90 og 90.",
+      "longitudeRange": "Lengdegrad må være mellom -180 og 180."
     },
     "success": {
       "updated": "Profilen er oppdatert.",

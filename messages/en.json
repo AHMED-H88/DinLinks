@@ -377,7 +377,13 @@
       "orgNumberInvalid": "The organization number must be 9 digits.",
       "serviceModesInvalid": "One or more selected service modes are not valid.",
       "highlightCodesInvalid": "One or more selected highlights are not valid.",
-      "invalidType": "One of the fields has an invalid value."
+      "invalidType": "One of the fields has an invalid value.",
+      "emailInvalid": "Enter a valid email address.",
+      "websiteInvalid": "Enter a valid website address starting with http:// or https://.",
+      "bookingUrlInvalid": "Enter a valid booking link starting with http:// or https://.",
+      "mapsUrlInvalid": "Enter a valid Google Maps link starting with http:// or https://.",
+      "latitudeRange": "Latitude must be between -90 and 90.",
+      "longitudeRange": "Longitude must be between -180 and 180."
     },
     "success": {
       "updated": "Profile updated successfully.",

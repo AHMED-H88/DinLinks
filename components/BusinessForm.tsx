@@ -9,6 +9,7 @@ import {
   SERVICE_MODES,
   HIGHLIGHT_CODES,
   IDENTITY_SUMMARY_MAX,
+  FOUNDED_YEAR_MIN,
 } from "@/lib/business-fields";
 import { topLevelOrder, subOrder } from "@/lib/taxonomy-v1";
 import styles from "./BusinessForm.module.css";
@@ -100,6 +101,39 @@ const SECTIONS = [
   { id: "hours",    labelKey: "openingHours" },
   { id: "services", labelKey: "services" },
 ] as const;
+
+
+// ─── Field validation ─────────────────────────────────────────────────────────
+// The editor keeps all six sections mounted and hides the inactive ones, and a
+// collapsed <details> hides the GPS fields even inside the active section. The
+// browser cannot focus a hidden invalid control, so native constraint
+// validation refuses to submit without reporting anything — a silent dead end.
+// The form is therefore `noValidate` and every blocking rule lives here, so the
+// save flow can surface a localised error and reveal the offending section.
+// Semantic input types (email/url/tel/number) are kept for keyboards and hints.
+
+/** Deliberately permissive — the API and a real send are the true authority. */
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/** A user-enterable web address: parseable and served over http(s). */
+function isHttpUrl(value: string): boolean {
+  try {
+    const { protocol } = new URL(value);
+    return protocol === "http:" || protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+/** Mirrors the integer bounds enforced in lib/business-fields.ts. */
+function isIntegerInRange(raw: string, min: number, max: number): boolean {
+  const n = Number(raw);
+  return Number.isInteger(n) && n >= min && n <= max;
+}
+
+function isNumberInRange(n: number, min: number, max: number): boolean {
+  return Number.isFinite(n) && n >= min && n <= max;
+}
 
 
 // ─── Storage helpers ──────────────────────────────────────────────────────────
@@ -367,6 +401,66 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
       return false;
     }
 
+    // Fields the browser can no longer block on (the form is `noValidate` —
+    // see the Field validation note above). Optional fields stay valid while
+    // empty; checks run in section order so the user is sent to the earliest
+    // problem rather than an arbitrary one.
+    const checks: { invalid: boolean; section: string; messageKey: string }[] = [
+      // 2. About the business
+      {
+        invalid:
+          foundedYear.trim() !== "" &&
+          !isIntegerInRange(foundedYear.trim(), FOUNDED_YEAR_MIN, new Date().getFullYear()),
+        section: "company",
+        messageKey: "foundedYearRange",
+      },
+      {
+        invalid:
+          employeeCount.trim() !== "" &&
+          !isIntegerInRange(employeeCount.trim(), 0, Number.MAX_SAFE_INTEGER),
+        section: "company",
+        messageKey: "employeeCountRange",
+      },
+      // 4. Location & contact
+      {
+        invalid: mapLink.trim() !== "" && !isHttpUrl(mapLink.trim()),
+        section: "location",
+        messageKey: "mapsUrlInvalid",
+      },
+      {
+        invalid: latitude !== null && !isNumberInRange(latitude, -90, 90),
+        section: "location",
+        messageKey: "latitudeRange",
+      },
+      {
+        invalid: longitude !== null && !isNumberInRange(longitude, -180, 180),
+        section: "location",
+        messageKey: "longitudeRange",
+      },
+      {
+        invalid: email.trim() !== "" && !EMAIL_RE.test(email.trim()),
+        section: "location",
+        messageKey: "emailInvalid",
+      },
+      {
+        invalid: website.trim() !== "" && !isHttpUrl(website.trim()),
+        section: "location",
+        messageKey: "websiteInvalid",
+      },
+      {
+        invalid: bookingLink.trim() !== "" && !isHttpUrl(bookingLink.trim()),
+        section: "location",
+        messageKey: "bookingUrlInvalid",
+      },
+    ];
+
+    const failed = checks.find((c) => c.invalid);
+    if (failed) {
+      setError(t(`errors.${failed.messageKey}` as any));
+      setActiveSection(failed.section);
+      return false;
+    }
+
     setLoading(true);
     try {
       const payload = {
@@ -471,7 +565,10 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
       </nav>
 
       {/* ── Form body — one section rendered at a time ─────────────────── */}
-      <form onSubmit={handlePrimary} className="min-w-0">
+      {/* `noValidate`: hidden sections make native constraint validation
+          unreliable — see the Field validation note at the top of this file.
+          doSave() owns every blocking rule instead. */}
+      <form onSubmit={handlePrimary} noValidate className="min-w-0">
         {/* Validation / save feedback (publication state lives in the page header) */}
         <FormFeedback error={error} success={success} />
 
@@ -965,7 +1062,12 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
                     type="number"
                     step="any"
                     value={latitude ?? ""}
-                    onChange={(e) => setLatitude(parseFloat(e.target.value) || null)}
+                    // Number.isFinite, not `|| null`: latitude 0 is a real
+                    // coordinate and must not be coerced away.
+                    onChange={(e) => {
+                      const n = parseFloat(e.target.value);
+                      setLatitude(Number.isFinite(n) ? n : null);
+                    }}
                     className="input"
                     placeholder={t("placeholders.latitude")}
                   />
@@ -976,7 +1078,11 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
                     type="number"
                     step="any"
                     value={longitude ?? ""}
-                    onChange={(e) => setLongitude(parseFloat(e.target.value) || null)}
+                    // See latitude above — longitude 0 is equally valid.
+                    onChange={(e) => {
+                      const n = parseFloat(e.target.value);
+                      setLongitude(Number.isFinite(n) ? n : null);
+                    }}
                     className="input"
                     placeholder={t("placeholders.longitude")}
                   />

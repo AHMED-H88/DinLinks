@@ -36,7 +36,9 @@ export const HIGHLIGHT_CODES = [
 ] as const;
 export type HighlightCode = (typeof HIGHLIGHT_CODES)[number];
 
-const FOUNDED_YEAR_MIN = 1800;
+/** Earliest accepted founding year. Exported so the client form validates
+ *  against the same bound the API enforces. */
+export const FOUNDED_YEAR_MIN = 1800;
 
 /** Application-level max length for the short business identity summary. */
 export const IDENTITY_SUMMARY_MAX = 180;
