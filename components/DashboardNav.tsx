@@ -49,13 +49,18 @@ function DesktopLink({ href, label, icon, active }: { href: string; label: strin
   );
 }
 
+/** Workspace-level tab. Deliberately quieter than the Profile section tabs
+ *  that sit below it — normal weight when idle, medium when active — so the
+ *  two rows read as different levels rather than two copies of one bar. */
 function MobileTab({ href, label, active }: { href: string; label: string; active: boolean }) {
   return (
     <Link
       href={href as any}
       aria-current={active ? "page" : undefined}
-      className={`whitespace-nowrap px-3.5 py-2.5 text-sm font-medium border-b-2 transition-colors ${
-        active ? "border-gray-900 text-gray-900" : "border-transparent text-gray-500 hover:text-gray-900"
+      className={`whitespace-nowrap px-1 py-2.5 text-sm border-b-2 transition-colors ${
+        active
+          ? "border-gray-900 text-gray-900 font-medium"
+          : "border-transparent text-gray-500 font-normal hover:text-gray-900"
       }`}
     >
       {label}
@@ -135,15 +140,28 @@ export default function DashboardNav({ business }: { business: DashboardBusiness
   const helpHref = "/contact";
 
   // ── Mobile "More" menu ──────────────────────────────────────────────────────
-  // Mobile shows one primary row; the Account destinations and Help live behind
-  // More so the workspace does not spend most of the first screen on chrome.
+  // Mobile keeps three primary destinations plus More. Locations joins the
+  // Account entries and Help behind the menu: four labels fit a 320px row
+  // without scrolling, five do not, and a half-clipped label is worse than a
+  // destination one tap away. Desktop still lists everything in the sidebar.
   const [moreOpen, setMoreOpen] = useState(false);
-  const moreRef  = useRef<HTMLDivElement>(null);
-  const stripRef = useRef<HTMLDivElement>(null);
+  const moreRef = useRef<HTMLDivElement>(null);
 
-  const businessItems = groups.find((g) => g.key === "business")?.items ?? [];
-  const moreItems     = groups.find((g) => g.key === "account")?.items ?? [];
-  const moreActive    = pathname.startsWith("/dashboard/account");
+  const byKey = (key: string) =>
+    groups.flatMap((g) => g.items).find((it) => it.key === key)!;
+
+  const primaryItems = ["overview", "profile", "reviews"].map(byKey);
+
+  // Rendered as separate blocks with a hairline between them: the workspace
+  // destination, then the account pair, then Help, which leaves the workspace.
+  const moreGroups = [
+    [byKey("locations")],
+    [byKey("general"), byKey("billing")],
+    [{ key: "help", href: helpHref, label: t("nav.help"), icon: icons.help }],
+  ];
+
+  const moreActive =
+    pathname.startsWith("/dashboard/account") || pathname.startsWith("/dashboard/locations");
 
   // Close on navigation — Link keeps this component mounted across routes.
   useEffect(() => setMoreOpen(false), [pathname]);
@@ -166,23 +184,9 @@ export default function DashboardNav({ business }: { business: DashboardBusiness
     };
   }, [moreOpen]);
 
-  // The primary row scrolls when the labels do not fit, so keep the active tab
-  // in view. Only the strip scrolls, never the page.
-  useEffect(() => {
-    const strip = stripRef.current;
-    const active = strip?.querySelector<HTMLElement>('[aria-current="page"]');
-    if (!strip || !active) return;
-
-    const GUTTER = 16;
-    const box = strip.getBoundingClientRect();
-    const tab = active.getBoundingClientRect();
-
-    if (tab.left < box.left) {
-      strip.scrollBy({ left: tab.left - box.left - GUTTER, behavior: "auto" });
-    } else if (tab.right > box.right) {
-      strip.scrollBy({ left: tab.right - box.right + GUTTER, behavior: "auto" });
-    }
-  }, [pathname]);
+  // No auto-scroll here any more: with four labels the row fits every
+  // supported width, so there is nothing to scroll into view. The Profile
+  // section strip keeps its own auto-scroll, which has many more tabs.
 
   return (
     <>
@@ -224,9 +228,9 @@ export default function DashboardNav({ business }: { business: DashboardBusiness
       {/* Mobile — compact identity above a single primary row. The group labels
           and the standalone Help block are desktop-only; on a phone they cost
           most of the first screen before any page content appears. */}
-      <div className="lg:hidden mb-5">
+      <div className="lg:hidden mb-4">
         {business && (
-          <div className="mb-3">
+          <div className="mb-2.5">
             <Identity business={business} categoryLabel={categoryLabel} compact />
           </div>
         )}
@@ -234,29 +238,25 @@ export default function DashboardNav({ business }: { business: DashboardBusiness
           aria-label={t("nav.menuLabel")}
           className="-mx-4 sm:-mx-6 px-4 sm:px-6 border-b border-gray-200"
         >
-          <div className="flex items-stretch">
-            {/* Primary destinations — scroll horizontally only if they overflow */}
-            <div ref={stripRef} className="flex min-w-0 flex-1 gap-1 overflow-x-auto scrollbar-hide">
-              {businessItems.map((it) => (
-                <MobileTab key={it.key} href={it.href} label={it.label} active={isActive(it.href)} />
-              ))}
-            </div>
+          {/* All four fit every supported width, so the row is spread rather
+              than scrolled — nothing is ever half-clipped, and with no overflow
+              container the menu cannot be clipped either. */}
+          <div className="flex items-stretch justify-between gap-2">
+            {primaryItems.map((it) => (
+              <MobileTab key={it.key} href={it.href} label={it.label} active={isActive(it.href)} />
+            ))}
 
-            {/* Kept outside the scroller: an overflow container would clip the
-                menu, and More must stay reachable without scrolling. The rule
-                marks where the scrolling list ends, so a label clipped mid-word
-                reads as "there is more behind this" rather than as a glitch. */}
-            <div ref={moreRef} className="relative flex-shrink-0 pl-2 ml-1 border-l border-gray-200">
+            <div ref={moreRef} className="relative flex-shrink-0">
               <button
                 type="button"
                 onClick={() => setMoreOpen((open) => !open)}
                 aria-haspopup="menu"
                 aria-expanded={moreOpen}
                 aria-current={moreActive ? "page" : undefined}
-                className={`flex h-full items-center gap-1 whitespace-nowrap px-3.5 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+                className={`flex h-full items-center gap-1 whitespace-nowrap px-1 py-2.5 text-sm border-b-2 transition-colors ${
                   moreActive
-                    ? "border-gray-900 text-gray-900"
-                    : "border-transparent text-gray-500 hover:text-gray-900"
+                    ? "border-gray-900 text-gray-900 font-medium"
+                    : "border-transparent text-gray-500 font-normal hover:text-gray-900"
                 }`}
               >
                 {t("nav.more")}
@@ -273,35 +273,31 @@ export default function DashboardNav({ business }: { business: DashboardBusiness
               {moreOpen && (
                 <div
                   role="menu"
-                  className="absolute right-0 top-full z-20 mt-1 w-56 rounded-xl border border-gray-200 bg-white py-1 shadow-soft"
+                  className="absolute right-0 top-full z-20 mt-1.5 w-[13.5rem] rounded-md border border-gray-200 bg-white py-1 shadow-subtle"
                 >
-                  {moreItems.map((it) => (
-                    <Link
-                      key={it.key}
-                      role="menuitem"
-                      href={it.href as any}
-                      aria-current={isActive(it.href) ? "page" : undefined}
-                      onClick={() => setMoreOpen(false)}
-                      className={`block px-4 py-2.5 text-sm transition-colors ${
-                        isActive(it.href)
-                          ? "font-medium text-gray-900 bg-gray-50"
-                          : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                      }`}
+                  {moreGroups.map((group, i) => (
+                    <div
+                      key={group[0].key}
+                      className={i > 0 ? "mt-1 pt-1 border-t border-gray-100" : undefined}
                     >
-                      {it.label}
-                    </Link>
+                      {group.map((it) => (
+                        <Link
+                          key={it.key}
+                          role="menuitem"
+                          href={it.href as any}
+                          aria-current={isActive(it.href) ? "page" : undefined}
+                          onClick={() => setMoreOpen(false)}
+                          className={`block px-3.5 py-2 text-sm transition-colors ${
+                            isActive(it.href)
+                              ? "font-medium text-gray-900 bg-gray-50"
+                              : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                          }`}
+                        >
+                          {it.label}
+                        </Link>
+                      ))}
+                    </div>
                   ))}
-                  {/* Help leaves the workspace, so it sits apart from Account */}
-                  <div className="mt-1 pt-1 border-t border-gray-100">
-                    <Link
-                      role="menuitem"
-                      href={helpHref as any}
-                      onClick={() => setMoreOpen(false)}
-                      className="block px-4 py-2.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors"
-                    >
-                      {t("nav.help")}
-                    </Link>
-                  </div>
                 </div>
               )}
             </div>
