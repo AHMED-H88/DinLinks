@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useTranslations, useLocale } from "next-intl";
@@ -288,6 +288,30 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
   const logoInputRef   = useRef<HTMLInputElement>(null);
   const coverInputRef  = useRef<HTMLInputElement>(null);
   const imagesInputRef = useRef<HTMLInputElement>(null);
+  const navRef         = useRef<HTMLElement>(null);
+
+  // The tab strip scrolls horizontally on narrow screens, so a section reached
+  // via Save and continue / Previous can sit outside the visible run. Nudge the
+  // strip just far enough to reveal it. Only the strip is scrolled — never the
+  // page — so this is inert on desktop, where nothing overflows.
+  useEffect(() => {
+    const nav = navRef.current;
+    const active = nav?.querySelector<HTMLElement>('[aria-current="true"]');
+    if (!nav || !active) return;
+
+    const GUTTER = 16; // leave a hint of the neighbouring tab
+    // Compare rectangles rather than offsetLeft: the tabs' offsetParent is not
+    // the strip (it is not positioned), so offset maths would use the wrong
+    // origin. Deltas fed to scrollBy are origin-independent.
+    const strip = nav.getBoundingClientRect();
+    const tab   = active.getBoundingClientRect();
+
+    if (tab.left < strip.left) {
+      nav.scrollBy({ left: tab.left - strip.left - GUTTER, behavior: "auto" });
+    } else if (tab.right > strip.right) {
+      nav.scrollBy({ left: tab.right - strip.right + GUTTER, behavior: "auto" });
+    }
+  }, [activeSection]);
 
   // ── Opening hours helper ────────────────────────────────────────────────────
   function updateHours(day: string, field: string, value: string | boolean) {
@@ -546,7 +570,10 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
     <div className={styles.editor}>
       {/* ── Thin, text-led section navigation — switches the active section.
              Horizontally scrollable on mobile, same model on desktop. ── */}
-      <nav className="flex items-center gap-6 lg:gap-7 border-b border-gray-200 overflow-x-auto scrollbar-hide mb-8">
+      <nav
+        ref={navRef}
+        className="flex items-center gap-5 sm:gap-6 lg:gap-7 border-b border-gray-200 overflow-x-auto scrollbar-hide mb-8"
+      >
         {SECTIONS.map((s) => (
           <button
             key={s.id}
@@ -794,9 +821,10 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
             {/* Service modes */}
             <fieldset>
               <legend className="block text-sm font-medium text-gray-700 mb-1.5">{t("labels.serviceModes")}</legend>
+              {/* py-1 below sm only: taller tap targets, desktop unchanged. */}
               <div className="flex flex-wrap gap-x-5 gap-y-2">
                 {SERVICE_MODES.map((mode) => (
-                  <label key={mode} className="flex items-center gap-2 text-sm text-gray-700">
+                  <label key={mode} className="flex items-center gap-2 py-1 sm:py-0 text-sm text-gray-700">
                     <input
                       type="checkbox"
                       checked={serviceModes.includes(mode)}
@@ -815,7 +843,7 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
               <p className="text-xs text-gray-500 mb-2">{t("hints.highlightCodes")}</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-2">
                 {HIGHLIGHT_CODES.map((code) => (
-                  <label key={code} className="flex items-center gap-2 text-sm text-gray-700">
+                  <label key={code} className="flex items-center gap-2 py-1 sm:py-0 text-sm text-gray-700">
                     <input
                       type="checkbox"
                       checked={highlightCodes.includes(code)}
@@ -979,7 +1007,10 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
                       <button
                         type="button"
                         onClick={() => removeGalleryImage(img, idx)}
-                        className="absolute top-1.5 right-1.5 w-6 h-6 bg-red-500/90 hover:bg-red-600 text-white rounded-full flex items-center justify-center text-xs font-bold opacity-0 group-hover:opacity-100 transition-all shadow"
+                        // Touch screens have no hover, so the hover-reveal used
+                        // on desktop would leave this unreachable: show it
+                        // outright below sm, keep the desktop reveal above.
+                        className="absolute top-1.5 right-1.5 w-7 h-7 sm:w-6 sm:h-6 bg-red-500/90 hover:bg-red-600 text-white rounded-full flex items-center justify-center text-xs font-bold opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all shadow"
                       >
                         ×
                       </button>
@@ -1013,7 +1044,7 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <FieldLabel>{t("labels.city")}</FieldLabel>
                 <input
@@ -1154,46 +1185,54 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
               return (
                 <div
                   key={day}
-                  className="flex flex-col sm:flex-row sm:items-center gap-3 py-3"
+                  className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 py-3"
                 >
-                  {/* Day name */}
-                  <span className={`w-28 text-sm font-medium flex-shrink-0 ${h.closed ? "text-gray-400" : "text-gray-800"}`}>
-                    {t(`days.${day}`)}
-                  </span>
-
-                  {/* Closed toggle */}
-                  <label className="flex items-center gap-2 cursor-pointer select-none flex-shrink-0">
-                    <div
-                      onClick={() => updateHours(day, "closed", !h.closed)}
-                      className={`relative w-9 h-5 rounded-full transition-colors ${h.closed ? "bg-gray-300" : "bg-gray-900"}`}
-                    >
-                      <div className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${h.closed ? "" : "translate-x-4"}`} />
-                    </div>
-                    <span className={`text-xs font-medium ${h.closed ? "text-gray-400" : "text-gray-900"}`}>
-                      {h.closed ? t("openState.closed") : t("openState.open")}
+                  {/* Day and state share the first line on narrow screens so a
+                      day costs two lines rather than three. `sm:contents`
+                      dissolves this wrapper at sm+, restoring the approved
+                      flat desktop row exactly. */}
+                  <div className="flex items-center justify-between gap-3 sm:contents">
+                    {/* Day name */}
+                    <span className={`sm:w-28 text-sm font-medium flex-shrink-0 ${h.closed ? "text-gray-400" : "text-gray-800"}`}>
+                      {t(`days.${day}`)}
                     </span>
-                  </label>
+
+                    {/* Closed toggle */}
+                    <label className="flex items-center gap-2 cursor-pointer select-none flex-shrink-0">
+                      <div
+                        onClick={() => updateHours(day, "closed", !h.closed)}
+                        className={`relative w-9 h-5 rounded-full transition-colors ${h.closed ? "bg-gray-300" : "bg-gray-900"}`}
+                      >
+                        <div className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${h.closed ? "" : "translate-x-4"}`} />
+                      </div>
+                      <span className={`text-xs font-medium ${h.closed ? "text-gray-400" : "text-gray-900"}`}>
+                        {h.closed ? t("openState.closed") : t("openState.open")}
+                      </span>
+                    </label>
+                  </div>
 
                   {/* Time inputs */}
                   {!h.closed && (
-                    <div className="flex items-center gap-2 flex-1">
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
                       <input
                         type="time"
                         value={h.open}
                         onChange={(e) => updateHours(day, "open", e.target.value)}
-                        className="input py-1.5 px-3 text-sm flex-1"
+                        className="input py-1.5 px-3 text-sm flex-1 min-w-0"
                       />
                       <span className="text-gray-400 text-sm font-medium">–</span>
                       <input
                         type="time"
                         value={h.close}
                         onChange={(e) => updateHours(day, "close", e.target.value)}
-                        className="input py-1.5 px-3 text-sm flex-1"
+                        className="input py-1.5 px-3 text-sm flex-1 min-w-0"
                       />
                     </div>
                   )}
+                  {/* Redundant on mobile — the toggle beside the day already
+                      reads Closed / Stengt — so it only shows from sm up. */}
                   {h.closed && (
-                    <span className="text-sm text-gray-400 italic">{t("openState.notAvailable")}</span>
+                    <span className="hidden sm:inline text-sm text-gray-400 italic">{t("openState.notAvailable")}</span>
                   )}
                 </div>
               );
@@ -1216,7 +1255,7 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
             {services.length > 0 && (
               <div className="divide-y divide-gray-100 border-t border-gray-100">
                 {services.map((svc, idx) => (
-                  <div key={svc.id} className="group relative flex items-start gap-4 py-5">
+                  <div key={svc.id} className="group relative flex items-start gap-3 sm:gap-4 py-5">
                     <span className="w-6 flex-shrink-0 pt-2.5 text-xs font-semibold text-gray-400 tabular-nums">
                       {String(idx + 1).padStart(2, "0")}
                     </span>
@@ -1257,7 +1296,8 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
                     <button
                       type="button"
                       onClick={() => removeService(svc.id)}
-                      className="w-8 h-8 mt-1.5 rounded-lg flex items-center justify-center text-gray-500 hover:text-red-600 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-200 focus:text-red-600 transition-colors flex-shrink-0"
+                      // Wider tap target below sm; the desktop box stays 32px.
+                      className="w-10 h-10 sm:w-8 sm:h-8 mt-1.5 rounded-lg flex items-center justify-center text-gray-500 hover:text-red-600 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-200 focus:text-red-600 transition-colors flex-shrink-0"
                       title={t("actions.removeService")}
                     >
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1294,13 +1334,17 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
             </button>
           )}
 
-          <div className="ml-auto flex items-center gap-3">
+          {/* Below sm this group takes its own line under Previous and stacks:
+              the Norwegian labels are too long to sit side by side at 320px, and
+              stretching both keeps the primary save strongest and thumb-reachable.
+              At sm+ it is the original single row. */}
+          <div className="ml-auto flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
             {isEdit && business.status === "APPROVED" && (
               <a
                 href={`/${locale}/business/${business.id}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn btn-secondary hidden sm:inline-flex items-center gap-2"
+                className="btn btn-secondary inline-flex items-center justify-center gap-2 sm:flex-shrink-0"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
