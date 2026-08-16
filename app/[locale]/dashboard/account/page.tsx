@@ -2,7 +2,6 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { Link } from "@/i18n/routing";
-import LanguageSwitcher from "@/components/LanguageSwitcher";
 import SignOutButton from "@/components/SignOutButton";
 
 export const dynamic = "force-dynamic";
@@ -22,10 +21,14 @@ export default async function DashboardAccountPage() {
   const t = await getTranslations("dashboard");
   const tNav = await getTranslations("nav");
 
+  // Language is not listed here: the Header now renders in the mobile
+  // workspace too, so its menu already offers the switch and a second control
+  // would be a duplicate. Removing it empties the preferences group, so that
+  // group goes with it rather than sitting here with no rows.
   const groups: {
     key: string;
     label: string;
-    rows: { key: string; label: string; href?: string; control?: "language" }[];
+    rows: { key: string; label: string; href: string }[];
   }[] = [
     {
       key: "account",
@@ -34,11 +37,6 @@ export default async function DashboardAccountPage() {
         { key: "general", label: t("nav.general"), href: "/dashboard/account/general" },
         { key: "billing", label: t("nav.billing"), href: "/dashboard/account/billing" },
       ],
-    },
-    {
-      key: "preferences",
-      label: t("accountPage.groups.preferences"),
-      rows: [{ key: "language", label: tNav("language"), control: "language" }],
     },
     {
       key: "support",
@@ -61,26 +59,18 @@ export default async function DashboardAccountPage() {
               {group.label}
             </h2>
             <div className="divide-y divide-gray-100 border-y border-gray-100">
-              {group.rows.map((row) =>
-                row.href ? (
-                  <Link
-                    key={row.key}
-                    href={row.href as any}
-                    className="flex items-center justify-between gap-4 py-3.5 text-sm text-gray-900 hover:text-gray-600 transition-colors"
-                  >
-                    {row.label}
-                    <svg className="w-4 h-4 flex-shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden>
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </Link>
-                ) : (
-                  // No chevron: language changes in place rather than navigating.
-                  <div key={row.key} className="flex items-center justify-between gap-4 py-3">
-                    <span className="text-sm text-gray-900">{row.label}</span>
-                    <LanguageSwitcher bare />
-                  </div>
-                )
-              )}
+              {group.rows.map((row) => (
+                <Link
+                  key={row.key}
+                  href={row.href as any}
+                  className="flex items-center justify-between gap-4 py-3.5 text-sm text-gray-900 hover:text-gray-600 transition-colors"
+                >
+                  {row.label}
+                  <svg className="w-4 h-4 flex-shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </Link>
+              ))}
             </div>
           </section>
         ))}

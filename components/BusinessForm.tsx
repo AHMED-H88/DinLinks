@@ -292,6 +292,7 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
   const coverInputRef  = useRef<HTMLInputElement>(null);
   const imagesInputRef = useRef<HTMLInputElement>(null);
   const navRef         = useRef<HTMLElement>(null);
+  const editorRef      = useRef<HTMLDivElement>(null);
 
   // The tab strip scrolls horizontally on narrow screens, so a section reached
   // via Save and continue / Previous can sit outside the visible run. Nudge the
@@ -302,19 +303,115 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
     const active = nav?.querySelector<HTMLElement>('[aria-current="true"]');
     if (!nav || !active) return;
 
-    const GUTTER = 16; // leave a hint of the neighbouring tab
+    // Enough overshoot that a sliver of the neighbouring tab stays visible, so
+    // the strip reads as a run of sections rather than ending at the active one.
+    const GUTTER = 40;
     // Compare rectangles rather than offsetLeft: the tabs' offsetParent is not
     // the strip (it is not positioned), so offset maths would use the wrong
     // origin. Deltas fed to scrollBy are origin-independent.
     const strip = nav.getBoundingClientRect();
     const tab   = active.getBoundingClientRect();
 
+    // Only move when the active tab is actually out of view — no recentring
+    // while it is already comfortably visible.
     if (tab.left < strip.left) {
       nav.scrollBy({ left: tab.left - strip.left - GUTTER, behavior: "auto" });
     } else if (tab.right > strip.right) {
       nav.scrollBy({ left: tab.right - strip.right + GUTTER, behavior: "auto" });
     }
   }, [activeSection]);
+
+  // ── Continue-scrolling into the next section (touch only) ───────────────────
+  // One section shows at a time, but reaching the end of one should not feel
+  // like a wall. Once the page is scrolled to the bottom, further *finger*
+  // movement accumulates; past a deliberate threshold the editor advances one
+  // section. Navigation only — nothing is saved and no form state is touched.
+  //
+  // Reading touchmove rather than scroll position is what makes this safe on
+  // iOS Safari: momentum after a flick fires scroll events but no touchmove, so
+  // a hard flick cannot skip ahead; rubber-band overscroll only accumulates
+  // while the finger is still down, which is genuine intent; and a keyboard
+  // opening or closing resizes the viewport without any touchmove at all.
+  const pullRef              = useRef(0);
+  const lastTouchY           = useRef<number | null>(null);
+  const advanceLock          = useRef(false);
+  const revealOnNextSection  = useRef(false);
+
+  // Only a gesture-driven change repositions the page. Tab taps, Previous and
+  // Save and continue keep their existing behaviour untouched.
+  useEffect(() => {
+    if (!revealOnNextSection.current) return;
+    revealOnNextSection.current = false;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    editorRef.current?.scrollIntoView({
+      behavior: reduceMotion ? "auto" : "smooth",
+      block: "start",
+    });
+  }, [activeSection]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    // Desktop keeps tabs / Previous / Save and continue; no scroll hijacking.
+    if (!window.matchMedia("(pointer: coarse)").matches) return;
+    // The last section has nowhere to advance to: normal end of page.
+    if (isLastSection) return;
+
+    const BOTTOM_SLACK    = 4;   // px of tolerance for "at the bottom"
+    const PULL_THRESHOLD  = 80;  // px of finger travel past the bottom
+    const RELOCK_MS       = 800;
+
+    const atBottom = () =>
+      window.scrollY + window.innerHeight >=
+      document.documentElement.scrollHeight - BOTTOM_SLACK;
+
+    const reset = () => { pullRef.current = 0; lastTouchY.current = null; };
+
+    const onTouchStart = (e: TouchEvent) => {
+      lastTouchY.current = e.touches[0]?.clientY ?? null;
+      pullRef.current = 0;
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      const y = e.touches[0]?.clientY;
+      if (y == null) return;
+      const previous = lastTouchY.current;
+      lastTouchY.current = y;
+      if (previous == null || advanceLock.current) return;
+
+      const delta = previous - y; // finger travelling up = scrolling down
+      // Only movement made *while already at the bottom* counts, so the user
+      // can reach the actions, pause, read and tap them without advancing.
+      if (delta <= 0 || !atBottom()) {
+        pullRef.current = 0;
+        return;
+      }
+
+      pullRef.current += delta;
+      if (pullRef.current < PULL_THRESHOLD) return;
+
+      advanceLock.current = true;
+      reset();
+      // Reveal after React has swapped the section in — scrolling here would
+      // measure the outgoing section's layout and land somewhere arbitrary.
+      revealOnNextSection.current = true;
+      setActiveSection(SECTIONS[activeIndex + 1].id);
+
+      // Hold the lock past the reveal so one gesture advances exactly one
+      // section, however much momentum follows it.
+      window.setTimeout(() => { advanceLock.current = false; }, RELOCK_MS);
+    };
+
+    window.addEventListener("touchstart", onTouchStart, { passive: true });
+    window.addEventListener("touchmove", onTouchMove, { passive: true });
+    window.addEventListener("touchend", reset, { passive: true });
+    window.addEventListener("touchcancel", reset, { passive: true });
+    return () => {
+      window.removeEventListener("touchstart", onTouchStart);
+      window.removeEventListener("touchmove", onTouchMove);
+      window.removeEventListener("touchend", reset);
+      window.removeEventListener("touchcancel", reset);
+    };
+  }, [activeIndex, isLastSection]);
 
   // ── Opening hours helper ────────────────────────────────────────────────────
   function updateHours(day: string, field: string, value: string | boolean) {
@@ -570,7 +667,7 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
 
   // ── Render ──────────────────────────────────────────────────────────────────
   return (
-    <div className={styles.editor}>
+    <div ref={editorRef} className={styles.editor}>
       {/* ── Thin, text-led section navigation — switches the active section.
              Horizontally scrollable on mobile, same model on desktop. ── */}
       <nav

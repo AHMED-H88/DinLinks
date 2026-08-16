@@ -312,7 +312,6 @@
       "subtitle": "Manage your DinLinks account",
       "groups": {
         "account": "Account",
-        "preferences": "Preferences",
         "support": "Support"
       }
     },

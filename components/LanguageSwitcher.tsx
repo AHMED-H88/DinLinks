@@ -8,16 +8,14 @@ export type Locale = "en" | "no";
 interface LanguageSwitcherProps {
   /** Compact label + plain buttons, used inside the mobile Header menu. */
   mobile?: boolean;
-  /** Segmented control with no leading label, for the Account settings row. */
-  bare?: boolean;
 }
 
 /**
- * The single locale switch for the whole product. Extracted from Header so the
- * Account page can offer language without a second localisation mechanism —
- * the mobile workspace hides the public Header, so this is the only way in.
+ * The single locale switch for the whole product, rendered by Header on every
+ * page including the mobile workspace. Kept as its own component so there is
+ * exactly one locale-switching mechanism.
  */
-export default function LanguageSwitcher({ mobile = false, bare = false }: LanguageSwitcherProps) {
+export default function LanguageSwitcher({ mobile = false }: LanguageSwitcherProps) {
   const t        = useTranslations("nav");
   const pathname = usePathname();
   const router   = useRouter();
@@ -75,7 +73,7 @@ export default function LanguageSwitcher({ mobile = false, bare = false }: Langu
     <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden">
       <button
         onClick={() => switchTo("en")}
-        className={`${bare ? "px-3 py-1.5" : "px-2.5 py-1"} text-xs font-semibold tracking-wide transition-all duration-150 ${
+        className={`px-2.5 py-1 text-xs font-semibold tracking-wide transition-all duration-150 ${
           current === "en"
             ? "bg-gray-900 text-white"
             : "bg-transparent text-gray-500 hover:text-gray-800 hover:bg-gray-50"
@@ -86,7 +84,7 @@ export default function LanguageSwitcher({ mobile = false, bare = false }: Langu
       <span className="w-px h-4 bg-gray-200 flex-shrink-0" aria-hidden />
       <button
         onClick={() => switchTo("no")}
-        className={`${bare ? "px-3 py-1.5" : "px-2.5 py-1"} text-xs font-semibold tracking-wide transition-all duration-150 ${
+        className={`px-2.5 py-1 text-xs font-semibold tracking-wide transition-all duration-150 ${
           current === "no"
             ? "bg-gray-900 text-white"
             : "bg-transparent text-gray-500 hover:text-gray-800 hover:bg-gray-50"
