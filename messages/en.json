@@ -285,6 +285,7 @@
       "general": "General",
       "billing": "Billing",
       "help": "Help & support",
+      "more": "More",
       "menuLabel": "Workspace menu",
       "groups": {
         "business": "Business",

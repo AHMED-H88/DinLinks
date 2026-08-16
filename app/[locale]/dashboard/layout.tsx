@@ -2,7 +2,6 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 import DashboardNav from "@/components/DashboardNav";
 
 export const dynamic = "force-dynamic";
@@ -46,14 +45,14 @@ export default async function DashboardLayout({
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Header />
 
-      <div className="flex-1 w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-10 py-6 sm:py-10">
+      <div className="flex-1 w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-10 py-5 sm:py-10">
         <div className="lg:flex lg:gap-16 lg:items-start">
           <DashboardNav business={identity} />
           <main className="flex-1 min-w-0">{children}</main>
         </div>
       </div>
-
-      <Footer />
+      {/* No public Footer here: the workspace ends with workspace content.
+          The marketing Footer stays on the public pages that render it. */}
     </div>
   );
 }

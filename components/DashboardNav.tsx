@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { Link, usePathname } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
@@ -133,6 +134,56 @@ export default function DashboardNav({ business }: { business: DashboardBusiness
 
   const helpHref = "/contact";
 
+  // ── Mobile "More" menu ──────────────────────────────────────────────────────
+  // Mobile shows one primary row; the Account destinations and Help live behind
+  // More so the workspace does not spend most of the first screen on chrome.
+  const [moreOpen, setMoreOpen] = useState(false);
+  const moreRef  = useRef<HTMLDivElement>(null);
+  const stripRef = useRef<HTMLDivElement>(null);
+
+  const businessItems = groups.find((g) => g.key === "business")?.items ?? [];
+  const moreItems     = groups.find((g) => g.key === "account")?.items ?? [];
+  const moreActive    = pathname.startsWith("/dashboard/account");
+
+  // Close on navigation — Link keeps this component mounted across routes.
+  useEffect(() => setMoreOpen(false), [pathname]);
+
+  useEffect(() => {
+    if (!moreOpen) return;
+    const onPointerDown = (e: MouseEvent | TouchEvent) => {
+      if (!moreRef.current?.contains(e.target as Node)) setMoreOpen(false);
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMoreOpen(false);
+    };
+    document.addEventListener("mousedown", onPointerDown);
+    document.addEventListener("touchstart", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", onPointerDown);
+      document.removeEventListener("touchstart", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [moreOpen]);
+
+  // The primary row scrolls when the labels do not fit, so keep the active tab
+  // in view. Only the strip scrolls, never the page.
+  useEffect(() => {
+    const strip = stripRef.current;
+    const active = strip?.querySelector<HTMLElement>('[aria-current="page"]');
+    if (!strip || !active) return;
+
+    const GUTTER = 16;
+    const box = strip.getBoundingClientRect();
+    const tab = active.getBoundingClientRect();
+
+    if (tab.left < box.left) {
+      strip.scrollBy({ left: tab.left - box.left - GUTTER, behavior: "auto" });
+    } else if (tab.right > box.right) {
+      strip.scrollBy({ left: tab.right - box.right + GUTTER, behavior: "auto" });
+    }
+  }, [pathname]);
+
   return (
     <>
       {/* Desktop — persistent grouped sidebar */}
@@ -170,32 +221,91 @@ export default function DashboardNav({ business }: { business: DashboardBusiness
         </div>
       </aside>
 
-      {/* Mobile — grouped compact navigation (identity + labelled group rows) */}
-      <div className="lg:hidden mb-6">
+      {/* Mobile — compact identity above a single primary row. The group labels
+          and the standalone Help block are desktop-only; on a phone they cost
+          most of the first screen before any page content appears. */}
+      <div className="lg:hidden mb-5">
         {business && (
-          <div className="mb-4">
+          <div className="mb-3">
             <Identity business={business} categoryLabel={categoryLabel} compact />
           </div>
         )}
-        <nav aria-label={t("nav.menuLabel")} className="space-y-3">
-          {groups.map((g) => (
-            <div key={g.key}>
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-1">{g.label}</p>
-              <div className="-mx-4 sm:-mx-6 px-4 sm:px-6 border-b border-gray-200">
-                <div className="flex gap-1 overflow-x-auto scrollbar-hide">
-                  {g.items.map((it) => (
-                    <MobileTab key={it.key} href={it.href} label={it.label} active={isActive(it.href)} />
-                  ))}
-                </div>
-              </div>
+        <nav
+          aria-label={t("nav.menuLabel")}
+          className="-mx-4 sm:-mx-6 px-4 sm:px-6 border-b border-gray-200"
+        >
+          <div className="flex items-stretch">
+            {/* Primary destinations — scroll horizontally only if they overflow */}
+            <div ref={stripRef} className="flex min-w-0 flex-1 gap-1 overflow-x-auto scrollbar-hide">
+              {businessItems.map((it) => (
+                <MobileTab key={it.key} href={it.href} label={it.label} active={isActive(it.href)} />
+              ))}
             </div>
-          ))}
-          <Link
-            href={helpHref as any}
-            className="inline-flex items-center gap-1.5 pt-1 text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors"
-          >
-            {t("nav.help")}
-          </Link>
+
+            {/* Kept outside the scroller: an overflow container would clip the
+                menu, and More must stay reachable without scrolling. The rule
+                marks where the scrolling list ends, so a label clipped mid-word
+                reads as "there is more behind this" rather than as a glitch. */}
+            <div ref={moreRef} className="relative flex-shrink-0 pl-2 ml-1 border-l border-gray-200">
+              <button
+                type="button"
+                onClick={() => setMoreOpen((open) => !open)}
+                aria-haspopup="menu"
+                aria-expanded={moreOpen}
+                aria-current={moreActive ? "page" : undefined}
+                className={`flex h-full items-center gap-1 whitespace-nowrap px-3.5 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+                  moreActive
+                    ? "border-gray-900 text-gray-900"
+                    : "border-transparent text-gray-500 hover:text-gray-900"
+                }`}
+              >
+                {t("nav.more")}
+                <svg
+                  className={`w-3.5 h-3.5 transition-transform ${moreOpen ? "rotate-180" : ""}`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              {moreOpen && (
+                <div
+                  role="menu"
+                  className="absolute right-0 top-full z-20 mt-1 w-56 rounded-xl border border-gray-200 bg-white py-1 shadow-soft"
+                >
+                  {moreItems.map((it) => (
+                    <Link
+                      key={it.key}
+                      role="menuitem"
+                      href={it.href as any}
+                      aria-current={isActive(it.href) ? "page" : undefined}
+                      onClick={() => setMoreOpen(false)}
+                      className={`block px-4 py-2.5 text-sm transition-colors ${
+                        isActive(it.href)
+                          ? "font-medium text-gray-900 bg-gray-50"
+                          : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                      }`}
+                    >
+                      {it.label}
+                    </Link>
+                  ))}
+                  {/* Help leaves the workspace, so it sits apart from Account */}
+                  <div className="mt-1 pt-1 border-t border-gray-100">
+                    <Link
+                      role="menuitem"
+                      href={helpHref as any}
+                      onClick={() => setMoreOpen(false)}
+                      className="block px-4 py-2.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors"
+                    >
+                      {t("nav.help")}
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         </nav>
       </div>
     </>
