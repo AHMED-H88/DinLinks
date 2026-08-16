@@ -12,6 +12,7 @@ import {
   FOUNDED_YEAR_MIN,
 } from "@/lib/business-fields";
 import { topLevelOrder, subOrder } from "@/lib/taxonomy-v1";
+import { uuidv4, uuidHex } from "@/lib/uuid";
 import styles from "./BusinessForm.module.css";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -216,9 +217,11 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
   const isEdit  = !!business;
 
   // Stable UUID for new businesses — used as the storage folder path before
-  // the first save. crypto.randomUUID() is unpredictable (unlike useId which
-  // generates short sequential strings like "r0", "r1").
-  const [tempId]   = useState(() => crypto.randomUUID().replace(/-/g, ""));
+  // the first save. It must be unpredictable (unlike useId, which generates
+  // short sequential strings like "r0", "r1"). uuidHex keeps the hyphen-free
+  // 32-character shape the upload path expects, and unlike crypto.randomUUID
+  // it also works on the insecure-origin LAN URLs used for device testing.
+  const [tempId]   = useState(() => uuidHex());
   const businessId = business?.id ?? tempId;
 
   // ── Form state ──────────────────────────────────────────────────────────────
@@ -325,7 +328,7 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
   function addService() {
     setServices((prev) => [
       ...prev,
-      { id: crypto.randomUUID(), name: "", description: "", price: "" },
+      { id: uuidv4(), name: "", description: "", price: "" },
     ]);
   }
 
