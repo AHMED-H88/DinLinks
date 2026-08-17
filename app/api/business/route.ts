@@ -6,6 +6,17 @@ import { validateSelectedSubcategory } from "@/lib/taxonomy-v1";
 
 // ─── Shared field picker ──────────────────────────────────────────────────────
 
+/**
+ * Fields the editor always submits, so an absent key here genuinely means the
+ * owner cleared it.
+ *
+ * `services` and `mapLink` are deliberately NOT in this list — both moved to
+ * validateBusinessExtras, which writes a key only when the request carried it.
+ * mapLink is no longer an editor field, and `?? null` would have wiped every
+ * stored value the first time a form without it saved. services moved with it
+ * so the owner-authored JSON is normalised on the way in rather than stored
+ * verbatim.
+ */
 function pickFields(data: any) {
   return {
     name:         data.name         ?? null,
@@ -14,7 +25,6 @@ function pickFields(data: any) {
     logo:         data.logo         ?? null,
     coverImage:   data.coverImage   ?? null,
     images:       Array.isArray(data.images) ? data.images : [],
-    services:     Array.isArray(data.services) ? data.services : [],
     address:      data.address      ?? null,
     city:         data.city         ?? null,
     postalCode:   data.postalCode   ?? null,
@@ -24,7 +34,6 @@ function pickFields(data: any) {
     email:        data.email        ?? null,
     website:      data.website      ?? null,
     bookingLink:  data.bookingLink  ?? null,
-    mapLink:      data.mapLink      ?? null,
     openingHours: data.openingHours ?? null,
   };
 }
