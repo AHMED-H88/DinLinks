@@ -288,6 +288,12 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
   const activeIndex   = SECTIONS.findIndex((s) => s.id === activeSection);
   const isLastSection = activeIndex === SECTIONS.length - 1;
 
+  // Read by the scroll handlers so they can bind once and stay bound. Keying
+  // them on activeIndex instead would tear them down on every section change —
+  // taking their in-flight gesture state, including the momentum lock, with it.
+  const activeIndexRef = useRef(activeIndex);
+  activeIndexRef.current = activeIndex;
+
   const logoInputRef   = useRef<HTMLInputElement>(null);
   const coverInputRef  = useRef<HTMLInputElement>(null);
   const imagesInputRef = useRef<HTMLInputElement>(null);
@@ -369,22 +375,45 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
     if (typeof window === "undefined") return;
     // Desktop keeps tabs / Previous / Save and continue; no scroll hijacking.
     if (!window.matchMedia("(pointer: coarse)").matches) return;
-    // The last section has nowhere to advance to: normal end of page.
-    if (isLastSection) return;
 
     const BOTTOM_SLACK    = 4;   // px of tolerance for "at the bottom"
-    const PULL_THRESHOLD  = 80;  // px of finger travel past the bottom
+    const PULL_THRESHOLD  = 80;  // px of finger travel past the edge
     const RELOCK_MS       = 800;
 
     const atBottom = () =>
       window.scrollY + window.innerHeight >=
       document.documentElement.scrollHeight - BOTTOM_SLACK;
 
-    const reset = () => { pullRef.current = 0; lastTouchY.current = null; };
+    const atTop = () => window.scrollY <= BOTTOM_SLACK;
+
+    // A gesture may only change section if it *began* against the edge it is
+    // pushing. Sections are often shorter than one swipe — several have no
+    // scrollable range at all, where atTop and atBottom are true at once — so
+    // "we arrived at the edge during this swipe" cannot distinguish scrolling
+    // from intent. Where the finger went down can.
+    let armedTop = false;
+    let armedBottom = false;
+    let heading = 0; // the edge this gesture is currently pushing against
+
+    // Which way this movement would move us, or 0. The index bounds are also
+    // what stop the first section wrapping backwards and the last forwards.
+    const stepFor = (delta: number) => {
+      const index = activeIndexRef.current;
+      if (delta > 0 && armedBottom && atBottom() && index < SECTIONS.length - 1) return 1;
+      if (delta < 0 && armedTop    && atTop()    && index > 0)                   return -1;
+      return 0;
+    };
+
+    const reset = () => { pullRef.current = 0; heading = 0; lastTouchY.current = null; };
 
     const onTouchStart = (e: TouchEvent) => {
       lastTouchY.current = e.touches[0]?.clientY ?? null;
       pullRef.current = 0;
+      heading = 0;
+      // Arm from where the finger went down — the one moment that reliably
+      // separates a new gesture from the continuation of an old one.
+      armedTop = atTop();
+      armedBottom = atBottom();
     };
 
     const onTouchMove = (e: TouchEvent) => {
@@ -395,23 +424,34 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
       if (previous == null || advanceLock.current) return;
 
       const delta = previous - y; // finger travelling up = scrolling down
-      // Only movement made *while already at the bottom* counts, so the user
-      // can reach the actions, pause, read and tap them without advancing.
-      if (delta <= 0 || !atBottom()) {
+      // A swipe that began mid-section just scrolls, even once it reaches the
+      // edge — so the actions can be reached, read and tapped, and the fields
+      // scrolled back through, without the section changing.
+      const step = stepFor(delta);
+      if (step === 0) {
         pullRef.current = 0;
+        heading = 0;
         return;
       }
 
-      pullRef.current += delta;
+      // Turning around mid-gesture starts the count again.
+      if (step !== heading) { pullRef.current = 0; heading = step; }
+
+      pullRef.current += Math.abs(delta);
       if (pullRef.current < PULL_THRESHOLD) return;
 
+      const target = SECTIONS[activeIndexRef.current + step].id;
       advanceLock.current = true;
+      // Disarm: the rest of this gesture, and anything trailing it, cannot
+      // move again. Only the next touchstart re-arms.
+      armedTop = false;
+      armedBottom = false;
       reset();
       // The reveal runs from the effect above, after React has swapped the
       // section in — scrolling here would measure the outgoing layout.
-      setActiveSection(SECTIONS[activeIndex + 1].id);
+      setActiveSection(target);
 
-      // Hold the lock past the reveal so one gesture advances exactly one
+      // Hold the lock past the reveal so one gesture moves exactly one
       // section, however much momentum follows it.
       window.setTimeout(() => { advanceLock.current = false; }, RELOCK_MS);
     };
@@ -426,7 +466,10 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
       window.removeEventListener("touchend", reset);
       window.removeEventListener("touchcancel", reset);
     };
-  }, [activeIndex, isLastSection]);
+    // Bound once: the handler reads the live section from a ref, so it keeps
+    // its gesture state instead of being rebuilt mid-gesture.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ── The same continuation for mouse and trackpad ────────────────────────────
   // The touch handler above cannot fire on a desktop, so a fine pointer used to
@@ -445,20 +488,38 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
     if (typeof window === "undefined") return;
     // Touch devices are handled above; this is the fine-pointer path only.
     if (window.matchMedia("(pointer: coarse)").matches) return;
-    if (isLastSection) return;
 
     const BOTTOM_SLACK    = 4;
-    const WHEEL_THRESHOLD = 180; // accumulated px of scrolling past the bottom
+    const WHEEL_THRESHOLD = 180; // accumulated px of scrolling past the edge
     const QUIET_MS        = 600; // wheel silence that ends a gesture
 
     let accumulated = 0;
+    let heading = 0;             // the edge this gesture is pushing against
     let locked = false;
     let lastEventAt = 0;
     let releaseTimer: number | undefined;
 
+    // As on touch: a gesture may only change section if it *began* against the
+    // edge it is pushing. A wheel has no gesture-start event, so the boundary
+    // is the same silence that ends one — momentum keeps events flowing, so a
+    // tail can never be mistaken for a new gesture.
+    let armedTop = false;
+    let armedBottom = false;
+
     const atBottom = () =>
       window.scrollY + window.innerHeight >=
       document.documentElement.scrollHeight - BOTTOM_SLACK;
+
+    const atTop = () => window.scrollY <= BOTTOM_SLACK;
+
+    // Which way this movement would move us, or 0. The index bounds are also
+    // what stop the first section wrapping backwards and the last forwards.
+    const stepFor = (delta: number) => {
+      const index = activeIndexRef.current;
+      if (delta > 0 && armedBottom && atBottom() && index < SECTIONS.length - 1) return 1;
+      if (delta < 0 && armedTop    && atTop()    && index > 0)                   return -1;
+      return 0;
+    };
 
     // Normalise line- and page-mode wheels so the threshold means the same
     // thing whatever the device reports.
@@ -472,6 +533,7 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
       releaseTimer = window.setTimeout(() => {
         locked = false;
         accumulated = 0;
+        heading = 0;
       }, QUIET_MS);
     };
 
@@ -483,22 +545,39 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
 
       const delta = toPixels(e);
       const now = e.timeStamp;
-      if (now - lastEventAt > QUIET_MS) accumulated = 0; // a new gesture
+      if (now - lastEventAt > QUIET_MS) {
+        // A new gesture: arm from where it starts, exactly as touchstart does.
+        accumulated = 0;
+        heading = 0;
+        armedTop = atTop();
+        armedBottom = atBottom();
+      }
       lastEventAt = now;
 
-      // Only scrolling made while already at the bottom counts, so the actions
-      // can be reached, read and clicked without the section changing.
-      if (delta <= 0 || !atBottom()) {
+      // A gesture that began mid-section just scrolls, even once it reaches
+      // the edge — so the actions can be reached, read and clicked, and the
+      // fields scrolled back through, without the section changing.
+      const step = stepFor(delta);
+      if (step === 0) {
         accumulated = 0;
+        heading = 0;
         return;
       }
 
-      accumulated += delta;
+      // Turning around mid-gesture starts the count again.
+      if (step !== heading) { accumulated = 0; heading = step; }
+
+      accumulated += Math.abs(delta);
       if (accumulated < WHEEL_THRESHOLD) return;
 
       locked = true;
       accumulated = 0;
-      setActiveSection(SECTIONS[activeIndex + 1].id);
+      heading = 0;
+      // Disarm: the rest of this gesture, and its momentum tail, cannot move
+      // again. Only the next gesture — after real silence — re-arms.
+      armedTop = false;
+      armedBottom = false;
+      setActiveSection(SECTIONS[activeIndexRef.current + step].id);
       releaseAfterSilence();
     };
 
@@ -507,7 +586,10 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
       window.removeEventListener("wheel", onWheel);
       window.clearTimeout(releaseTimer);
     };
-  }, [activeIndex, isLastSection]);
+    // Bound once: the handler reads the live section from a ref, so `locked`
+    // and `accumulated` survive a section change instead of being reset by it.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ── Opening hours helper ────────────────────────────────────────────────────
   function updateHours(day: string, field: string, value: string | boolean) {

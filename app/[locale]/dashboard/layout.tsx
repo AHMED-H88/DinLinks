@@ -6,6 +6,7 @@ import Header from "@/components/Header";
 import DashboardNav from "@/components/DashboardNav";
 import DashboardBottomNav from "@/components/DashboardBottomNav";
 import DashboardIdentity from "@/components/DashboardIdentity";
+import Footer from "@/components/Footer";
 
 export const dynamic = "force-dynamic";
 
@@ -73,6 +74,11 @@ export default async function DashboardLayout({
         </div>
       </div>
 
+      {/* The shared site Footer, unchanged, as on every public page. It sits
+          above the spacer so the spacer still clears the bottom bar for the
+          last thing on the page — which is now the Footer, not the content. */}
+      <Footer />
+
       {/* Clears the fixed bottom bar (plus the home indicator) so no page ever
           hides its last control behind it. Desktop has no bar, so no spacer. */}
       <div
@@ -81,9 +87,6 @@ export default async function DashboardLayout({
         aria-hidden
       />
       <DashboardBottomNav />
-
-      {/* No public Footer here: the workspace ends with workspace content.
-          The marketing Footer stays on the public pages that render it. */}
     </div>
   );
 }
