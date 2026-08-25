@@ -4,22 +4,86 @@ import { TOP_LEVELS, SUBCATEGORIES } from "../lib/taxonomy-v1";
 
 const prisma = new PrismaClient();
 
-async function main() {
-  console.log("Starting database seed...");
+/** Shortest password any seeded account will accept. One rule, both of them. */
+const SEED_PASSWORD_MIN = 8;
 
-  const adminPassword = await bcrypt.hash("admin123", 10);
-  const admin = await prisma.user.upsert({
-    where: { email: "admin@dinlinks.com" },
-    update: {},
-    create: {
-      email: "admin@dinlinks.com",
-      password: adminPassword,
+/**
+ * Read a password the caller must supply, or explain what is missing.
+ *
+ * No default, and no fallback: a password written in this file is a password
+ * everyone with the repository has, and a seed pointed at a live database turns
+ * it into a working login. The value is returned to be hashed and then dropped
+ * — it is never logged, and neither is its length.
+ */
+function requireSeedPassword(varName: string): string {
+  const value = process.env[varName];
+  if (!value) {
+    throw new Error(`${varName} must be set (no default password is built in).`);
+  }
+  if (value.length < SEED_PASSWORD_MIN) {
+    throw new Error(`${varName} must be at least ${SEED_PASSWORD_MIN} characters.`);
+  }
+  return value;
+}
+
+/**
+ * Create the local ADMIN account — only when asked, and only with a credential
+ * supplied from outside the repository.
+ *
+ * This used to hash a password written in this file and upsert an ADMIN on every
+ * `db:seed`. A password in source is a password everyone with the repository
+ * has, and a seed pointed at a live database turns it into a working key to
+ * the admin surface. Nothing in the run said it had happened.
+ *
+ * Now: no environment variables, no admin. Both must be present, so a partial
+ * setup stops the run instead of quietly falling back to a default. An account
+ * that already exists is never touched — a seed must not reset a live
+ * administrator's password. The password is read, hashed and dropped; it is
+ * never logged, and neither is its length.
+ */
+async function seedAdmin() {
+  const email    = process.env.SEED_ADMIN_EMAIL?.trim();
+  const password = process.env.SEED_ADMIN_PASSWORD;
+
+  if (!email && !password) {
+    console.log("Admin user skipped (set SEED_ADMIN_EMAIL and SEED_ADMIN_PASSWORD to create one).");
+    return;
+  }
+
+  // Half-configured is an accident, not an intention. Refuse rather than guess.
+  if (!email || !password) {
+    throw new Error(
+      "Admin seeding needs BOTH SEED_ADMIN_EMAIL and SEED_ADMIN_PASSWORD. " +
+        `Missing: ${!email ? "SEED_ADMIN_EMAIL" : "SEED_ADMIN_PASSWORD"}.`
+    );
+  }
+
+  // Re-read through the shared helper so the length rule is stated in one place.
+  const adminPassword = requireSeedPassword("SEED_ADMIN_PASSWORD");
+
+  const existing = await prisma.user.findUnique({ where: { email }, select: { id: true } });
+  if (existing) {
+    console.log("Admin user already exists — left unchanged (no password reset).");
+    return;
+  }
+
+  await prisma.user.create({
+    data: {
+      email,
+      // Same algorithm and cost factor the application uses. Unchanged.
+      password: await bcrypt.hash(adminPassword, 10),
       name: "Admin",
       role: "ADMIN",
     },
   });
 
-  console.log("Admin user created:", admin.email);
+  console.log("Admin user created.");
+}
+
+async function main() {
+  console.log("Starting database seed...");
+
+  await seedAdmin();
 
   // ── Taxonomy v1 (docs/specifications/03_TAXONOMY_MASTER_LIST.md) ─────────────
   // Idempotent, slug-keyed upserts. Parents (top-level Categories) are created
@@ -49,7 +113,31 @@ async function main() {
 
   console.log(`Taxonomy v1 created: ${TOP_LEVELS.length} top-level, ${SUBCATEGORIES.length} subcategories`);
 
-  const businessUserPassword = await bcrypt.hash("business123", 10);
+  // ── Demo businesses ────────────────────────────────────────────────────────
+  // Opt-in, and off by default. These three are APPROVED, which is what puts a
+  // business into public discovery — the homepage, Search and the category
+  // pages. They carry real company names DinLinks does not represent, owner
+  // accounts on the reserved example.com domain and stock photography, so a
+  // seed run against a live database publishes three profiles that look like
+  // listings and are not. Local development sets SEED_DEMO_BUSINESSES=1.
+  //
+  // This guards future runs only. It does not remove rows an earlier run
+  // already created — see the launch-readiness report.
+  if (process.env.SEED_DEMO_BUSINESSES !== "1") {
+    console.log("Demo businesses skipped (set SEED_DEMO_BUSINESSES=1 to create them).");
+    console.log("Seed completed successfully!");
+    return;
+  }
+
+  // The demo owners' password is supplied too, for the same reason the admin's
+  // is. These three accounts are real logins — maaemo@example.com and its two
+  // siblings exist in databases an earlier seed ran against — so a shared
+  // literal here is a shared key to them. Opting in with SEED_DEMO_BUSINESSES
+  // is unchanged; it now also means choosing what the accounts are secured with.
+  const businessUserPassword = await bcrypt.hash(
+    requireSeedPassword("SEED_DEMO_PASSWORD"),
+    10
+  );
 
   // Demo businesses are assigned to Subcategories (never a top-level Category).
   const restaurantCat = { id: subIdBySlug.get("restaurant")! };

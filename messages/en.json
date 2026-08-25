@@ -243,7 +243,6 @@
     "categories": "Categories",
     "businessSingular": "business",
     "businessPlural": "businesses",
-    "andMore": "and more",
     "viewAll": "View all",
     "showLess": "Show less",
     "noBusinesses": "No businesses in this category yet",
@@ -252,7 +251,7 @@
     "nextPage": "Next page"
   },
   "dashboard": {
-    "title": "Dashboard",
+    "title": "Overview",
     "welcomeBack": "Welcome back,",
     "viewPublicProfile": "View public profile",
     "profileViews": "Profile views",
@@ -261,7 +260,7 @@
     "branches": "Locations",
     "editProfile": "Edit business profile",
     "createProfile": "Create your business profile",
-    "editSubtitle": "Changes are saved immediately. If you were rejected, saving will re-submit for review.",
+    "editSubtitle": "Manage the information shown on your business profile",
     "createSubtitle": "Fill in your details and submit for admin approval. It only takes a few minutes.",
     "gettingStarted": "Getting started",
     "step1": "Enter your business name and category",
@@ -276,7 +275,68 @@
     "photos": "Photos",
     "approved": "✓ Approved",
     "pending": "⏳ Pending",
-    "rejected": "✕ Rejected"
+    "rejected": "✕ Rejected",
+    "nav": {
+      "overview": "Overview",
+      "profile": "Profile",
+      "reviews": "Reviews",
+      "locations": "Locations",
+      "general": "General",
+      "billing": "Billing",
+      "help": "Help & support",
+      "account": "Account",
+      "menuLabel": "Workspace menu",
+      "workspaceLabel": "Workspace",
+      "groups": {
+        "business": "Business",
+        "account": "Account"
+      }
+    },
+    "status": {
+      "published": "Profile published",
+      "inReview": "In review",
+      "notPublished": "Not published"
+    },
+    "overview": {
+      "welcome": "Welcome back, {name}",
+      "needBusinessTitle": "Create your business profile",
+      "needBusinessBody": "You need to create a business profile before you can use this page."
+    },
+    "reviewsPage": {
+      "subtitle": "See what customers say about your business",
+      "empty": "No reviews yet"
+    },
+    "accountPage": {
+      "subtitle": "Manage your DinLinks account",
+      "groups": {
+        "account": "Account",
+        "support": "Support"
+      }
+    },
+    "locationsPage": {
+      "subtitle": "Manage your business locations",
+      "mainLocation": "Main location",
+      "mainLocationHint": "Edit under Business profile → Contact. Your main address counts as one location on your public profile.",
+      "noMainLocation": "No main address yet. Add it under Business profile.",
+      "branches": "Branches"
+    },
+    "generalPage": {
+      "subtitle": "Your personal account information",
+      "name": "Name",
+      "email": "Email",
+      "noName": "Not set"
+    },
+    "billingPage": {
+      "subtitle": "Manage your subscription",
+      "plan": "Plan",
+      "status": "Status",
+      "active": "Active",
+      "renews": "Next renewal",
+      "cadenceMonthly": "Monthly",
+      "cadenceAnnual": "Annual",
+      "noSubscription": "No active subscription",
+      "viewPlans": "View plans"
+    }
   },
   "admin": {
     "title": "Business management",
@@ -297,9 +357,11 @@
     "sections": {
       "basics": "Basic information",
       "company": "Company information",
+      "about": "About the business",
       "media": "Media",
       "location": "Location",
       "contact": "Contact information",
+      "locationContact": "Location & contact",
       "hours": "Opening hours",
       "services": "Services & offers"
     },
@@ -307,7 +369,7 @@
       "basics": "Your business name, category, and description.",
       "company": "Optional details about your company. All fields can be left blank.",
       "media": "Logo, cover image, and photo gallery.",
-      "location": "Where customers can find you.",
+      "location": "The information customers use to find and contact your business.",
       "contact": "How customers can reach you."
     },
     "errors": {
@@ -323,7 +385,16 @@
       "orgNumberInvalid": "The organization number must be 9 digits.",
       "serviceModesInvalid": "One or more selected service modes are not valid.",
       "highlightCodesInvalid": "One or more selected highlights are not valid.",
-      "invalidType": "One of the fields has an invalid value."
+      "invalidType": "One of the fields has an invalid value.",
+      "emailInvalid": "Enter a valid email address.",
+      "websiteInvalid": "Enter a valid website address starting with http:// or https://.",
+      "bookingUrlInvalid": "Enter a valid booking link starting with http:// or https://.",
+      "mapsUrlInvalid": "Enter a valid Google Maps link starting with http:// or https://.",
+      "latitudeRange": "Latitude must be between -90 and 90.",
+      "exceptionalDateRequired": "Choose a date for every special opening hour.",
+      "exceptionalDateDuplicate": "The same date is entered twice. Each date can appear only once.",
+      "exceptionalTimesRequired": "Enter opening and closing times for dates that are open.",
+      "longitudeRange": "Longitude must be between -180 and 180."
     },
     "success": {
       "updated": "Profile updated successfully.",
@@ -335,25 +406,78 @@
     "tabs": {
       "basicInfo": "Basic info",
       "company": "Company",
+      "about": "About the business",
       "media": "Media",
       "location": "Location",
       "contact": "Contact",
+      "locationContact": "Location & contact",
       "openingHours": "Opening hours",
       "services": "Services"
     },
     "companySize": {
       "none": "Not specified",
       "SELF_EMPLOYED": "Self-employed",
-      "MICRO": "Micro (1–9)",
-      "SMALL": "Small (10–49)",
-      "MEDIUM": "Medium (50–249)",
-      "LARGE": "Large (250–999)",
-      "ENTERPRISE": "Enterprise (1000+)"
+      "MICRO": "Micro",
+      "SMALL": "Small",
+      "MEDIUM": "Medium",
+      "LARGE": "Large",
+      "ENTERPRISE": "Enterprise"
     },
     "serviceMode": {
       "ON_SITE": "On site",
       "REMOTE": "Remote",
       "NATIONWIDE": "Nationwide"
+    },
+    "deliveryMethod": {
+      "ON_SITE": "On site",
+      "AT_CUSTOMER": "At the customer",
+      "DIGITAL": "Digital",
+      "PICKUP": "Pickup",
+      "DELIVERY": "Delivery"
+    },
+    "serviceAreaOption": {
+      "none": "Not specified",
+      "LOCAL": "Local",
+      "REGIONAL": "Regional",
+      "NATIONWIDE": "Nationwide"
+    },
+    "media": {
+      "preview": "View larger image",
+      "close": "Close image view",
+      "previousImage": "Previous image",
+      "nextImage": "Next image",
+      "removeImage": "Remove image",
+      "count": "{count, plural, =1 {# image} other {# images}}",
+      "reorderHint": "Drag an image where you want it. On mobile, press and hold first.",
+      "reorder": "Change order",
+      "reorderDone": "Done",
+      "position": "Image {index} of {total}",
+      "pendingRemoval": "Images you remove are deleted when you save."
+    },
+    "writing": {
+      "done": "Done",
+      "close": "Close",
+      "edit": "open writing view"
+    },
+    "visibility": {
+      "hide": "Hide",
+      "show": "Show",
+      "hideTitle": "Hide this field from the public profile",
+      "showTitle": "Show this field on the public profile",
+      "hiddenNote": "Hidden on the public profile. The field is still saved."
+    },
+    "highlights": {
+      "add": "Add highlight",
+      "empty": "No highlights yet.",
+      "norwegian": "Norwegian",
+      "english": "English",
+      "placeholderNo": "Skriv et kort kjennetegn",
+      "placeholderEn": "Write a short highlight",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "remove": "Remove highlight",
+      "count": "{count} of {max}",
+      "legacyNote": "You have {count} highlights from the previous list. They still show on your profile until you write your own here."
     },
     "highlight": {
       "FREE_ESTIMATE": "Free estimate",
@@ -397,21 +521,25 @@
       "address": "Address",
       "city": "City",
       "postalCode": "Postal code",
-      "mapsUrl": "Google Maps URL",
-      "gpsCoordinates": "GPS coordinates (optional)",
+      "mapsUrl": "Google Maps link",
+      "gpsCoordinates": "Advanced map settings",
+      "opensAt": "Opens",
+      "closesAt": "Closes",
+      "exceptionalHours": "Special opening hours",
+      "exceptionalDate": "Date",
       "latitude": "Latitude",
       "longitude": "Longitude",
       "phone": "Phone",
       "email": "Email",
       "website": "Website",
-      "bookingUrl": "Booking URL",
+      "bookingUrl": "Booking link",
       "openingHours": "Opening hours",
       "services": "Services",
       "serviceName": "Service name",
       "price": "Price",
       "companyStory": "Company story",
-      "identitySummaryNo": "Short introduction (Norwegian)",
-      "identitySummaryEn": "Short introduction (English)",
+      "identitySummaryNo": "Short business description (Norwegian)",
+      "identitySummaryEn": "Short business description (English)",
       "foundedYear": "Founded year",
       "employeeCount": "Number of employees",
       "companySize": "Company size",
@@ -419,7 +547,10 @@
       "organizationNumber": "Organization number",
       "organizationType": "Organization type",
       "serviceModes": "How you deliver your service",
-      "highlightCodes": "Highlights"
+      "highlightCodes": "Highlights",
+      "deliveryMethods": "How is the service delivered?",
+      "serviceArea": "Service area",
+      "highlights": "Highlights"
     },
     "placeholders": {
       "name": "e.g. Oslo Auto Repair",
@@ -430,7 +561,6 @@
       "address": "e.g. Karl Johans gate 1",
       "city": "Oslo",
       "postalCode": "0154",
-      "mapsUrlHint": "Paste the share URL from Google Maps so customers can get directions.",
       "latitude": "59.9139",
       "longitude": "10.7522",
       "phone": "+47 123 45 678",
@@ -453,16 +583,27 @@
       "logo": "Square image, 400×400 px recommended · max 2 MB · JPG, PNG, WebP",
       "cover": "Banner shown at the top of your public profile · 1200×400 px recommended · max 5 MB",
       "photos": "Additional photos of your premises, products, or team · max 5 MB each",
+      "mapsUrl": "Paste the link to your business on Google Maps.",
+      "coordinates": "Use coordinates only if the address does not point to the right place on the map.",
+      "exceptionalHours": "Add exceptions for holidays or other dates.",
       "bookingUrl": "A direct link for customers to book appointments or reservations.",
-      "openingHours": "Set your weekly schedule. Toggle 'Closed' for days you're not open.",
+      "openingHours": "Set when your business is usually open.",
       "services": "List what you offer. Customers will see these on your profile.",
-      "companyStory": "This is separate from the short description above.",
-      "identitySummary": "One short, factual sentence explaining what the business is. Not a slogan.",
+      "companyStory": "Your background: how the business started and what has shaped it. Not a repeat of the description.",
+      "identitySummary": "One short, factual sentence about who you are and what you mainly do. Appears directly below the business name on your public profile.",
+      "description": "The fuller text: what you do, what you offer, and what a customer should know before getting in touch.",
       "organizationNumber": "9 digits. Spaces are removed automatically.",
-      "highlightCodes": "Short badges shown on your profile."
+      "highlightCodes": "Short badges shown on your profile.",
+      "deliveryMethods": "Select every way a customer can receive the service.",
+      "serviceArea": "How far do you cover? Choose one.",
+      "highlights": "Add short points that describe what makes the business distinctive. Fill in whichever language you want — an empty field is left out."
     },
     "actions": {
       "save": "Save changes",
+      "addExceptionalDate": "Add date",
+      "removeExceptionalDate": "Remove date",
+      "next": "Next",
+      "previous": "Previous",
       "create": "Create profile",
       "preview": "Preview profile",
       "changeLogo": "Change logo",
@@ -484,10 +625,12 @@
       "rejected": "Profile rejected",
       "rejectedDesc": "Please update your information and save again to re-submit for review."
     },
+    "exceptional": {
+      "empty": "No dates added yet."
+    },
     "openState": {
       "open": "Open",
-      "closed": "Closed",
-      "notAvailable": "Not available"
+      "closed": "Closed"
     },
     "noServices": "No services yet. Add your first one below."
   },

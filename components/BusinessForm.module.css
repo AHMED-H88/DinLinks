@@ -1,0 +1,153 @@
+/*
+ * Scoped visual foundation for the Business Profile editor ONLY.
+ * Everything is nested under .editor so nothing here affects the rest of the
+ * site. It intentionally overrides the global .input / .btn utilities inside
+ * this editor (via :global) to remove the old native/shadowed look.
+ */
+
+.editor {
+  color-scheme: light;
+}
+
+/* ── Section flow ──────────────────────────────────────────────────────────── */
+/* Heading, then description, then fields — one column at every width. Desktop
+   used to set the heading beside the fields in a side column, but that column
+   holds only a heading and a line of context, so it read as a permanent empty
+   strip that pushed the editable content to the right. The fields carry their
+   own internal grids (category pairs, NO/EN descriptions) where pairing helps. */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-block: 40px;
+}
+.section + .section {
+  border-top: 1px solid #e5e7eb; /* gray-200 divider between major sections */
+}
+@media (min-width: 1024px) {
+  /* A touch more air between the section context and the first control, now
+     that they sit in one column rather than side by side. */
+  .section {
+    gap: 28px;
+  }
+}
+
+/* ── Scoped control treatment ──────────────────────────────────────────────── */
+.editor :global(.input) {
+  height: 44px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;         /* gray-200 — light default, less chrome */
+  background-color: #ffffff;
+  box-shadow: none;
+  padding: 0 14px;
+  font-size: 0.9375rem;
+  line-height: 1.4;
+  color: #111827;                    /* gray-900 */
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+.editor :global(.input):hover:not(:disabled):not(:focus) {
+  border-color: #d1d5db;             /* gray-300 — stronger only on hover */
+}
+/* Native checkboxes render charcoal (not the browser default accent) */
+.editor input[type="checkbox"] {
+  accent-color: #111827;
+}
+.editor :global(textarea.input) {
+  height: auto;
+  min-height: 112px;
+  padding: 11px 14px;
+  line-height: 1.6;
+  resize: vertical;
+}
+.editor :global(.input)::placeholder {
+  color: #9ca3af;                    /* gray-400 */
+}
+.editor :global(.input):focus {
+  outline: none;
+  border-color: #111827;             /* charcoal focus, never blue */
+  box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.08); /* very subtle neutral ring */
+}
+.editor :global(.input):disabled {
+  background-color: #f9fafb;         /* gray-50 */
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* Selects: remove native look, add a subtle custom chevron */
+.editor :global(select.input) {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding-right: 40px;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' viewBox='0 0 24 24' stroke='%236b7280' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 16px;
+}
+
+/* ── Scoped buttons: charcoal primary, neutral secondary, no shadow ────────── */
+.editor :global(.btn) {
+  box-shadow: none;
+}
+.editor :global(.btn-primary) {
+  background-color: #111827;         /* near-black */
+  color: #ffffff;
+  box-shadow: none;
+}
+.editor :global(.btn-primary):hover {
+  background-color: #1f2937;         /* gray-800 */
+}
+.editor :global(.btn-secondary) {
+  background-color: #ffffff;
+  color: #374151;                    /* gray-700 */
+  border: 1px solid #d1d5db;
+  box-shadow: none;
+}
+.editor :global(.btn-secondary):hover {
+  background-color: #f9fafb;
+  border-color: #9ca3af;
+}
+
+/* ── Section tab strip ─────────────────────────────────────────────────────── */
+/* Horizontal only — this row scrolls sideways through the six sections and has
+   nothing to do with the page's vertical scrolling, which never changes
+   section. */
+.tabStrip {
+  -webkit-overflow-scrolling: touch;
+  /* Leaves a little room at each end so a snapped tab is never flush against
+     the edge of the strip. */
+  scroll-padding-inline: 16px;
+}
+
+/* Momentum snapping is a narrow-layout behaviour: it belongs where the row
+   genuinely overflows and a flick should settle on a tab. Desktop fits all six
+   at once, so both the snap type AND the per-tab centre alignment are declared
+   only here. Previously `scroll-snap-align: center` applied at every width and
+   only the snap *type* was switched off on desktop, which left the centring
+   alignment live for the browser to act on the moment the row overflowed even
+   briefly — e.g. while the webfont was still loading — parking the strip
+   mid-scroll with the first tab cut off. */
+@media (max-width: 1023.98px) {
+  .tabStrip {
+    scroll-snap-type: x proximity;
+  }
+
+  .tab {
+    scroll-snap-align: center;
+  }
+}
+
+/* ── Gallery tile while reordering ─────────────────────────────────────────── */
+/* No touch-action override. Scrolling stays completely normal until a finger
+   has held a tile long enough to pick it up, and from that moment the drag
+   refuses scroll events one by one instead — which is what lets the picture be
+   dragged in any direction rather than only sideways.
+
+   The long-press needs the browser to keep its hands off in two other ways:
+   no text/image selection building up under a held finger, and no iOS
+   callout menu appearing on top of the drag. */
+.reorderTile {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}

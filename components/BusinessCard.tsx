@@ -1,8 +1,7 @@
-import Image from "next/image";
 import { Link } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
 import { formatCity } from "@/lib/format";
-import { safeImageUrl } from "@/lib/images";
+import SafeImage from "@/components/SafeImage";
 
 interface BusinessCardProps {
   id: string;
@@ -77,10 +76,6 @@ export default function BusinessCard({
     categorySlug && tCat.has(categorySlug) ? tCat(categorySlug) : category;
   const initials = name.slice(0, 2).toUpperCase();
 
-  // Drop URLs next/image can only fail on (malformed / non-allowed host), so
-  // the existing designed placeholders render instead of a broken request.
-  const coverSrc = safeImageUrl(coverImage);
-  const logoSrc  = safeImageUrl(logo);
 
   return (
     <Link
@@ -92,26 +87,28 @@ export default function BusinessCard({
     >
       {/* ── Cover image / colour band ─────────────────────────────────── */}
       <div className="relative h-32 bg-gradient-to-br from-gray-100 to-gray-200 flex-shrink-0 overflow-hidden">
-        {coverSrc ? (
-          <Image
-            src={coverSrc}
-            alt=""
-            fill
-            sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
-            className="object-cover group-hover:scale-[1.02] transition-transform duration-300"
-          />
-        ) : (
-          /* subtle branded gradient when no cover */
-          <div className="absolute inset-0 bg-gradient-to-br from-gray-100 via-white to-gray-100" />
-        )}
+        <SafeImage
+          src={coverImage}
+          alt=""
+          fill
+          sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
+          className="object-cover group-hover:scale-[1.02] transition-transform duration-300"
+          fallback={
+            /* subtle branded gradient when no cover */
+            <div className="absolute inset-0 bg-gradient-to-br from-gray-100 via-white to-gray-100" />
+          }
+        />
 
         {/* Logo chip, bottom-left of cover */}
         <div className="absolute bottom-3 left-4 w-11 h-11 rounded-xl border-2 border-white shadow-medium bg-white overflow-hidden flex items-center justify-center">
-          {logoSrc ? (
-            <Image src={logoSrc} alt={name} width={44} height={44} className="w-full h-full object-cover" />
-          ) : (
-            <span className="text-xs font-bold text-gray-700">{initials}</span>
-          )}
+          <SafeImage
+            src={logo}
+            alt={name}
+            width={44}
+            height={44}
+            className="w-full h-full object-cover"
+            fallback={<span className="text-xs font-bold text-gray-700">{initials}</span>}
+          />
         </div>
 
       </div>

@@ -1,7 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import type { Branch } from "@/components/BranchManager";
 import type { DisplayLocation } from "@/lib/locations";
-import { normalizeDayKey } from "@/lib/days";
+import { normalizeDayKey, DAY_KEYS } from "@/lib/days";
 
 function HoursTable({
   hours,
@@ -13,16 +13,30 @@ function HoursTable({
   closedLabel: string;
 }) {
   if (!hours || Object.keys(hours).length === 0) return null;
+
+  // Monday → Sunday, whichever key the record was written with. Iterating the
+  // stored object gave Postgres' own jsonb key order (by length, then bytes),
+  // so a branch listed its week as Friday, Monday, Sunday, Tuesday …
+  const byDay: Record<string, { open?: string; close?: string; closed?: boolean }> = {};
+  for (const [raw, value] of Object.entries(hours)) {
+    const key = normalizeDayKey(raw);
+    if (key) byDay[key] = value;
+  }
+  const days = DAY_KEYS.filter((d) => byDay[d]);
+  if (days.length === 0) return null;
+
   return (
     <div className="rounded-xl border border-gray-100 overflow-hidden mt-3">
-      {Object.entries(hours).map(([day, h], i) => (
+      {days.map((day, i) => {
+        const h = byDay[day];
+        return (
         <div
           key={day}
           className={`flex items-center justify-between px-3 py-2 text-xs ${
             i % 2 === 0 ? "bg-gray-50" : "bg-white"
           }`}
         >
-          <span className="font-medium text-gray-600 w-22">{(() => { const k = normalizeDayKey(day); return k ? labels[k] : day; })()}</span>
+          <span className="font-medium text-gray-600 w-22">{labels[day]}</span>
           {h?.closed ? (
             <span className="text-gray-400">{closedLabel}</span>
           ) : (
@@ -31,7 +45,8 @@ function HoursTable({
             </span>
           )}
         </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

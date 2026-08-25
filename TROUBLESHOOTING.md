@@ -354,8 +354,7 @@ Should load with search bar and categories
 ### 2. Test Admin Login
 ```
 http://localhost:3000/login
-Email: admin@dinlinks.com
-Password: admin123
+Sign in with the SEED_ADMIN_EMAIL / SEED_ADMIN_PASSWORD you seeded
 Should redirect to /admin
 ```
 

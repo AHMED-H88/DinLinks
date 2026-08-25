@@ -154,7 +154,12 @@ npm run db:seed
 ```
 
 This will create:
-- The current pre-migration category rows and an admin user (admin@dinlinks.com / admin123)
+- The current pre-migration category rows
+
+An admin account is opt-in and takes its credentials from the environment —
+`SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD`, both required. Demo businesses
+are opt-in too (`SEED_DEMO_BUSINESSES=1`). Leave both unset for any database
+that is not your own local one.
 
 Note: the seed still reflects the legacy flat category state (which includes `Annet`). It is not the approved taxonomy. The approved taxonomy is defined in `docs/specifications/03_TAXONOMY_MASTER_LIST.md` and is applied through the controlled Taxonomy v1 migration. `Annet` is not a valid final Category and is removed during that migration.
 
@@ -243,13 +248,19 @@ The application can be deployed to:
 - Railway
 - Any Node.js hosting platform
 
-## Default Admin Account
+## Admin Account
 
-After seeding, you can login with:
-- Email: `admin@dinlinks.com`
-- Password: `admin123`
+There is no default admin and no default password. To create one locally,
+supply both variables when seeding:
 
-**Important**: Change these credentials in production!
+```bash
+SEED_ADMIN_EMAIL=you@example.com SEED_ADMIN_PASSWORD='<choose a strong one>' npm run db:seed
+```
+
+The seed refuses to run if only one of the two is set, and it never modifies an
+admin that already exists — so it cannot reset a live administrator's password.
+
+**Important**: never seed an admin against a shared or production database.
 
 ## Development
 

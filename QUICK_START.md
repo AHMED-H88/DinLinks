@@ -76,9 +76,15 @@ Open http://localhost:3000 in your browser!
 ## Test Accounts
 
 ### Admin Account
+The seed creates no admin unless you ask for one, and it has no built-in
+password. Choose your own:
+
+```bash
+SEED_ADMIN_EMAIL=you@example.com SEED_ADMIN_PASSWORD='<choose a strong one>' npm run db:seed
+```
+
 - **URL**: http://localhost:3000/login
-- **Email**: admin@dinlinks.com
-- **Password**: admin123
+- Sign in with the credentials you supplied
 
 ### Test Business (Create Your Own)
 - **URL**: http://localhost:3000/signup

@@ -95,6 +95,49 @@ model Business {
   identitySummaryNo String?
   identitySummaryEn String?
 
+  // ── Public by default, private by choice ────────────────────────────────
+  // Names of the owner-hideable fields this business has chosen to keep off
+  // the public profile. Empty — the default — means everything set is public,
+  // so existing rows need no backfill and no field silently disappears.
+  // Core identity (name, category) is deliberately not hideable.
+  hiddenFields String[] @default([])
+
+  // ── How the service is delivered, and where ─────────────────────────────
+  // Replaces the older serviceModes list, which mixed delivery with reach.
+  // serviceModes is kept as a column so this change stays reversible; it is
+  // no longer written by the editor.
+  deliveryMethods String[] @default([])
+  serviceArea     String?
+
+  // ── Owner-authored profile highlights, in display order ─────────────────
+  // `[{ no, en }, …]` — business-authored public text, so each entry carries
+  // both languages and either side may be null when the owner wrote only one.
+  //
+  // JSON rather than the paired-scalar shape used by identitySummaryNo/En,
+  // because this is a *list*: two parallel String[] columns would let the
+  // languages fall out of step the moment one array was written a different
+  // length, and position is the only thing tying a highlight to its
+  // translation. One JSON value keeps each pair atomic and order intrinsic.
+  //
+  // The fixed highlightCodes list this replaces is retained, so no existing
+  // profile loses what it already shows.
+  highlights Json?
+
+  // ── Primary action ──────────────────────────────────────────────────────
+  // bookingLink remains the URL — every stored booking link keeps working —
+  // and these are only the owner's wording for it, per language. Scalar pairs
+  // here rather than JSON, matching identitySummaryNo/En: it is a single
+  // value, not a list, so there is no ordering to keep in step. Null falls
+  // back to the existing localized default, so nothing has to be re-entered
+  // and no missing translation is ever invented.
+  primaryActionLabelNo String?
+  primaryActionLabelEn String?
+
+  // ── Exceptional opening hours — holidays and one-off dates ──────────────
+  // A list of { date, mode, open?, close?, label?, holiday? }. Separate from
+  // openingHours so the weekly schedule is never touched by a holiday edit.
+  exceptionalHours Json?
+
   address    String?
   latitude   Float?
   longitude  Float?

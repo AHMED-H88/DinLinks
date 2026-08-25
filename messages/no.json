@@ -243,7 +243,6 @@
     "categories": "Kategorier",
     "businessSingular": "bedrift",
     "businessPlural": "bedrifter",
-    "andMore": "og flere",
     "viewAll": "Vis alle",
     "showLess": "Vis færre",
     "noBusinesses": "Ingen bedrifter i denne kategorien ennå",
@@ -252,7 +251,7 @@
     "nextPage": "Neste side"
   },
   "dashboard": {
-    "title": "Dashboard",
+    "title": "Oversikt",
     "welcomeBack": "Velkommen tilbake,",
     "viewPublicProfile": "Se offentlig profil",
     "profileViews": "Profilvisninger",
@@ -261,7 +260,7 @@
     "branches": "Lokasjoner",
     "editProfile": "Rediger bedriftsprofil",
     "createProfile": "Opprett din bedriftsprofil",
-    "editSubtitle": "Endringer lagres umiddelbart. Hvis du ble avvist, vil lagring sende inn profilen på nytt.",
+    "editSubtitle": "Administrer informasjonen som vises på bedriftsprofilen din",
     "createSubtitle": "Fyll inn opplysningene dine og send inn for godkjenning. Det tar bare noen minutter.",
     "gettingStarted": "Komme i gang",
     "step1": "Skriv inn bedriftsnavn og kategori",
@@ -276,7 +275,68 @@
     "photos": "Bilder",
     "approved": "✓ Godkjent",
     "pending": "⏳ Venter",
-    "rejected": "✕ Avvist"
+    "rejected": "✕ Avvist",
+    "nav": {
+      "overview": "Oversikt",
+      "profile": "Profil",
+      "reviews": "Anmeldelser",
+      "locations": "Avdelinger",
+      "general": "Generelt",
+      "billing": "Fakturering",
+      "help": "Hjelp og støtte",
+      "account": "Konto",
+      "menuLabel": "Arbeidsområdemeny",
+      "workspaceLabel": "Arbeidsområde",
+      "groups": {
+        "business": "Bedrift",
+        "account": "Konto"
+      }
+    },
+    "status": {
+      "published": "Profil publisert",
+      "inReview": "Til gjennomgang",
+      "notPublished": "Ikke publisert"
+    },
+    "overview": {
+      "welcome": "Velkommen tilbake, {name}",
+      "needBusinessTitle": "Opprett bedriftsprofilen din",
+      "needBusinessBody": "Du må opprette en bedriftsprofil før du kan bruke denne siden."
+    },
+    "reviewsPage": {
+      "subtitle": "Se hva kunder sier om bedriften",
+      "empty": "Ingen anmeldelser ennå"
+    },
+    "accountPage": {
+      "subtitle": "Administrer DinLinks-kontoen din",
+      "groups": {
+        "account": "Konto",
+        "support": "Support"
+      }
+    },
+    "locationsPage": {
+      "subtitle": "Administrer bedriftens avdelinger",
+      "mainLocation": "Hovedlokasjon",
+      "mainLocationHint": "Rediger under Bedriftsprofil → Kontakt. Hovedadressen teller som en lokasjon på den offentlige profilen.",
+      "noMainLocation": "Ingen hovedadresse ennå. Legg den til under Bedriftsprofil.",
+      "branches": "Filialer"
+    },
+    "generalPage": {
+      "subtitle": "Din personlige kontoinformasjon",
+      "name": "Navn",
+      "email": "E-post",
+      "noName": "Ikke angitt"
+    },
+    "billingPage": {
+      "subtitle": "Administrer abonnementet ditt",
+      "plan": "Plan",
+      "status": "Status",
+      "active": "Aktiv",
+      "renews": "Neste fornyelse",
+      "cadenceMonthly": "Månedlig",
+      "cadenceAnnual": "Årlig",
+      "noSubscription": "Ingen aktivt abonnement",
+      "viewPlans": "Se planer"
+    }
   },
   "admin": {
     "title": "Bedriftsadministrasjon",
@@ -297,9 +357,11 @@
     "sections": {
       "basics": "Grunnleggende informasjon",
       "company": "Bedriftsinformasjon",
+      "about": "Om bedriften",
       "media": "Media",
       "location": "Beliggenhet",
       "contact": "Kontaktinformasjon",
+      "locationContact": "Beliggenhet og kontakt",
       "hours": "Åpningstider",
       "services": "Tjenester og tilbud"
     },
@@ -307,7 +369,7 @@
       "basics": "Bedriftsnavn, kategori og beskrivelse.",
       "company": "Valgfrie opplysninger om bedriften. Alle felt kan stå tomme.",
       "media": "Logo, forsidebilde og bildegalleri.",
-      "location": "Her finner kundene deg.",
+      "location": "Informasjonen kundene bruker for å finne og kontakte bedriften.",
       "contact": "Slik når kundene deg."
     },
     "errors": {
@@ -323,7 +385,16 @@
       "orgNumberInvalid": "Organisasjonsnummeret må være 9 siffer.",
       "serviceModesInvalid": "En eller flere valgte leveringsmåter er ugyldige.",
       "highlightCodesInvalid": "Ett eller flere valgte kjennetegn er ugyldige.",
-      "invalidType": "Ett av feltene har en ugyldig verdi."
+      "invalidType": "Ett av feltene har en ugyldig verdi.",
+      "emailInvalid": "Oppgi en gyldig e-postadresse.",
+      "websiteInvalid": "Oppgi en gyldig nettadresse som starter med http:// eller https://.",
+      "bookingUrlInvalid": "Oppgi en gyldig bestillingslenke som starter med http:// eller https://.",
+      "mapsUrlInvalid": "Oppgi en gyldig Google Maps-lenke som starter med http:// eller https://.",
+      "latitudeRange": "Breddegrad må være mellom -90 og 90.",
+      "exceptionalDateRequired": "Velg en dato for hver spesielle åpningstid.",
+      "exceptionalDateDuplicate": "Samme dato er lagt inn to ganger. Hver dato kan bare stå en gang.",
+      "exceptionalTimesRequired": "Oppgi åpningstid og stengetid for datoer som er åpne.",
+      "longitudeRange": "Lengdegrad må være mellom -180 og 180."
     },
     "success": {
       "updated": "Profilen er oppdatert.",
@@ -335,25 +406,78 @@
     "tabs": {
       "basicInfo": "Grunnleggende info",
       "company": "Bedrift",
+      "about": "Om bedriften",
       "media": "Media",
       "location": "Beliggenhet",
       "contact": "Kontakt",
+      "locationContact": "Beliggenhet og kontakt",
       "openingHours": "Åpningstider",
       "services": "Tjenester"
     },
     "companySize": {
       "none": "Ikke oppgitt",
       "SELF_EMPLOYED": "Selvstendig",
-      "MICRO": "Mikro (1–9)",
-      "SMALL": "Liten (10–49)",
-      "MEDIUM": "Mellomstor (50–249)",
-      "LARGE": "Stor (250–999)",
-      "ENTERPRISE": "Storbedrift (1000+)"
+      "MICRO": "Mikro",
+      "SMALL": "Liten",
+      "MEDIUM": "Mellomstor",
+      "LARGE": "Stor",
+      "ENTERPRISE": "Storbedrift"
     },
     "serviceMode": {
       "ON_SITE": "På stedet",
       "REMOTE": "Eksternt",
       "NATIONWIDE": "Hele landet"
+    },
+    "deliveryMethod": {
+      "ON_SITE": "På stedet",
+      "AT_CUSTOMER": "Hos kunden",
+      "DIGITAL": "Digitalt",
+      "PICKUP": "Henting",
+      "DELIVERY": "Levering"
+    },
+    "serviceAreaOption": {
+      "none": "Ikke oppgitt",
+      "LOCAL": "Lokalt",
+      "REGIONAL": "Regionalt",
+      "NATIONWIDE": "Hele Norge"
+    },
+    "media": {
+      "preview": "Vis større bilde",
+      "close": "Lukk bildevisning",
+      "previousImage": "Forrige bilde",
+      "nextImage": "Neste bilde",
+      "removeImage": "Fjern bilde",
+      "count": "{count, plural, =1 {# bilde} other {# bilder}}",
+      "reorderHint": "Dra et bilde dit du vil ha det. På mobil: trykk og hold først.",
+      "reorder": "Endre rekkefølge",
+      "reorderDone": "Ferdig",
+      "position": "Bilde {index} av {total}",
+      "pendingRemoval": "Bilder du fjerner slettes først når du lagrer."
+    },
+    "writing": {
+      "done": "Ferdig",
+      "close": "Lukk",
+      "edit": "åpne skrivefelt"
+    },
+    "visibility": {
+      "hide": "Skjul",
+      "show": "Vis",
+      "hideTitle": "Skjul dette feltet fra den offentlige profilen",
+      "showTitle": "Vis dette feltet på den offentlige profilen",
+      "hiddenNote": "Skjult på den offentlige profilen. Feltet lagres fortsatt."
+    },
+    "highlights": {
+      "add": "Legg til kjennetegn",
+      "empty": "Ingen kjennetegn ennå.",
+      "norwegian": "Norsk",
+      "english": "Engelsk",
+      "placeholderNo": "Skriv et kort kjennetegn",
+      "placeholderEn": "Write a short highlight",
+      "moveUp": "Flytt opp",
+      "moveDown": "Flytt ned",
+      "remove": "Fjern kjennetegn",
+      "count": "{count} av {max}",
+      "legacyNote": "Du har {count} kjennetegn fra den forrige listen. De vises fortsatt på profilen til du skriver dine egne her."
     },
     "highlight": {
       "FREE_ESTIMATE": "Gratis befaring",
@@ -395,23 +519,27 @@
       "cover": "Forsidebilde",
       "photos": "Bilder",
       "address": "Adresse",
-      "city": "By",
+      "city": "Poststed",
       "postalCode": "Postnummer",
-      "mapsUrl": "Google Maps-URL",
-      "gpsCoordinates": "GPS-koordinater (valgfritt)",
+      "mapsUrl": "Google Maps-lenke",
+      "gpsCoordinates": "Avanserte kartinnstillinger",
+      "opensAt": "Åpner",
+      "closesAt": "Stenger",
+      "exceptionalHours": "Spesielle åpningstider",
+      "exceptionalDate": "Dato",
       "latitude": "Breddegrad",
       "longitude": "Lengdegrad",
       "phone": "Telefon",
       "email": "E-post",
       "website": "Nettsted",
-      "bookingUrl": "Bestillings-URL",
+      "bookingUrl": "Bestillingslenke",
       "openingHours": "Åpningstider",
       "services": "Tjenester",
       "serviceName": "Tjenestenavn",
       "price": "Pris",
       "companyStory": "Bedriftshistorie",
-      "identitySummaryNo": "Kort presentasjon (norsk)",
-      "identitySummaryEn": "Kort presentasjon (engelsk)",
+      "identitySummaryNo": "Kort bedriftsbeskrivelse (norsk)",
+      "identitySummaryEn": "Kort bedriftsbeskrivelse (engelsk)",
       "foundedYear": "Etableringsår",
       "employeeCount": "Antall ansatte",
       "companySize": "Bedriftsstørrelse",
@@ -419,7 +547,10 @@
       "organizationNumber": "Organisasjonsnummer",
       "organizationType": "Organisasjonsform",
       "serviceModes": "Slik leverer du tjenesten",
-      "highlightCodes": "Kjennetegn"
+      "highlightCodes": "Kjennetegn",
+      "deliveryMethods": "Hvordan leveres tjenesten?",
+      "serviceArea": "Tjenesteområde",
+      "highlights": "Kjennetegn"
     },
     "placeholders": {
       "name": "f.eks. Oslo Auto Repair",
@@ -430,7 +561,6 @@
       "address": "f.eks. Karl Johans gate 1",
       "city": "Oslo",
       "postalCode": "0154",
-      "mapsUrlHint": "Lim inn delingslenken fra Google Maps slik at kunder kan få veibeskrivelse.",
       "latitude": "59.9139",
       "longitude": "10.7522",
       "phone": "+47 123 45 678",
@@ -453,16 +583,27 @@
       "logo": "Kvadratisk bilde, 400×400 px anbefalt · maks 2 MB · JPG, PNG, WebP",
       "cover": "Banner vist øverst på din offentlige profil · 1200×400 px anbefalt · maks 5 MB",
       "photos": "Ekstra bilder av lokaler, produkter eller team · maks 5 MB per bilde",
+      "mapsUrl": "Lim inn lenken til bedriften på Google Maps.",
+      "coordinates": "Bruk koordinater bare hvis adressen ikke treffer riktig sted i kartet.",
+      "exceptionalHours": "Legg til avvik for helligdager eller andre datoer.",
       "bookingUrl": "En direkte lenke der kunder kan bestille time eller reservere.",
-      "openingHours": "Sett ukeplanen din. Bruk «Stengt» for dager du ikke holder åpent.",
+      "openingHours": "Angi når bedriften vanligvis er åpen.",
       "services": "List opp hva du tilbyr. Kundene ser disse på profilen din.",
-      "companyStory": "Dette er atskilt fra den korte beskrivelsen ovenfor.",
-      "identitySummary": "En kort, faktabasert setning som forklarer hva bedriften er. Ikke en slogan.",
+      "companyStory": "Bakgrunnen deres: hvordan bedriften startet og hva som har formet den. Ikke en gjentakelse av beskrivelsen.",
+      "identitySummary": "En kort, faktabasert setning om hvem dere er og hva dere hovedsakelig gjør. Vises rett under bedriftsnavnet på den offentlige profilen.",
+      "description": "Den utfyllende teksten: hva dere gjør, hva dere tilbyr, og hva kunden bør vite før de tar kontakt.",
       "organizationNumber": "9 siffer. Mellomrom fjernes automatisk.",
-      "highlightCodes": "Korte merker som vises på profilen din."
+      "highlightCodes": "Korte merker som vises på profilen din.",
+      "deliveryMethods": "Velg alle måtene kunden kan få tjenesten levert på.",
+      "serviceArea": "Hvor langt dekker dere? Velg ett alternativ.",
+      "highlights": "Legg til korte punkter som beskriver det som kjennetegner bedriften. Fyll ut det språket dere vil ha med — et tomt felt utelates."
     },
     "actions": {
       "save": "Lagre endringer",
+      "addExceptionalDate": "Legg til dato",
+      "removeExceptionalDate": "Fjern dato",
+      "next": "Neste",
+      "previous": "Forrige",
       "create": "Opprett profil",
       "preview": "Forhåndsvis profil",
       "changeLogo": "Endre logo",
@@ -484,10 +625,12 @@
       "rejected": "Profil avvist",
       "rejectedDesc": "Oppdater informasjonen din og lagre på nytt for å sende inn til ny vurdering."
     },
+    "exceptional": {
+      "empty": "Ingen datoer lagt til ennå."
+    },
     "openState": {
       "open": "Åpent",
-      "closed": "Stengt",
-      "notAvailable": "Ikke tilgjengelig"
+      "closed": "Stengt"
     },
     "noServices": "Ingen tjenester ennå. Legg til din første nedenfor."
   },

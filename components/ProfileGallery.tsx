@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect } from "react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
+import { safeImageUrl, watchImageFailure } from "@/lib/images";
 
 interface ProfileGalleryProps {
   images:       string[];
@@ -15,7 +16,27 @@ export default function ProfileGallery({ images, businessName }: ProfileGalleryP
   const [lightbox, setLightbox] = useState<number | null>(null);
   const [failed, setFailed]     = useState<Set<number>>(new Set());
 
-  const validImages = images.filter((_, i) => !failed.has(i));
+  const markFailed = useCallback(
+    (origIdx: number) => setFailed((prev) => new Set(prev).add(origIdx)),
+    []
+  );
+
+  // Same guard SafeImage uses. onError on its own missed a tile whose request
+  // failed around hydration, which left a broken image in the grid.
+  const watchTile = useCallback(
+    (origIdx: number) => (node: HTMLImageElement | null) =>
+      watchImageFailure(node, () => markFailed(origIdx)),
+    [markFailed]
+  );
+
+  // Two filters, for two different failures. `safeImageUrl` drops a URL that
+  // next/image can only reject — a host it is not configured for, or a
+  // malformed value — before a request is made, so the tile never flashes a
+  // broken image on its way to being removed. `failed` still catches the rest:
+  // a well-formed URL on an allowed host whose file is gone.
+  const validImages = images.filter(
+    (img, i) => !failed.has(i) && safeImageUrl(img) !== null
+  );
 
   const prev = useCallback(() => {
     setLightbox((i) => (i === null ? null : (i - 1 + validImages.length) % validImages.length));
@@ -66,10 +87,8 @@ export default function ProfileGallery({ images, businessName }: ProfileGalleryP
             alt={`${businessName} — photo 1`}
             fill
             className="object-cover group-hover:scale-[1.02] transition-transform duration-300"
-            onError={() => {
-              const origIdx = images.indexOf(validImages[0]);
-              setFailed((prev) => new Set(prev).add(origIdx));
-            }}
+            ref={watchTile(images.indexOf(validImages[0]))}
+            onError={() => markFailed(images.indexOf(validImages[0]))}
           />
         </button>
       ) : (
@@ -90,7 +109,8 @@ export default function ProfileGallery({ images, businessName }: ProfileGalleryP
                   alt={`${businessName} — photo ${idx + 1}`}
                   fill
                   className="object-cover group-hover:scale-[1.03] transition-transform duration-300"
-                  onError={() => setFailed((prev) => new Set(prev).add(origIdx))}
+                  ref={watchTile(origIdx)}
+                  onError={() => markFailed(origIdx)}
                 />
                 {idx === MAX_VISIBLE - 1 && remaining > 0 && (
                   <div className="absolute inset-0 bg-gray-900/60 flex items-center justify-center">
@@ -151,9 +171,9 @@ export default function ProfileGallery({ images, businessName }: ProfileGalleryP
               fill
               className="object-contain"
               sizes="(max-width: 768px) 100vw, 80vw"
+              ref={watchTile(images.indexOf(validImages[lightbox!]))}
               onError={() => {
-                const origIdx = images.indexOf(validImages[lightbox!]);
-                setFailed((prev) => new Set(prev).add(origIdx));
+                markFailed(images.indexOf(validImages[lightbox!]));
                 close();
               }}
             />
