@@ -6,12 +6,11 @@ import Header from "@/components/Header";
 import DashboardNav from "@/components/DashboardNav";
 import DashboardBottomNav from "@/components/DashboardBottomNav";
 import DashboardIdentity from "@/components/DashboardIdentity";
-import Footer from "@/components/Footer";
 
 export const dynamic = "force-dynamic";
 
 /**
- * Shared Dashboard V2 shell: global Header + Footer, a persistent desktop
+ * Shared Dashboard V2 shell: the global Header, a persistent desktop
  * navigation sidebar and a distinct compact mobile navigation, wrapping every
  * dashboard destination (Overview, Business profile, Reviews, Locations,
  * Settings). Auth is enforced here (middleware also guards /dashboard).
@@ -74,10 +73,12 @@ export default async function DashboardLayout({
         </div>
       </div>
 
-      {/* The shared site Footer, unchanged, as on every public page. It sits
-          above the spacer so the spacer still clears the bottom bar for the
-          last thing on the page — which is now the Footer, not the content. */}
-      <Footer />
+      {/* No public Footer in here. The workspace is a signed-in tool, and the
+          marketing footer — branding, product links, legal, contact — added a
+          screen of public-site page to the bottom of every dashboard view. It
+          read as a public page embedded in a dashboard, and on mobile it sat
+          directly above the fixed workspace navigation. The Footer is
+          unchanged and still renders on every public page. */}
 
       {/* Clears the fixed bottom bar (plus the home indicator) so no page ever
           hides its last control behind it. Desktop has no bar, so no spacer. */}
