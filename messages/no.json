@@ -150,8 +150,8 @@
     "twitterDescription": "Finn lokale bedrifter i Norge."
   },
   "search": {
-    "metaTitle": "Søk: {query} | DinLinks",
-    "metaDefault": "Søk bedrifter | DinLinks",
+    "metaTitle": "Søk: {query}",
+    "metaDefault": "Søk bedrifter",
     "metaDescription": "Søk etter norske bedrifter etter navn kategori eller by og finn åpningstider og kontaktinformasjon",
     "inPreposition": "i",
     "heading": "Søkeresultater",
@@ -222,7 +222,8 @@
     "annet": "Annet"
   },
   "categoriesPage": {
-    "metaTitle": "Bla gjennom kategorier | DinLinks",
+    "metaTitle": "Bla gjennom kategorier",
+    "ogTitle": "Bla gjennom kategorier | DinLinks",
     "metaDescription": "Utforsk alle bedriftskategorier på DinLinks — fra restauranter og butikker til helse og bil. Finn akkurat det du trenger.",
     "ogDescription": "Utforsk alle bedriftskategorier på DinLinks.",
     "allCategories": "Alle kategorier",
@@ -234,8 +235,8 @@
     "businesses": "bedrifter"
   },
   "categoryPage": {
-    "metaNotFound": "Ikke funnet | DinLinks",
-    "metaTitle": "{category}-bedrifter i Norge | DinLinks",
+    "metaNotFound": "Ikke funnet",
+    "metaTitle": "{category}-bedrifter i Norge",
     "metaDescription": "Se {count} {category}-bedrifter på DinLinks. Finn kontaktinfo, åpningstider og anmeldelser.",
     "ogTitle": "{category}-bedrifter | DinLinks",
     "ogDescription": "{count} {category}-bedrifter.",
@@ -345,6 +346,86 @@
     "pending": "Venter på gjennomgang",
     "approved": "Godkjent",
     "rejected": "Avvist",
+    "table": {
+      "tabs": {
+        "pending": "Venter",
+        "approved": "Godkjent",
+        "rejected": "Avvist",
+        "all": "Alle"
+      },
+      "status": {
+        "APPROVED": "Godkjent",
+        "PENDING": "Venter",
+        "REJECTED": "Avvist"
+      },
+      "searchPlaceholder": "Søk på navn, eier eller by",
+      "unnamed": "Uten navn",
+      "noCategory": "Ingen kategori",
+      "clearSearch": "Tøm søket",
+      "results": "{count, plural, =1 {# treff} other {# treff}}",
+      "columns": {
+        "business": "Bedrift",
+        "owner": "Eier",
+        "categoryCity": "Kategori / by",
+        "status": "Status",
+        "submitted": "Sendt inn",
+        "actions": "Handlinger"
+      },
+      "empty": {
+        "allTitle": "Ingen bedrifter ennå",
+        "allBody": "Bedrifter dukker opp her når eiere registrerer seg.",
+        "pendingTitle": "Ingen venter på gjennomgang",
+        "pendingBody": "Alle innsendte profiler er gjennomgått.",
+        "approvedTitle": "Ingen godkjente bedrifter",
+        "approvedBody": "Godkjenn innsendte profiler for å publisere dem.",
+        "rejectedTitle": "Ingen avviste bedrifter",
+        "rejectedBody": "Ingen bedrifter er avvist."
+      },
+      "details": {
+        "heading": "Bedriftsdetaljer",
+        "owner": "Eier",
+        "name": "Navn",
+        "email": "E-post",
+        "plan": "Abonnement",
+        "free": "Gratis",
+        "category": "Kategori",
+        "city": "By",
+        "phone": "Telefon",
+        "website": "Nettsted",
+        "created": "Opprettet",
+        "updated": "Oppdatert",
+        "engagement": "Aktivitet",
+        "views": "Visninger",
+        "favourites": "Favoritter",
+        "reviews": "Anmeldelser",
+        "description": "Beskrivelse",
+        "services": "Tjenester ({count})"
+      },
+      "actions": {
+        "approve": "Godkjenn",
+        "reject": "Avvis",
+        "delete": "Slett",
+        "view": "Se profil",
+        "close": "Lukk"
+      },
+      "toast": {
+        "approved": "Bedriften er godkjent og er nå publisert.",
+        "approveFailed": "Kunne ikke godkjenne. Prøv igjen.",
+        "rejected": "Bedriften er avvist. Eieren ser statusen i sitt kontrollpanel.",
+        "rejectFailed": "Kunne ikke avvise. Prøv igjen.",
+        "deleted": "«{name}» er slettet.",
+        "deleteFailed": "Kunne ikke slette. Prøv igjen.",
+        "network": "Nettverksfeil."
+      },
+      "deleteDialog": {
+        "title": "Slette bedriften?",
+        "body": "{name} og alle data knyttet til den slettes permanent. Dette kan ikke angres.",
+        "fallbackName": "Denne bedriften",
+        "confirm": "Slett",
+        "deleting": "Sletter",
+        "cancel": "Avbryt"
+      }
+    },
     "categories": {
       "title": "Kategorier",
       "subtitle": "Opprett og administrer bedriftskategorier."
@@ -955,7 +1036,7 @@
       "locationFallback": "Norge",
       "inPreposition": "i",
       "descriptionFallback": "{name} er en bedrift på DinLinks. Finn kontaktinfo, åpningstider og anmeldelser.",
-      "notFound": "Bedrift ikke funnet | DinLinks"
+      "notFound": "Bedrift ikke funnet"
     },
     "hero": {
       "openNow": "Åpent nå",

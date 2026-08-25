@@ -5,12 +5,10 @@ import { getMessages, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import AuthSessionProvider from "@/components/SessionProvider";
+import { SITE_URL, SITE_NAME } from "@/lib/site";
 import "../globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
-
-const SITE_URL  = process.env.NEXTAUTH_URL ?? "https://dinlinks.no";
-const SITE_NAME = "DinLinks";
 
 // viewport-fit=cover is what makes env(safe-area-inset-*) report real values on
 // iPhone; without it the insets are always 0 and the fixed workspace bottom bar

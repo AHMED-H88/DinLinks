@@ -10,6 +10,7 @@ import BusinessCard from "@/components/BusinessCard";
 import CategorySortBar from "@/components/CategorySortBar";
 import SubcategoryChips from "@/components/SubcategoryChips";
 import { subOrder } from "@/lib/taxonomy-v1";
+import { businessUrl } from "@/lib/site";
 
 // No `force-dynamic`: this page reads `searchParams` (sort / page), which
 // already forces dynamic rendering. The flag was redundant.
@@ -49,7 +50,7 @@ export async function generateMetadata({
       type: "website",
     },
     alternates: {
-      canonical: `/categories/${slug}`,
+      canonical: `/${locale}/categories/${slug}`,
     },
   };
 }
@@ -76,10 +77,13 @@ export default async function CategoryDetailPage({
   params,
   searchParams,
 }: {
-  params: Promise<{ slug: string }>;
+  // `locale` was always present at runtime — this route lives under
+  // app/[locale] — it simply was not declared, which is why the JSON-LD item
+  // URLs below used to hard-code "/en/" for Norwegian visitors too.
+  params: Promise<{ slug: string; locale: string }>;
   searchParams: { sort?: string; page?: string };
 }) {
-  const { slug } = await params;
+  const { slug, locale } = await params;
   const t         = await getTranslations("categoryPage");
   const tCat      = await getTranslations("categories");
   const sort      = searchParams.sort ?? "popular";
@@ -139,7 +143,7 @@ export default async function CategoryDetailPage({
       "@type":    "ListItem",
       position:  (page - 1) * PAGE_SIZE + i + 1,
       name:       b.name ?? "",
-      url:       `${process.env.NEXTAUTH_URL ?? "https://dinlinks.no"}/en/business/${b.id}`,
+      url:       businessUrl(locale, b.id),
     })),
   };
 
