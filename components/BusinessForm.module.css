@@ -107,3 +107,47 @@
   background-color: #f9fafb;
   border-color: #9ca3af;
 }
+
+/* ── Section tab strip ─────────────────────────────────────────────────────── */
+/* Horizontal only — this row scrolls sideways through the six sections and has
+   nothing to do with the page's vertical scrolling, which never changes
+   section. */
+.tabStrip {
+  -webkit-overflow-scrolling: touch;
+  /* Leaves a little room at each end so a snapped tab is never flush against
+     the edge of the strip. */
+  scroll-padding-inline: 16px;
+}
+
+/* Momentum snapping is a narrow-layout behaviour: it belongs where the row
+   genuinely overflows and a flick should settle on a tab. Desktop fits all six
+   at once, so both the snap type AND the per-tab centre alignment are declared
+   only here. Previously `scroll-snap-align: center` applied at every width and
+   only the snap *type* was switched off on desktop, which left the centring
+   alignment live for the browser to act on the moment the row overflowed even
+   briefly — e.g. while the webfont was still loading — parking the strip
+   mid-scroll with the first tab cut off. */
+@media (max-width: 1023.98px) {
+  .tabStrip {
+    scroll-snap-type: x proximity;
+  }
+
+  .tab {
+    scroll-snap-align: center;
+  }
+}
+
+/* ── Gallery tile while reordering ─────────────────────────────────────────── */
+/* No touch-action override. Scrolling stays completely normal until a finger
+   has held a tile long enough to pick it up, and from that moment the drag
+   refuses scroll events one by one instead — which is what lets the picture be
+   dragged in any direction rather than only sideways.
+
+   The long-press needs the browser to keep its hands off in two other ways:
+   no text/image selection building up under a held finger, and no iOS
+   callout menu appearing on top of the drag. */
+.reorderTile {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}

@@ -83,6 +83,11 @@ export default async function DashboardBusinessProfilePage({
                   legalName:          business.legalName,
                   organizationType:   business.organizationType,
                   highlightCodes:     business.highlightCodes,
+                  hiddenFields:       business.hiddenFields,
+                  deliveryMethods:    business.deliveryMethods,
+                  serviceArea:        business.serviceArea,
+                  highlights:         business.highlights,
+                  exceptionalHours:   business.exceptionalHours,
                 }
               : null
           }
