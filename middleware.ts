@@ -48,6 +48,18 @@ export default auth((req: any) => {
     );
   }
 
+  // An ADMIN in the Business Workspace is always a wrong turn: the workspace
+  // manages one business through `business.userId`, and an admin account owns
+  // none, so every page there would render its empty state. Sign-in lands
+  // everyone on /dashboard, so this is also what puts an admin in /admin
+  // afterwards — decided here rather than in the login form because the role
+  // lives in the session, and a redirect the server owns cannot be skipped.
+  if (PRIVATE_ROUTES.some((r) => clean.startsWith(r)) && isLoggedIn && userRole === "ADMIN") {
+    return NextResponse.redirect(
+      new URL(withLocale(locale, "/admin"), req.url)
+    );
+  }
+
   // Admin-only routes
   if (ADMIN_ROUTES.some((r) => clean.startsWith(r))) {
     if (!isLoggedIn) {

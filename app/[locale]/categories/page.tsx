@@ -16,10 +16,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const t = await getTranslations({ locale: params.locale, namespace: "categoriesPage" });
   return {
+    // `title` goes through the root layout's "%s | DinLinks" template, so it
+    // carries no suffix of its own. Open Graph has no template, so its title
+    // keeps the brand explicitly — the same split every other page uses.
     title: t("metaTitle"),
     description: t("metaDescription"),
     openGraph: {
-      title: t("metaTitle"),
+      title: t("ogTitle"),
       description: t("ogDescription"),
       type: "website",
     },

@@ -25,7 +25,7 @@ import { buildDisplayLocations } from "@/lib/locations";
 
 export const dynamic = "force-dynamic";
 
-const SITE_URL = process.env.NEXTAUTH_URL ?? "https://dinlinks.no";
+import { SITE_URL } from "@/lib/site";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -73,7 +73,10 @@ export async function generateMetadata({
 
   const rating    = avgRatingOf(b.reviews);
   const ratingStr = rating ? ` · ${rating.toFixed(1)}⭐` : "";
-  const title     = `${b.name} — ${b.category?.name ?? t("meta.categoryFallback")} ${t("meta.inPreposition")} ${b.city ?? t("meta.locationFallback")}${ratingStr} | DinLinks`;
+  // No " | DinLinks" here: the root layout's title template appends it to
+  // every page title, and spelling it out again produced
+  // "… | DinLinks | DinLinks" on every profile in production.
+  const title     = `${b.name} — ${b.category?.name ?? t("meta.categoryFallback")} ${t("meta.inPreposition")} ${b.city ?? t("meta.locationFallback")}${ratingStr}`;
 
   const description =
     b.description?.slice(0, 155) ??
@@ -84,7 +87,9 @@ export async function generateMetadata({
   return {
     title,
     description,
-    alternates: { canonical: `/business/${id}` },
+    // Locale-prefixed: every public route lives under /[locale], so a bare
+    // /business/<id> canonical named a path that only resolves via a redirect.
+    alternates: { canonical: `/${locale}/business/${id}` },
     openGraph: {
       title, description,
       type: "website",

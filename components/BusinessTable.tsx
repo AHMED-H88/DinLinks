@@ -2,6 +2,7 @@
 
 import { useState, useTransition, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
 import Image from "next/image";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -44,14 +45,19 @@ type FilterTab = "ALL" | Status;
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function statusMeta(s: Status) {
-  if (s === "APPROVED") return { label: "Approved", cls: "bg-green-100 text-green-700 border-green-200" };
-  if (s === "PENDING")  return { label: "Pending",  cls: "bg-amber-100 text-amber-700 border-amber-200" };
-  return                       { label: "Rejected", cls: "bg-red-100 text-red-700 border-red-200" };
+/** Colour only — the label comes from `admin.table.status` so it follows the locale. */
+function statusCls(s: Status) {
+  if (s === "APPROVED") return "bg-green-100 text-green-700 border-green-200";
+  if (s === "PENDING")  return "bg-amber-100 text-amber-700 border-amber-200";
+  return "bg-red-100 text-red-700 border-red-200";
 }
 
-function fmtDate(d: Date) {
-  return new Date(d).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+/** Formatted in the reader's locale; this used to be hard-coded to en-GB, so a
+ *  Norwegian admin read English month names. */
+function fmtDate(d: Date, locale: string) {
+  return new Date(d).toLocaleDateString(locale === "no" ? "nb-NO" : "en-GB", {
+    day: "numeric", month: "short", year: "numeric",
+  });
 }
 
 // ─── Delete confirmation dialog ───────────────────────────────────────────────
@@ -67,6 +73,7 @@ function DeleteDialog({
   onCancel: () => void;
   loading: boolean;
 }) {
+  const t = useTranslations("admin.table.deleteDialog");
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onCancel} />
@@ -77,13 +84,13 @@ function DeleteDialog({
               d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
           </svg>
         </div>
-        <h3 className="text-base font-semibold text-gray-900 text-center mb-1">Delete business?</h3>
+        <h3 className="text-base font-semibold text-gray-900 text-center mb-1">{t("title")}</h3>
         <p className="text-sm text-gray-500 text-center mb-6">
-          <span className="font-medium text-gray-700">{name || "This business"}</span> and all its data will be permanently deleted. This cannot be undone.
+          {t("body", { name: name || t("fallbackName") })}
         </p>
         <div className="flex gap-3">
           <button onClick={onCancel} disabled={loading} className="flex-1 btn btn-secondary">
-            Cancel
+            {t("cancel")}
           </button>
           <button
             onClick={onConfirm}
@@ -96,9 +103,9 @@ function DeleteDialog({
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                 </svg>
-                Deleting…
+                {t("deleting")}
               </span>
-            ) : "Delete"}
+            ) : t("confirm")}
           </button>
         </div>
       </div>
@@ -121,8 +128,9 @@ function DetailPanel({
   onReject:  (id: string) => void;
   loadingId: string | null;
 }) {
+  const t      = useTranslations("admin.table");
+  const locale = useLocale();
   const busy = loadingId === business.id;
-  const sm   = statusMeta(business.status);
   const services = Array.isArray(business.services) ? business.services : [];
 
   return (
@@ -145,8 +153,8 @@ function DetailPanel({
             )}
             <div>
               <h2 className="text-base font-semibold text-gray-900 leading-tight">{business.name ?? "—"}</h2>
-              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${sm.cls}`}>
-                {sm.label}
+              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${statusCls(business.status)}`}>
+                {t(`status.${business.status}`)}
               </span>
             </div>
           </div>
@@ -161,30 +169,30 @@ function DetailPanel({
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
 
           {/* Owner */}
-          <Section title="Owner">
-            <Row label="Name"     value={business.user.name  ?? "—"} />
-            <Row label="Email"    value={business.user.email}         />
-            <Row label="Plan"     value={business.subscription ? `${business.subscription.plan} (${business.subscription.status})` : "Free"} />
+          <Section title={t("columns.owner")}>
+            <Row label={t("details.name")}  value={business.user.name  ?? "—"} />
+            <Row label={t("details.email")} value={business.user.email}         />
+            <Row label={t("details.plan")}  value={business.subscription ? `${business.subscription.plan} (${business.subscription.status})` : t("details.free")} />
           </Section>
 
           {/* Business info */}
-          <Section title="Business details">
-            <Row label="Category" value={business.category?.name ?? "—"} />
-            <Row label="City"     value={business.city     ?? "—"} />
-            <Row label="Phone"    value={business.phone    ?? "—"} />
-            <Row label="Email"    value={business.email    ?? "—"} />
-            <Row label="Website"  value={business.website  ?? "—"} link={business.website} />
-            <Row label="Created"  value={fmtDate(business.createdAt)} />
-            <Row label="Updated"  value={fmtDate(business.updatedAt)} />
+          <Section title={t("details.heading")}>
+            <Row label={t("details.category")} value={business.category?.name ?? "—"} />
+            <Row label={t("details.city")}     value={business.city     ?? "—"} />
+            <Row label={t("details.phone")}    value={business.phone    ?? "—"} />
+            <Row label={t("details.email")}    value={business.email    ?? "—"} />
+            <Row label={t("details.website")}  value={business.website  ?? "—"} link={business.website} />
+            <Row label={t("details.created")}  value={fmtDate(business.createdAt, locale)} />
+            <Row label={t("details.updated")}  value={fmtDate(business.updatedAt, locale)} />
           </Section>
 
           {/* Stats */}
-          <Section title="Engagement">
+          <Section title={t("details.engagement")}>
             <div className="grid grid-cols-3 gap-3">
               {[
-                { label: "Views",      value: business.views },
-                { label: "Favourites", value: business._count.favorites },
-                { label: "Reviews",    value: business._count.reviews },
+                { label: t("details.views"),      value: business.views },
+                { label: t("details.favourites"), value: business._count.favorites },
+                { label: t("details.reviews"),    value: business._count.reviews },
               ].map(({ label, value }) => (
                 <div key={label} className="bg-gray-50 rounded-xl p-3 text-center">
                   <div className="text-xl font-bold text-gray-900">{value}</div>
@@ -196,14 +204,14 @@ function DetailPanel({
 
           {/* Description */}
           {business.description && (
-            <Section title="Description">
+            <Section title={t("details.description")}>
               <p className="text-sm text-gray-600 leading-relaxed">{business.description}</p>
             </Section>
           )}
 
           {/* Services */}
           {services.length > 0 && (
-            <Section title={`Services (${services.length})`}>
+            <Section title={t("details.services", { count: services.length })}>
               <div className="space-y-2">
                 {services.map((s: any) => (
                   <div key={s.id} className="flex items-center justify-between text-sm">
@@ -242,7 +250,7 @@ function DetailPanel({
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
-                  Approve
+                  {t("actions.approve")}
                 </>
               )}
             </button>
@@ -258,14 +266,15 @@ function DetailPanel({
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
-                  Reject
+                  {t("actions.reject")}
                 </>
               )}
             </button>
           )}
           {business.status === "APPROVED" && (
             <a
-              href={`/en/business/${business.id}`}
+              // Was hard-coded to /en/, so a Norwegian admin opened the English profile.
+              href={`/${locale}/business/${business.id}`}
               target="_blank"
               rel="noopener noreferrer"
               className="flex-1 btn btn-secondary btn-sm justify-center"
@@ -274,7 +283,7 @@ function DetailPanel({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75}
                   d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
               </svg>
-              View live
+              {t("actions.view")}
             </a>
           )}
         </div>
@@ -320,18 +329,17 @@ function BtnSpinner() {
 // ─── Empty state ──────────────────────────────────────────────────────────────
 
 function EmptyState({ filter }: { filter: FilterTab }) {
-  const messages: Record<FilterTab, { icon: string; title: string; body: string }> = {
-    ALL:      { icon: "🏢", title: "No businesses yet",       body: "Businesses will appear here once owners register." },
-    PENDING:  { icon: "⏳", title: "No pending reviews",      body: "All submissions have been reviewed. Great work!" },
-    APPROVED: { icon: "✅", title: "No approved businesses",  body: "Approve pending submissions to make them public." },
-    REJECTED: { icon: "❌", title: "No rejected businesses",  body: "No businesses have been rejected." },
+  const t = useTranslations("admin.table.empty");
+  // Keyed off the filter so each state says something specific. The emoji that
+  // used to head this block are gone — DinLinks uses functional icons only.
+  const key: Record<FilterTab, string> = {
+    ALL: "all", PENDING: "pending", APPROVED: "approved", REJECTED: "rejected",
   };
-  const m = messages[filter];
+  const k = key[filter];
   return (
     <div className="text-center py-16">
-      <div className="text-4xl mb-4">{m.icon}</div>
-      <h3 className="text-base font-semibold text-gray-900 mb-1">{m.title}</h3>
-      <p className="text-sm text-gray-500 max-w-xs mx-auto">{m.body}</p>
+      <h3 className="text-base font-semibold text-gray-900 mb-1">{t(`${k}Title`)}</h3>
+      <p className="text-sm text-gray-500 max-w-xs mx-auto">{t(`${k}Body`)}</p>
     </div>
   );
 }
@@ -339,6 +347,8 @@ function EmptyState({ filter }: { filter: FilterTab }) {
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function BusinessTable({ businesses }: { businesses: BusinessRow[] }) {
+  const t      = useTranslations("admin.table");
+  const locale = useLocale();
   const router = useRouter();
   const [, startTransition] = useTransition();
 
@@ -387,15 +397,15 @@ export default function BusinessTable({ businesses }: { businesses: BusinessRow[
     try {
       const res = await fetch(`/api/admin/businesses/${id}/approve`, { method: "POST" });
       if (res.ok) {
-        showToast("Business approved and is now live.", true);
+        showToast(t("toast.approved"), true);
         // Close detail panel if it was showing this business
         if (detailBiz?.id === id) setDetailBiz(null);
         startTransition(() => router.refresh());
       } else {
-        showToast("Failed to approve. Please try again.", false);
+        showToast(t("toast.approveFailed"), false);
       }
     } catch {
-      showToast("Network error.", false);
+      showToast(t("toast.network"), false);
     } finally {
       setLoadingId(null);
     }
@@ -406,14 +416,14 @@ export default function BusinessTable({ businesses }: { businesses: BusinessRow[
     try {
       const res = await fetch(`/api/admin/businesses/${id}/reject`, { method: "POST" });
       if (res.ok) {
-        showToast("Business rejected. The owner will see the status in their dashboard.", true);
+        showToast(t("toast.rejected"), true);
         if (detailBiz?.id === id) setDetailBiz(null);
         startTransition(() => router.refresh());
       } else {
-        showToast("Failed to reject. Please try again.", false);
+        showToast(t("toast.rejectFailed"), false);
       }
     } catch {
-      showToast("Network error.", false);
+      showToast(t("toast.network"), false);
     } finally {
       setLoadingId(null);
     }
@@ -424,16 +434,16 @@ export default function BusinessTable({ businesses }: { businesses: BusinessRow[
     try {
       const res = await fetch(`/api/admin/businesses/${business.id}`, { method: "DELETE" });
       if (res.ok) {
-        showToast(`"${business.name}" deleted.`, true);
+        showToast(t("toast.deleted", { name: business.name ?? t("unnamed") }), true);
         setDeleteTarget(null);
         if (detailBiz?.id === business.id) setDetailBiz(null);
         startTransition(() => router.refresh());
       } else {
-        showToast("Failed to delete. Please try again.", false);
+        showToast(t("toast.deleteFailed"), false);
         setDeleteTarget(null);
       }
     } catch {
-      showToast("Network error.", false);
+      showToast(t("toast.network"), false);
       setDeleteTarget(null);
     } finally {
       setDeleteLoading(false);
@@ -441,10 +451,10 @@ export default function BusinessTable({ businesses }: { businesses: BusinessRow[
   }
 
   const TABS: { key: FilterTab; label: string }[] = [
-    { key: "PENDING",  label: "Pending"  },
-    { key: "APPROVED", label: "Approved" },
-    { key: "REJECTED", label: "Rejected" },
-    { key: "ALL",      label: "All"      },
+    { key: "PENDING",  label: t("tabs.pending")  },
+    { key: "APPROVED", label: t("tabs.approved") },
+    { key: "REJECTED", label: t("tabs.rejected") },
+    { key: "ALL",      label: t("tabs.all")      },
   ];
 
   return (
@@ -532,11 +542,11 @@ export default function BusinessTable({ businesses }: { businesses: BusinessRow[
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search name, owner, city…"
+            placeholder={t("searchPlaceholder")}
             className="input pl-9 py-2 text-sm"
           />
           {search && (
-            <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700">
+            <button onClick={() => setSearch("")} aria-label={t("clearSearch")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -545,7 +555,7 @@ export default function BusinessTable({ businesses }: { businesses: BusinessRow[
         </div>
 
         <p className="text-xs text-gray-400 sm:ml-auto">
-          {displayed.length} {displayed.length === 1 ? "result" : "results"}
+          {t("results", { count: displayed.length })}
         </p>
       </div>
 
@@ -557,7 +567,7 @@ export default function BusinessTable({ businesses }: { businesses: BusinessRow[
           <table className="w-full min-w-[700px]">
             <thead className="bg-gray-50 border-b border-gray-100">
               <tr>
-                {["Business", "Owner", "Category / City", "Status", "Submitted", "Actions"].map((h) => (
+                {[t("columns.business"), t("columns.owner"), t("columns.categoryCity"), t("columns.status"), t("columns.submitted"), t("columns.actions")].map((h) => (
                   <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap">
                     {h}
                   </th>
@@ -566,7 +576,7 @@ export default function BusinessTable({ businesses }: { businesses: BusinessRow[
             </thead>
             <tbody>
               {displayed.map((b, idx) => {
-                const sm  = statusMeta(b.status);
+                const cls = statusCls(b.status);
                 const busy = loadingId === b.id;
                 return (
                   <tr
@@ -592,7 +602,7 @@ export default function BusinessTable({ businesses }: { businesses: BusinessRow[
                           className="text-sm font-semibold text-gray-900 hover:text-primary-700 transition-colors text-left truncate max-w-[140px]"
                           title={b.name ?? ""}
                         >
-                          {b.name ?? <span className="text-gray-400 italic">Unnamed</span>}
+                          {b.name ?? <span className="text-gray-400 italic">{t("unnamed")}</span>}
                         </button>
                       </div>
                     </td>
@@ -610,21 +620,21 @@ export default function BusinessTable({ businesses }: { businesses: BusinessRow[
                     {/* Category / city */}
                     <td className="px-4 py-3.5">
                       <div className="flex flex-col">
-                        <span className="text-sm text-gray-700">{b.category?.name ?? <span className="text-gray-400 italic">No category</span>}</span>
+                        <span className="text-sm text-gray-700">{b.category?.name ?? <span className="text-gray-400 italic">{t("noCategory")}</span>}</span>
                         {b.city && <span className="text-xs text-gray-400">{b.city}</span>}
                       </div>
                     </td>
 
                     {/* Status badge */}
                     <td className="px-4 py-3.5">
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold border ${sm.cls}`}>
-                        {sm.label}
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold border ${cls}`}>
+                        {t(`status.${b.status}`)}
                       </span>
                     </td>
 
                     {/* Date */}
                     <td className="px-4 py-3.5 text-xs text-gray-400 whitespace-nowrap">
-                      {fmtDate(b.createdAt)}
+                      {fmtDate(b.createdAt, locale)}
                     </td>
 
                     {/* Actions */}

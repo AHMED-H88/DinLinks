@@ -150,8 +150,8 @@
     "twitterDescription": "Find local businesses in Norway."
   },
   "search": {
-    "metaTitle": "Search: {query} | DinLinks",
-    "metaDefault": "Search businesses | DinLinks",
+    "metaTitle": "Search: {query}",
+    "metaDefault": "Search businesses",
     "metaDescription": "Search Norwegian businesses by name category or city and find opening hours and contact information",
     "inPreposition": "in",
     "heading": "Search results",
@@ -222,7 +222,8 @@
     "annet": "Other"
   },
   "categoriesPage": {
-    "metaTitle": "Browse categories | DinLinks",
+    "metaTitle": "Browse categories",
+    "ogTitle": "Browse categories | DinLinks",
     "metaDescription": "Explore all business categories on DinLinks — from restaurants and retail to health and automotive. Find exactly what you need.",
     "ogDescription": "Explore all business categories on DinLinks.",
     "allCategories": "All categories",
@@ -234,8 +235,8 @@
     "businesses": "businesses"
   },
   "categoryPage": {
-    "metaNotFound": "Not found | DinLinks",
-    "metaTitle": "{category} businesses in Norway | DinLinks",
+    "metaNotFound": "Not found",
+    "metaTitle": "{category} businesses in Norway",
     "metaDescription": "Browse {count} {category} businesses on DinLinks. Find contact details, opening hours, and reviews.",
     "ogTitle": "{category} businesses | DinLinks",
     "ogDescription": "{count} {category} businesses.",
@@ -345,6 +346,86 @@
     "pending": "Pending review",
     "approved": "Approved",
     "rejected": "Rejected",
+    "table": {
+      "tabs": {
+        "pending": "Pending",
+        "approved": "Approved",
+        "rejected": "Rejected",
+        "all": "All"
+      },
+      "status": {
+        "APPROVED": "Approved",
+        "PENDING": "Pending",
+        "REJECTED": "Rejected"
+      },
+      "searchPlaceholder": "Search name, owner, or city",
+      "unnamed": "Unnamed",
+      "noCategory": "No category",
+      "clearSearch": "Clear search",
+      "results": "{count, plural, =1 {# result} other {# results}}",
+      "columns": {
+        "business": "Business",
+        "owner": "Owner",
+        "categoryCity": "Category / city",
+        "status": "Status",
+        "submitted": "Submitted",
+        "actions": "Actions"
+      },
+      "empty": {
+        "allTitle": "No businesses yet",
+        "allBody": "Businesses appear here once owners register.",
+        "pendingTitle": "Nothing waiting for review",
+        "pendingBody": "Every submitted profile has been reviewed.",
+        "approvedTitle": "No approved businesses",
+        "approvedBody": "Approve submitted profiles to publish them.",
+        "rejectedTitle": "No rejected businesses",
+        "rejectedBody": "No businesses have been rejected."
+      },
+      "details": {
+        "heading": "Business details",
+        "owner": "Owner",
+        "name": "Name",
+        "email": "Email",
+        "plan": "Plan",
+        "free": "Free",
+        "category": "Category",
+        "city": "City",
+        "phone": "Phone",
+        "website": "Website",
+        "created": "Created",
+        "updated": "Updated",
+        "engagement": "Engagement",
+        "views": "Views",
+        "favourites": "Favourites",
+        "reviews": "Reviews",
+        "description": "Description",
+        "services": "Services ({count})"
+      },
+      "actions": {
+        "approve": "Approve",
+        "reject": "Reject",
+        "delete": "Delete",
+        "view": "View profile",
+        "close": "Close"
+      },
+      "toast": {
+        "approved": "Business approved and is now live.",
+        "approveFailed": "Could not approve. Please try again.",
+        "rejected": "Business rejected. The owner sees the status in their dashboard.",
+        "rejectFailed": "Could not reject. Please try again.",
+        "deleted": "“{name}” deleted.",
+        "deleteFailed": "Could not delete. Please try again.",
+        "network": "Network error."
+      },
+      "deleteDialog": {
+        "title": "Delete this business?",
+        "body": "{name} and all of its data will be permanently deleted. This cannot be undone.",
+        "fallbackName": "This business",
+        "confirm": "Delete",
+        "deleting": "Deleting",
+        "cancel": "Cancel"
+      }
+    },
     "categories": {
       "title": "Categories",
       "subtitle": "Create and manage business categories."
@@ -955,7 +1036,7 @@
       "locationFallback": "Norway",
       "inPreposition": "in",
       "descriptionFallback": "{name} is a business on DinLinks. Find contact details, opening hours, and reviews.",
-      "notFound": "Business not found | DinLinks"
+      "notFound": "Business not found"
     },
     "hero": {
       "openNow": "Open now",

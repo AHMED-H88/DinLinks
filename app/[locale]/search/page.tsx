@@ -33,7 +33,7 @@ export async function generateMetadata({
   return {
     title,
     description: t("metaDescription"),
-    alternates: { canonical: "/search" },
+    alternates: { canonical: `/${params.locale}/search` },
   };
 }
 
