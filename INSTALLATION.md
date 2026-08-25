@@ -139,9 +139,19 @@ Seed the database with initial data:
 npm run db:seed
 ```
 
-This creates:
-- Admin user (admin@dinlinks.com / admin123)
-- Default categories (Administrasjon, Helse, Håndverk, etc.)
+This creates the category taxonomy.
+
+An admin account is **not** created unless you ask for one, and the seed has no
+built-in password — you supply it:
+
+```bash
+SEED_ADMIN_EMAIL=you@example.com SEED_ADMIN_PASSWORD='<choose a strong one>' npm run db:seed
+```
+
+The seed never overwrites an admin that already exists, so it cannot reset a
+live administrator's password. Demo businesses are opt-in too, with
+`SEED_DEMO_BUSINESSES=1`; leave it unset for anything resembling a real
+database.
 
 ## Step 7: Run Development Server
 
@@ -157,9 +167,7 @@ The application will be available at [http://localhost:3000](http://localhost:30
 
 ### As Admin
 1. Go to http://localhost:3000/login
-2. Login with:
-   - Email: admin@dinlinks.com
-   - Password: admin123
+2. Log in with the `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` you seeded
 3. You'll be redirected to /admin
 4. Try creating categories and managing businesses
 

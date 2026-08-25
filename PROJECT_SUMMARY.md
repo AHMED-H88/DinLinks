@@ -240,8 +240,7 @@ npm run dev
 ### 5. Access Application
 - **Home**: http://localhost:3000
 - **Admin**: http://localhost:3000/admin
-  - Email: admin@dinlinks.com
-  - Password: admin123
+  - Sign in with the `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` you seeded
 
 ## 📖 Documentation Guide
 
@@ -321,12 +320,14 @@ npm run dev
 ### Test Accounts
 ```
 Admin:
-- Email: admin@dinlinks.com
-- Password: admin123
+- Opt in when seeding; you choose the credentials:
+  SEED_ADMIN_EMAIL=... SEED_ADMIN_PASSWORD=... npm run db:seed
 
 Business:
 - Create your own at /signup
 ```
+
+Local accounts only. Never seed an admin against a shared or live database.
 
 ### Stripe Test Cards
 ```

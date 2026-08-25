@@ -4,7 +4,6 @@ import { prisma } from "@/lib/prisma";
 import { Link } from "@/i18n/routing";
 import { getTranslations } from "next-intl/server";
 import { useTranslations } from "next-intl";
-import { formatCity } from "@/lib/format";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BusinessCard from "@/components/BusinessCard";
@@ -109,7 +108,7 @@ export default async function CategoryDetailPage({
     .map((c) => ({ id: c.id, name: tCat.has(c.slug) ? tCat(c.slug) : c.name, slug: c.slug }))
     .sort((a, b) => subOrder(a.slug) - subOrder(b.slug));
 
-  const [total, businesses, cityGroups] = await Promise.all([
+  const [total, businesses] = await Promise.all([
     prisma.business.count({ where: { categoryId: { in: targetIds }, status: "APPROVED" } }),
 
     prisma.business.findMany({
@@ -126,18 +125,9 @@ export default async function CategoryDetailPage({
       skip:  (page - 1) * PAGE_SIZE,
       take:  PAGE_SIZE,
     }),
-
-    prisma.business.groupBy({
-      by:      ["city"],
-      where:   { categoryId: { in: targetIds }, status: "APPROVED", city: { not: null } },
-      _count:  { city: true },
-      orderBy: { _count: { city: "desc" } },
-      take:    8,
-    }),
   ]);
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
-  const cities     = cityGroups.filter((g) => g.city).map((g) => g.city as string);
 
   // ── JSON-LD (ItemList of businesses) ─────────────────────────────────────
   const jsonLd = {
@@ -179,12 +169,18 @@ export default async function CategoryDetailPage({
             <div className="flex flex-col sm:flex-row sm:items-end gap-4">
               <div>
                 <h1 className="text-3xl font-bold text-gray-900 tracking-tight">{catName}</h1>
+                {/* Count only. This page has no city filter — it lists every
+                    approved business in the category, in every city — so the
+                    city suffix that used to sit here described nothing the
+                    reader could act on. With one distinct city among the
+                    results it read as a scope ("2 bedrifter · Bergen") that the
+                    result set did not actually have, and a business whose city
+                    is unset was left out of the summary entirely while still
+                    being counted. The city belongs to each card, and to Search,
+                    where an explicit filter backs it. */}
                 <p className="text-sm text-gray-500 mt-1">
                   <span className="font-medium text-gray-700">{total}</span>{" "}
                   {total === 1 ? t("businessSingular") : t("businessPlural")}
-                  {cities.length > 0 && (
-                    <> · {cities.slice(0, 4).map(formatCity).join(", ")}{cities.length > 4 ? ` ${t("andMore")}` : ""}</>
-                  )}
                 </p>
               </div>
 

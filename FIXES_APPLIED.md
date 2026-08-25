@@ -156,9 +156,9 @@ npm run dev
 Should start without errors at http://localhost:3000
 
 ### 4. Test Admin Login
+- Seed an admin first: `SEED_ADMIN_EMAIL=... SEED_ADMIN_PASSWORD=... npm run db:seed`
 - Navigate to http://localhost:3000/login
-- Email: admin@dinlinks.com
-- Password: admin123
+- Sign in with the credentials you supplied
 - Should redirect to /admin without errors
 
 ### 5. Test API Routes

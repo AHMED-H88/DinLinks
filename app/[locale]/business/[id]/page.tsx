@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
@@ -19,7 +18,8 @@ import CollapsibleReveal from "@/components/CollapsibleReveal";
 import type { ServiceItem } from "@/components/BusinessForm";
 import type { Branch } from "@/components/BranchManager";
 import { getTranslations } from "next-intl/server";
-import { normalizeDayKey } from "@/lib/days";
+import { normalizeDayKey, DAY_KEYS } from "@/lib/days";
+import SafeImage from "@/components/SafeImage";
 import { formatCity } from "@/lib/format";
 import { buildDisplayLocations } from "@/lib/locations";
 
@@ -171,7 +171,16 @@ export default async function BusinessProfilePage({
   const displayLocations = buildDisplayLocations(business, branches);
   const galleryImages = business.images;
   const avgRating     = avgRatingOf(business.reviews);
-  const hasHours      = Object.keys(openingHours).length > 0;
+  // Keyed by canonical English day. `openingHours` is a jsonb column, and
+  // Postgres does not preserve the key order it was written in — it stores
+  // object keys sorted by length then bytes, which is why the week rendered as
+  // Friday, Monday, Sunday, Tuesday, Saturday, Thursday, Wednesday. Order is a
+  // presentation concern, so it is imposed here rather than in the data.
+  const orderedHours  = normalizeOpeningHours(openingHours);
+  const weekDays      = DAY_KEYS.filter((d) => orderedHours[d]);
+  // Derived from the days that will actually render, so a record holding only
+  // keys nothing recognises shows no card instead of an empty one.
+  const hasHours      = weekDays.length > 0;
   const openNow       = hasHours ? isOpenNow(openingHours) : null;
   const profileUrl    = `${SITE_URL}/${locale}/business/${id}`;
 
@@ -220,13 +229,17 @@ export default async function BusinessProfilePage({
   const extraReviews   = business.reviews.slice(REVIEW_PREVIEW);
 
   // ── JSON-LD ───────────────────────────────────────────────────────────────
-  const openingHoursSpec = Object.entries(openingHours)
-    .filter(([, h]: [string, any]) => !h?.closed)
-    .map(([day, h]: [string, any]) => ({
+  // schema.org only recognises the English day names, and it reads the stored
+  // key verbatim — so a record written with Norwegian keys used to emit
+  // `schema.org/Mandag`, which is not a term Google resolves. The normalised
+  // key is used instead, in week order.
+  const openingHoursSpec = weekDays
+    .filter((day) => !orderedHours[day]?.closed)
+    .map((day) => ({
       "@type":   "OpeningHoursSpecification",
       dayOfWeek: `https://schema.org/${day.charAt(0).toUpperCase() + day.slice(1)}`,
-      opens:     h?.open  ?? "09:00",
-      closes:    h?.close ?? "17:00",
+      opens:     orderedHours[day]?.open  ?? "09:00",
+      closes:    orderedHours[day]?.close ?? "17:00",
     }));
 
   const jsonLd: Record<string, any> = {
@@ -276,24 +289,26 @@ export default async function BusinessProfilePage({
             HERO — full-bleed cover with identity overlay at bottom
         ══════════════════════════════════════════════════════════════════ */}
         <div className="relative w-full h-64 sm:h-72 md:h-96 overflow-hidden bg-gray-900">
-          {/* Cover image */}
-          {business.coverImage ? (
-            <Image
-              src={business.coverImage}
-              alt={`${business.name} forsidebilde`}
-              fill
-              className="object-cover"
-              priority
-            />
-          ) : (
-            // Elegant gradient fallback — no generic placeholder
-            <div
-              className="absolute inset-0"
-              style={{
-                background: "linear-gradient(135deg, #1f2937 0%, #111827 100%)",
-              }}
-            />
-          )}
+          {/* Cover image. A stored URL is checked before the request (bad host,
+              malformed) and again if the load itself fails (404, file removed),
+              so the gradient below is what shows in every failure — never a
+              broken-image icon over the hero. */}
+          <SafeImage
+            src={business.coverImage}
+            alt={`${business.name} forsidebilde`}
+            fill
+            className="object-cover"
+            priority
+            fallback={
+              // Elegant gradient fallback — no generic placeholder
+              <div
+                className="absolute inset-0"
+                style={{
+                  background: "linear-gradient(135deg, #1f2937 0%, #111827 100%)",
+                }}
+              />
+            }
+          />
 
           {/* Gradient veil — bottom-heavy so text is always legible */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent" />
@@ -305,19 +320,18 @@ export default async function BusinessProfilePage({
 
                 {/* Logo */}
                 <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl border-2 border-white/30 bg-white shadow-large flex-shrink-0 overflow-hidden flex items-center justify-center">
-                  {business.logo ? (
-                    <Image
-                      src={business.logo}
-                      alt={business.name ?? ""}
-                      width={80}
-                      height={80}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <span className="text-xl font-bold text-gray-700 select-none">
-                      {(business.name ?? "?").slice(0, 2).toUpperCase()}
-                    </span>
-                  )}
+                  <SafeImage
+                    src={business.logo}
+                    alt={business.name ?? ""}
+                    width={80}
+                    height={80}
+                    className="w-full h-full object-cover"
+                    fallback={
+                      <span className="text-xl font-bold text-gray-700 select-none">
+                        {(business.name ?? "?").slice(0, 2).toUpperCase()}
+                      </span>
+                    }
+                  />
                 </div>
 
                 {/* Name + badges */}
@@ -776,14 +790,14 @@ export default async function BusinessProfilePage({
                     )}
                   </div>
                   <div>
-                    {Object.entries(openingHours).map(([day, h]: [string, any], i) => {
-                      const dayKey = normalizeDayKey(day);
+                    {weekDays.map((dayKey, i) => {
+                      const h = orderedHours[dayKey];
                       return (
                       <div
-                        key={day}
+                        key={dayKey}
                         className={`flex items-center justify-between px-4 py-2.5 ${i % 2 === 0 ? "bg-gray-50/60" : "bg-white"}`}
                       >
-                        <span className="text-xs font-medium text-gray-600">{dayKey ? DAY_LABELS[dayKey] : day}</span>
+                        <span className="text-xs font-medium text-gray-600">{DAY_LABELS[dayKey]}</span>
                         {h?.closed ? (
                           <span className="text-xs text-gray-400">{t("sidebar.closed")}</span>
                         ) : (
@@ -940,25 +954,29 @@ function SimilarBusinesses({
                               >
                                 {/* Mini cover */}
                                 <div className="relative h-28 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
-                                  {sb.coverImage ? (
-                                    <Image
-                                      src={sb.coverImage}
-                                      alt={sb.name ?? ""}
-                                      fill
-                                      className="object-cover group-hover:scale-105 transition-transform duration-300"
-                                    />
-                                  ) : (
-                                    <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200" />
-                                  )}
+                                  <SafeImage
+                                    src={sb.coverImage}
+                                    alt={sb.name ?? ""}
+                                    fill
+                                    className="object-cover group-hover:scale-105 transition-transform duration-300"
+                                    fallback={
+                                      <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200" />
+                                    }
+                                  />
                                   {/* Logo badge */}
                                   <div className="absolute bottom-2 left-3 w-9 h-9 rounded-xl border-2 border-white bg-white shadow-subtle overflow-hidden flex items-center justify-center">
-                                    {sb.logo ? (
-                                      <Image src={sb.logo} alt={sb.name ?? ""} width={36} height={36} className="object-cover w-full h-full" />
-                                    ) : (
-                                      <span className="text-xs font-bold text-gray-700">
-                                        {(sb.name ?? "?").slice(0, 2).toUpperCase()}
-                                      </span>
-                                    )}
+                                    <SafeImage
+                                      src={sb.logo}
+                                      alt={sb.name ?? ""}
+                                      width={36}
+                                      height={36}
+                                      className="object-cover w-full h-full"
+                                      fallback={
+                                        <span className="text-xs font-bold text-gray-700">
+                                          {(sb.name ?? "?").slice(0, 2).toUpperCase()}
+                                        </span>
+                                      }
+                                    />
                                   </div>
                                 </div>
 
