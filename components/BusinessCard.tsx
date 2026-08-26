@@ -115,20 +115,24 @@ export default function BusinessCard({
 
       {/* ── Card body ────────────────────────────────────────────────── */}
       <div className="flex flex-col gap-2 p-4 flex-1">
-        {/* Name */}
-        <h3 className="text-sm font-semibold text-gray-900 group-hover:text-gray-700 transition-colors line-clamp-1 leading-snug mt-2">
+        {/* The business name is the subject of this card, so it sits a step
+            above the 14px band that nav links and card titles elsewhere in the
+            product share. */}
+        <h3 className="text-lg font-semibold text-gray-900 group-hover:text-gray-700 transition-colors line-clamp-1 leading-snug mt-2">
           <Highlighted text={name} query={highlight} />
         </h3>
 
-        {/* Category + city */}
+        {/* Category and city identify the company, so they carry gray-600
+            rather than the muted layer above it: gray-400 is 2.54:1 on white,
+            under the 4.5:1 minimum, and so is not safe for information. */}
         <div className="flex items-center gap-1.5 flex-wrap">
           {category && (
-            <span className="text-xs text-gray-500 font-medium">{categoryLabel}</span>
+            <span className="text-xs text-gray-600 font-medium">{categoryLabel}</span>
           )}
           {city && (
             <>
               <span className="text-gray-300 text-xs">·</span>
-              <span className="text-xs text-gray-400 flex items-center gap-0.5">
+              <span className="text-xs text-gray-600 flex items-center gap-0.5">
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                     d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
