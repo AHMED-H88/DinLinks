@@ -1,23 +1,56 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "@/i18n/routing";
+import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 
 interface SearchBarProps {
   placeholder?: string;
 }
 
+/**
+ * The params that describe which results are being looked at, and so outlive a
+ * change of keyword. `SearchFilters` already carries `q` the other way when a
+ * filter is clicked; this is the same relationship read from this side.
+ *
+ * Named rather than copied wholesale: the URL can hold anything, and forwarding
+ * whatever happens to be there would let a stale or unrelated param ride along
+ * into a new search.
+ */
+const CARRIED_PARAMS = ["category", "city", "sort"] as const;
+
 export default function SearchBar({ placeholder }: SearchBarProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const t = useTranslations("searchBar");
-  const [query, setQuery] = useState("");
+
+  const committedQuery = searchParams.get("q") ?? "";
+  const [query, setQuery] = useState(committedQuery);
+
+  // Re-seed when the committed query changes underneath the field — a back or
+  // forward step, or a filter click that pushes a new URL. Keyed on the URL's
+  // value, so it runs on navigation and never mid-keystroke.
+  useEffect(() => setQuery(committedQuery), [committedQuery]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (query.trim()) {
-      router.push(`/search?q=${encodeURIComponent(query.trim())}`);
+    const trimmed = query.trim();
+
+    const params = new URLSearchParams();
+    if (trimmed) params.set("q", trimmed);
+    for (const key of CARRIED_PARAMS) {
+      const value = searchParams.get(key);
+      if (value) params.set(key, value);
     }
+
+    // An empty box with no filters behind it has nowhere to go. Submitting used
+    // to do nothing at all in that case, and it still does — clearing the
+    // keyword while a filter is set is the case that now navigates, dropping
+    // `q` and leaving the filter to describe the results.
+    if (!params.toString()) return;
+
+    router.push(`/search?${params.toString()}` as any);
   };
 
   return (

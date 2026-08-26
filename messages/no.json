@@ -475,7 +475,9 @@
       "exceptionalDateRequired": "Velg en dato for hver spesielle åpningstid.",
       "exceptionalDateDuplicate": "Samme dato er lagt inn to ganger. Hver dato kan bare stå en gang.",
       "exceptionalTimesRequired": "Oppgi åpningstid og stengetid for datoer som er åpne.",
-      "longitudeRange": "Lengdegrad må være mellom -180 og 180."
+      "longitudeRange": "Lengdegrad må være mellom -180 og 180.",
+      "serviceNameTooLong": "Et tjenestenavn er for langt. Maks {max} tegn.",
+      "serviceDescriptionTooLong": "En tjenestebeskrivelse er for lang. Maks {max} tegn."
     },
     "success": {
       "updated": "Profilen er oppdatert.",
@@ -1147,5 +1149,11 @@
       "saturday": "Lørdag",
       "sunday": "Søndag"
     }
+  },
+  "notFound": {
+    "title": "Siden finnes ikke",
+    "body": "Siden du leter etter finnes ikke eller er flyttet.",
+    "goHome": "Gå til forsiden",
+    "findBusiness": "Finn bedrift"
   }
 }
