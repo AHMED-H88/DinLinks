@@ -1147,5 +1147,11 @@
       "saturday": "Saturday",
       "sunday": "Sunday"
     }
+  },
+  "notFound": {
+    "title": "Page not found",
+    "body": "The page you are looking for does not exist or has moved.",
+    "goHome": "Go to the home page",
+    "findBusiness": "Find business"
   }
 }

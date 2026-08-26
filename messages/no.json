@@ -1147,5 +1147,11 @@
       "saturday": "Lørdag",
       "sunday": "Søndag"
     }
+  },
+  "notFound": {
+    "title": "Siden finnes ikke",
+    "body": "Siden du leter etter finnes ikke eller er flyttet.",
+    "goHome": "Gå til forsiden",
+    "findBusiness": "Finn bedrift"
   }
 }
