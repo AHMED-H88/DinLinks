@@ -12,6 +12,8 @@ import {
   HIGHLIGHT_MAX_COUNT,
   HIGHLIGHT_MAX_LENGTH,
   IDENTITY_SUMMARY_MAX,
+  SERVICE_NAME_MAX,
+  SERVICE_DESCRIPTION_MAX,
   FOUNDED_YEAR_MIN,
   EXCEPTIONAL_HOURS_MAX_COUNT,
   normalizeHighlights,
@@ -1185,7 +1187,13 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
     // see the Field validation note above). Optional fields stay valid while
     // empty; checks run in section order so the user is sent to the earliest
     // problem rather than an arbitrary one.
-    const checks: { invalid: boolean; section: string; messageKey: string }[] = [
+    const checks: {
+      invalid: boolean;
+      section: string;
+      messageKey: string;
+      /** Interpolation values for messages that name their own limit. */
+      values?: Record<string, string | number>;
+    }[] = [
       // 2. About the business
       {
         invalid:
@@ -1258,11 +1266,34 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
         section: "hours",
         messageKey: "exceptionalTimesRequired",
       },
+      // 6. Services — length. The server used to cap both fields with a slice
+      // and report success, so a pasted description came back published and cut
+      // mid-word. Stated here so the owner is told before the save, while the
+      // text they wrote is still in the field.
+      //
+      // `?? ""` because `services` is cast straight from the stored JSON and
+      // never passes through `normalizeServiceItem`, so a row saved before
+      // either field existed can arrive without it. The public profile guards
+      // the same cast the same way.
+      {
+        invalid: services.some((s) => (s.name ?? "").trim().length > SERVICE_NAME_MAX),
+        section: "services",
+        messageKey: "serviceNameTooLong",
+        values: { max: SERVICE_NAME_MAX },
+      },
+      {
+        invalid: services.some(
+          (s) => (s.description ?? "").trim().length > SERVICE_DESCRIPTION_MAX
+        ),
+        section: "services",
+        messageKey: "serviceDescriptionTooLong",
+        values: { max: SERVICE_DESCRIPTION_MAX },
+      },
     ];
 
     const failed = checks.find((c) => c.invalid);
     if (failed) {
-      setError(t(`errors.${failed.messageKey}` as any));
+      setError(t(`errors.${failed.messageKey}` as any, failed.values));
       setActiveSection(failed.section);
       return false;
     }
@@ -1337,10 +1368,12 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
             ? t(`categoryErrors.${data.code}` as any)
             : null;
         // Field-level validation errors from the API carry a message key we
-        // can localise; fall back to the generic message otherwise.
+        // can localise; fall back to the generic message otherwise. `values`
+        // travels with the error for the messages that name their own limit —
+        // without it those render a literal "{max}".
         const fieldMsg =
           Array.isArray(data.fields) && data.fields[0]?.message
-            ? t(`errors.${data.fields[0].message}` as any)
+            ? t(`errors.${data.fields[0].message}` as any, data.fields[0].values)
             : null;
         setError(categoryMsg ?? fieldMsg ?? data.error ?? t("errors.generic"));
         return false;
@@ -2625,6 +2658,12 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
                       </div>
                       <div>
                         <FieldLabel>{t("labels.description")}</FieldLabel>
+                        {/* No `maxLength`: the browser would trim a paste down
+                            to the limit without saying so, which is the same
+                            silent loss the save used to cause. The count is
+                            allowed to go over and turns red, and the save
+                            blocks with the limit named, so the owner's full
+                            text stays in the field until they shorten it. */}
                         <input
                           type="text"
                           value={svc.description}
@@ -2632,6 +2671,15 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
                           className="input"
                           placeholder={t("placeholders.serviceDescription")}
                         />
+                        <p
+                          className={`text-xs mt-1 tabular-nums ${
+                            (svc.description ?? "").trim().length > SERVICE_DESCRIPTION_MAX
+                              ? "text-red-600 font-medium"
+                              : "text-gray-400"
+                          }`}
+                        >
+                          {(svc.description ?? "").trim().length}/{SERVICE_DESCRIPTION_MAX}
+                        </p>
                       </div>
                     </div>
                     <button

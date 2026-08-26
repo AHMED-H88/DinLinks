@@ -321,7 +321,16 @@ export function normalizeExceptionalHours(raw: unknown): ExceptionalHoursEntry[]
 
 // ── Result helper ─────────────────────────────────────────────────────────────
 
-export type FieldError = { field: string; message: string };
+export type FieldError = {
+  field: string;
+  message: string;
+  /**
+   * Interpolation values for a message that names its own limit, e.g.
+   * "Maks {max} tegn". The client localises `message` and needs these to fill
+   * the placeholder; without them the raw `{max}` reaches the user.
+   */
+  values?: Record<string, string | number>;
+};
 
 // ── Individual normaliser/validators (also usable client-side) ────────────────
 
@@ -593,14 +602,43 @@ export function validateBusinessExtras(
     else errors.push({ field: "mapLink", message: "invalidType" });
   }
 
-  // services — normalised rather than rejected. The shape is owner-authored
-  // JSON that has changed across versions, so the server's job is to bring it
-  // to the current shape, not to fail a save over an old field.
+  // services — shape is normalised rather than rejected. The JSON is
+  // owner-authored and has changed across versions, so the server's job is to
+  // bring an old field to the current shape, not to fail a save over it.
+  //
+  // Length is the exception, and is checked here rather than left to the
+  // normaliser. `normalizeServiceItem` caps name and description with a plain
+  // slice, which is right for a stored row of unknown vintage but wrong for a
+  // save: it would publish the owner's sentence cut mid-word and report
+  // success. Same reasoning as highlights above — telling someone the limit
+  // beats silently keeping part of what they wrote.
   if (has("services")) {
     const v = body.services;
     if (v === null) data.services = [];
-    else if (Array.isArray(v)) data.services = normalizeServiceItems(v);
-    else errors.push({ field: "services", message: "invalidType" });
+    else if (Array.isArray(v)) {
+      const overLength = (key: "name" | "description", max: number) =>
+        v.some((item) => {
+          if (typeof item !== "object" || item === null) return false;
+          const field = (item as Record<string, unknown>)[key];
+          return typeof field === "string" && field.trim().length > max;
+        });
+
+      if (overLength("name", SERVICE_NAME_MAX)) {
+        errors.push({
+          field: "services",
+          message: "serviceNameTooLong",
+          values: { max: SERVICE_NAME_MAX },
+        });
+      } else if (overLength("description", SERVICE_DESCRIPTION_MAX)) {
+        errors.push({
+          field: "services",
+          message: "serviceDescriptionTooLong",
+          values: { max: SERVICE_DESCRIPTION_MAX },
+        });
+      } else {
+        data.services = normalizeServiceItems(v);
+      }
+    } else errors.push({ field: "services", message: "invalidType" });
   }
 
   // exceptionalHours — holidays and one-off dates. Dates are checked against

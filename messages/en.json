@@ -475,7 +475,9 @@
       "exceptionalDateRequired": "Choose a date for every special opening hour.",
       "exceptionalDateDuplicate": "The same date is entered twice. Each date can appear only once.",
       "exceptionalTimesRequired": "Enter opening and closing times for dates that are open.",
-      "longitudeRange": "Longitude must be between -180 and 180."
+      "longitudeRange": "Longitude must be between -180 and 180.",
+      "serviceNameTooLong": "One service name is too long. Maximum {max} characters.",
+      "serviceDescriptionTooLong": "One service description is too long. Maximum {max} characters."
     },
     "success": {
       "updated": "Profile updated successfully.",
