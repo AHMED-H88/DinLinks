@@ -92,8 +92,10 @@ export default function Footer() {
         </div>
 
         <div className="pt-8 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-3">
+          {/* "DinLinks" is the product name. No legal entity is asserted here,
+              because none has been verified. */}
           <p className="text-xs text-gray-400">
-            © {currentYear} DinLinks AS {t("rights")}
+            © {currentYear} DinLinks {t("rights")}
           </p>
           <p className="text-xs text-gray-400">{t("builtIn")}</p>
         </div>

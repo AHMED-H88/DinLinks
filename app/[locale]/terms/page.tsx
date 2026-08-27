@@ -1,11 +1,9 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { useTranslations, useLocale } from "next-intl";
+import { useTranslations } from "next-intl";
 
 export default function TermsPage() {
   const t = useTranslations("terms");
-  const locale = useLocale();
-  const dateLocale = locale === "no" ? "nb-NO" : "en-GB";
   return (
     <div className="min-h-screen bg-white">
       <Header />
@@ -15,8 +13,11 @@ export default function TermsPage() {
           <h1 className="text-5xl font-bold text-gray-900 mb-4 tracking-tight">
             {t("title")}
           </h1>
+          {/* The revision date is static copy, not the current date. Rendering
+              `new Date()` here made the terms claim they had been updated every
+              day they were viewed, whether or not anything had changed. */}
           <p className="text-lg text-gray-600">
-            {t("lastUpdated")} {new Date().toLocaleDateString(dateLocale)}
+            {t("lastUpdated")} {t("lastUpdatedDate")}
           </p>
         </div>
 
