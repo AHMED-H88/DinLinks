@@ -910,83 +910,115 @@
     "subtitle": "Har du spørsmål eller tilbakemeldinger? Vi hører gjerne fra deg!",
     "info": {
       "heading": "Kontaktinformasjon",
-      "email": "E-post",
-      "address": "Adresse",
-      "company": "DinLinks AS",
-      "location": "Oslo, Norge",
-      "hours": "Åpningstider",
-      "weekdays": "Mandag – fredag: 09:00 – 17:00",
-      "weekend": "Lørdag – søndag: Stengt",
-      "security": "Sikkerhet"
-    },
-    "form": {
-      "heading": "Send oss en melding",
-      "name": "Navn",
-      "namePlaceholder": "Ditt navn",
-      "email": "E-post",
-      "emailPlaceholder": "din@epost.no",
-      "subject": "Emne",
-      "subjectPlaceholder": "Hva gjelder henvendelsen?",
-      "message": "Melding",
-      "messagePlaceholder": "Skriv din melding her...",
-      "submit": "Send melding"
+      "intro": "Skriv til oss på e-post. Velg adressen som passer henvendelsen.",
+      "generalLabel": "Generelle henvendelser",
+      "generalDesc": "Spørsmål om DinLinks.",
+      "supportLabel": "Kundestøtte",
+      "supportDesc": "Hjelp med konto eller bedriftsprofil.",
+      "privacyLabel": "Personvern",
+      "privacyDesc": "Innsyn, retting og sletting av personopplysninger.",
+      "securityLabel": "Sikkerhet",
+      "securityDesc": "Meld fra om sikkerhetsproblemer."
     },
     "faq": {
       "heading": "Ofte stilte spørsmål",
-      "q1": "Hvordan registrerer jeg min bedrift?",
-      "a1": "Klikk på «Registrer deg» øverst på siden, fyll ut skjemaet med bedriftsinformasjon, og vent på godkjenning fra vårt team.",
-      "q2": "Er det gratis å registrere bedriften min?",
-      "a2": "Ja, grunnleggende registrering er gratis. Vi tilbyr også premium-pakker med ekstra funksjoner og synlighet.",
-      "q3": "Hvor lang tid tar det før bedriften min blir godkjent?",
-      "a3": "Vi behandler alle søknader innen 1–2 virkedager. Du vil motta en e-post når bedriften din er godkjent.",
-      "q4": "Kan jeg redigere bedriftsprofilen min etter publisering?",
-      "a4": "Ja, du kan når som helst logge inn på dashboardet ditt og oppdatere bedriftsinformasjonen din."
+      "q1": "Hvordan registrerer jeg bedriften min?",
+      "a1": "Velg «Registrer bedriften din», opprett en konto og fyll ut bedriftsprofilen.",
+      "q2": "Koster det noe å bli med i pilotperioden?",
+      "a2": "I pilotperioden får de første 100 bedriftene gratis tilgang i ett år. Et eventuelt betalt tilbud senere blir kommunisert tydelig før det gjelder.",
+      "q3": "Når blir profilen min publisert?",
+      "a3": "Bedriftsprofiler blir gjennomgått før publisering. Behandlingstiden kan variere.",
+      "q4": "Kan jeg redigere profilen etter publisering?",
+      "a4": "Ja. Du kan oppdatere bedriftsinformasjonen din fra Min side når som helst."
     }
   },
   "privacy": {
     "title": "Personvernerklæring",
     "lastUpdated": "Sist oppdatert:",
+    "lastUpdatedDate": "27. august 2026",
     "intro": {
-      "heading": "1. Innledning",
-      "p1": "Denne personvernerklæringen beskriver hvordan DinLinks («vi», «oss» eller «vår») samler inn, bruker og beskytter dine personopplysninger når du bruker vår plattform.",
-      "p2": "Vi er forpliktet til å beskytte personvernet ditt og behandler alle personopplysninger i samsvar med gjeldende personvernlovgivning, inkludert GDPR."
+      "heading": "1. Hvem er ansvarlig",
+      "p1": "Denne personvernerklæringen beskriver hvordan DinLinks behandler personopplysninger i tjenesten.",
+      "p2": "DinLinks drives av Ahmed Hasan, som er behandlingsansvarlig for behandlingen beskrevet i denne personvernerklæringen. Spørsmål om personvern og forespørsler om rettighetene dine kan sendes til privacy@dinlinks.com."
     },
     "dataCollection": {
-      "heading": "2. Informasjon vi samler inn",
-      "intro": "Vi samler inn følgende typer informasjon:",
-      "item1": "Kontaktinformasjon (navn, e-post, telefonnummer)",
-      "item2": "Bedriftsinformasjon (for bedriftskontoer)",
-      "item3": "Bruksdata og preferanser",
-      "item4": "Teknisk informasjon (IP-adresse, nettlesertype)"
+      "heading": "2. Hvilke opplysninger vi behandler",
+      "intro": "Vi behandler disse kategoriene av opplysninger:",
+      "item1": "Kontoopplysninger, som navn og e-postadresse",
+      "item2": "Opplysninger knyttet til pålogging og kontosikkerhet",
+      "item3": "Bedriftsprofilen som eieren selv fyller ut",
+      "item4": "Henvendelser du sender oss på e-post",
+      "item5": "Teknisk informasjon som oppstår ved bruk av tjenesten, som IP-adresse og nettleseropplysninger, der dette er relevant for drift og sikkerhet",
+      "item6": "Opplysninger knyttet til abonnement og betaling, kun dersom betalingsfunksjonalitet faktisk tas i bruk"
     },
     "dataUse": {
-      "heading": "3. Hvordan vi bruker informasjonen",
-      "intro": "Vi bruker dine personopplysninger til:",
-      "item1": "Å tilby og forbedre våre tjenester",
-      "item2": "Å kommunisere med deg om din konto og tjenester",
-      "item3": "Å personalisere din opplevelse",
-      "item4": "Å sikre plattformens sikkerhet og forebygge svindel"
+      "heading": "3. Hvorfor vi behandler opplysningene, og rettslig grunnlag",
+      "intro": "Formålet avgjør hvilket rettslig grunnlag som gjelder:",
+      "item1": "Opprette og drifte kontoen din, gi tilgang til bedriftsprofilen og levere funksjonene du ber om. Grunnlag: avtale, GDPR artikkel 6 nr. 1 bokstav b.",
+      "item2": "Sikre plattformen, forebygge misbruk og svindel, holde tjenesten stabil og svare på vanlige henvendelser. Grunnlag: berettiget interesse, GDPR artikkel 6 nr. 1 bokstav f. Interessen er å holde tjenesten trygg og i drift for alle som bruker den.",
+      "item3": "Oppfylle plikter som følger av lov, der behandlingen er nødvendig for det. Grunnlag: rettslig forpliktelse, GDPR artikkel 6 nr. 1 bokstav c.",
+      "item4": "Der vi ber deg om samtykke til noe bestemt, er samtykke grunnlaget for akkurat den behandlingen. Samtykke kan trekkes tilbake når som helst."
     },
     "dataSharing": {
-      "heading": "4. Deling av informasjon",
-      "text": "Vi selger ikke dine personopplysninger. Vi kan dele informasjon med tjenesteleverandører som hjelper oss med å drive plattformen, men kun i den grad det er nødvendig for å levere våre tjenester."
+      "heading": "4. Deling og databehandlere",
+      "intro": "DinLinks selger ikke personopplysninger. For å drive tjenesten bruker vi leverandører innenfor disse kategoriene:",
+      "item1": "Drift og infrastruktur",
+      "item2": "Database og lagring",
+      "item3": "E-post og håndtering av henvendelser",
+      "item4": "Betalingsleverandør, dersom betalingsfunksjonalitet tas i bruk",
+      "item5": "Offentlige myndigheter eller rådgivere, der vi er pålagt å utlevere opplysninger",
+      "outro": "Leverandørene får kun de opplysningene som er nødvendige for oppgaven de utfører."
+    },
+    "transfers": {
+      "heading": "5. Overføring utenfor Norge og EØS",
+      "text": "Noen av leverandørene våre kan behandle opplysninger utenfor Norge og EØS. Skjer det, bygger overføringen på et gyldig overføringsgrunnlag etter personvernforordningen, for eksempel en beslutning om tilstrekkelig beskyttelsesnivå eller EUs standard personvernbestemmelser."
+    },
+    "retention": {
+      "heading": "6. Hvor lenge vi lagrer opplysningene",
+      "intro": "Vi lagrer opplysninger så lenge det er nødvendig for formålet de ble samlet inn for:",
+      "item1": "Konto- og profilopplysninger: så lenge kontoen er aktiv, og deretter kun der det er nødvendig av berettigede eller rettslige grunner",
+      "item2": "Henvendelser: så lenge det er nødvendig for å behandle og dokumentere henvendelsen",
+      "item3": "Teknisk informasjon og sikkerhetsdata: i en begrenset periode som er nødvendig for drift, feilsøking og sikkerhet",
+      "item4": "Opplysninger vi er pålagt å oppbevare: i den perioden loven krever",
+      "outro": "Når opplysningene ikke lenger er nødvendige, blir de slettet eller anonymisert, med mindre lagring er lovpålagt."
+    },
+    "cookies": {
+      "heading": "7. Informasjonskapsler og lignende teknologi",
+      "intro": "DinLinks bruker nødvendig teknologi for at tjenesten skal fungere, blant annet til:",
+      "item1": "Pålogging og å holde deg innlogget",
+      "item2": "Sikkerhet",
+      "item3": "Nødvendige valg som språk",
+      "outro": "DinLinks bruker ikke informasjonskapsler til annonsering og sporer deg ikke på tvers av nettsteder for markedsføring."
     },
     "rights": {
-      "heading": "5. Dine rettigheter",
+      "heading": "8. Rettighetene dine",
       "intro": "Du har rett til å:",
-      "item1": "Få tilgang til dine personopplysninger",
-      "item2": "Rette unøyaktige opplysninger",
-      "item3": "Slette dine personopplysninger",
-      "item4": "Trekke tilbake samtykke"
+      "item1": "Få innsyn i opplysningene vi behandler om deg",
+      "item2": "Få rettet opplysninger som er feil",
+      "item3": "Få slettet opplysninger",
+      "item4": "Be om begrensning av behandlingen",
+      "item5": "Få opplysningene utlevert i et maskinlesbart format, der retten til dataportabilitet gjelder",
+      "item6": "Protestere mot behandling som bygger på berettiget interesse",
+      "item7": "Trekke tilbake samtykke, der samtykke er grunnlaget",
+      "outro": "Forespørsler sendes til privacy@dinlinks.com. Du kan også klage til Datatilsynet dersom du mener behandlingen er i strid med regelverket."
+    },
+    "automated": {
+      "heading": "9. Automatiserte avgjørelser",
+      "text": "DinLinks tar ikke avgjørelser om deg som utelukkende er automatiserte og som har rettsvirkning eller tilsvarende betydelig innvirkning. Bedriftsprofiler blir gjennomgått av et menneske før publisering."
+    },
+    "security": {
+      "heading": "10. Sikkerhet",
+      "text": "DinLinks bruker egnede tekniske og organisatoriske tiltak for å beskytte opplysningene. Mistenker du et sikkerhetsproblem, kan du melde fra til security@dinlinks.com."
     },
     "contact": {
-      "heading": "6. Kontakt oss",
-      "text": "Hvis du har spørsmål om denne personvernerklæringen, vennligst kontakt oss på"
+      "heading": "11. Kontakt",
+      "text": "Har du spørsmål om denne personvernerklæringen, kan du kontakte oss på"
     }
   },
   "terms": {
     "title": "Vilkår og betingelser",
     "lastUpdated": "Sist oppdatert:",
+    "lastUpdatedDate": "27. august 2026",
     "acceptance": {
       "heading": "1. Aksept av vilkår",
       "text": "Ved å bruke DinLinks («tjenesten») godtar du å være bundet av disse vilkårene og betingelsene. Hvis du ikke godtar disse vilkårene, vennligst ikke bruk tjenesten."

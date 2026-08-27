@@ -2,6 +2,18 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useTranslations } from "next-intl";
 
+/**
+ * The addresses that actually reach someone, in the order a visitor is most
+ * likely to need them. Each key maps to `contact.info.<key>Label` and
+ * `contact.info.<key>Desc` in the message files.
+ */
+const CHANNELS = [
+  { key: "general",  address: "hello@dinlinks.com" },
+  { key: "support",  address: "support@dinlinks.com" },
+  { key: "privacy",  address: "privacy@dinlinks.com" },
+  { key: "security", address: "security@dinlinks.com" },
+] as const;
+
 export default function ContactPage() {
   const t = useTranslations("contact");
   return (
@@ -21,142 +33,40 @@ export default function ContactPage() {
           </div>
         </section>
 
-        {/* Contact Information */}
+        {/* Contact channels — email only.
+            This section previously carried a message form with no action, no
+            onSubmit and no API behind it, so submitting it sent nothing. The
+            page now states the addresses that actually reach someone rather
+            than offering a channel that does not work. */}
         <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20">
-          <div className="grid md:grid-cols-2 gap-12">
-            {/* Contact Info */}
-            <div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-8 tracking-tight">
-                {t("info.heading")}
-              </h2>
-              <div className="space-y-6">
-                <div className="flex items-start gap-4">
+          <div className="max-w-2xl">
+            <h2 className="text-3xl font-bold text-gray-900 mb-3 tracking-tight">
+              {t("info.heading")}
+            </h2>
+            <p className="text-gray-600 mb-10 leading-relaxed">
+              {t("info.intro")}
+            </p>
+
+            <div className="space-y-6">
+              {CHANNELS.map(({ key, address }) => (
+                <div key={key} className="flex items-start gap-4">
                   <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
                     <svg className="w-6 h-6 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                     </svg>
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900 mb-1">{t("info.email")}</h3>
-                    <a href="mailto:hello@dinlinks.com" className="text-primary-600 hover:text-primary-700 transition-colors">
-                      hello@dinlinks.com
+                  <div className="min-w-0">
+                    <h3 className="font-semibold text-gray-900 mb-1">{t(`info.${key}Label`)}</h3>
+                    <a
+                      href={`mailto:${address}`}
+                      className="text-primary-600 hover:text-primary-700 transition-colors break-all"
+                    >
+                      {address}
                     </a>
+                    <p className="text-gray-600 mt-1">{t(`info.${key}Desc`)}</p>
                   </div>
                 </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <svg className="w-6 h-6 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900 mb-1">{t("info.address")}</h3>
-                    <p className="text-gray-600">
-                      {t("info.company")}<br />
-                      {t("info.location")}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <svg className="w-6 h-6 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900 mb-1">{t("info.hours")}</h3>
-                    <p className="text-gray-600">
-                      {t("info.weekdays")}<br />
-                      {t("info.weekend")}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <svg className="w-6 h-6 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900 mb-1">{t("info.security")}</h3>
-                    <a href="mailto:security@dinlinks.com" className="text-primary-600 hover:text-primary-700 transition-colors">
-                      security@dinlinks.com
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Contact Form */}
-            <div className="card p-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6 tracking-tight">
-                {t("form.heading")}
-              </h2>
-              <form className="space-y-6">
-                <div>
-                  <label htmlFor="name" className="label">
-                    {t("form.name")}
-                  </label>
-                  <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    className="input"
-                    placeholder={t("form.namePlaceholder")}
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="email" className="label">
-                    {t("form.email")}
-                  </label>
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    className="input"
-                    placeholder={t("form.emailPlaceholder")}
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="subject" className="label">
-                    {t("form.subject")}
-                  </label>
-                  <input
-                    type="text"
-                    id="subject"
-                    name="subject"
-                    className="input"
-                    placeholder={t("form.subjectPlaceholder")}
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="message" className="label">
-                    {t("form.message")}
-                  </label>
-                  <textarea
-                    id="message"
-                    name="message"
-                    rows={5}
-                    className="input resize-none"
-                    placeholder={t("form.messagePlaceholder")}
-                    required
-                  />
-                </div>
-
-                <button type="submit" className="w-full btn btn-primary btn-lg">
-                  {t("form.submit")}
-                </button>
-              </form>
+              ))}
             </div>
           </div>
         </section>

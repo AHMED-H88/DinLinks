@@ -910,83 +910,115 @@
     "subtitle": "Have questions or feedback? We'd love to hear from you!",
     "info": {
       "heading": "Contact information",
-      "email": "Email",
-      "address": "Address",
-      "company": "DinLinks AS",
-      "location": "Oslo, Norway",
-      "hours": "Opening hours",
-      "weekdays": "Monday – Friday: 09:00 – 17:00",
-      "weekend": "Saturday – Sunday: Closed",
-      "security": "Security"
-    },
-    "form": {
-      "heading": "Send us a message",
-      "name": "Name",
-      "namePlaceholder": "Your name",
-      "email": "Email",
-      "emailPlaceholder": "your@email.no",
-      "subject": "Subject",
-      "subjectPlaceholder": "What is your enquiry about?",
-      "message": "Message",
-      "messagePlaceholder": "Write your message here...",
-      "submit": "Send message"
+      "intro": "Write to us by email. Choose the address that fits your enquiry.",
+      "generalLabel": "General enquiries",
+      "generalDesc": "Questions about DinLinks.",
+      "supportLabel": "Support",
+      "supportDesc": "Help with your account or business profile.",
+      "privacyLabel": "Privacy",
+      "privacyDesc": "Access, correction and deletion of personal data.",
+      "securityLabel": "Security",
+      "securityDesc": "Report a security issue."
     },
     "faq": {
       "heading": "Frequently asked questions",
       "q1": "How do I register my business?",
-      "a1": "Click \"Register\" at the top of the page, fill in the form with your business information, and wait for approval from our team.",
-      "q2": "Is it free to register my business?",
-      "a2": "Yes, basic registration is free. We also offer premium packages with extra features and visibility.",
-      "q3": "How long does it take for my business to be approved?",
-      "a3": "We process all applications within 1–2 business days. You will receive an email when your business is approved.",
-      "q4": "Can I edit my business profile after publication?",
-      "a4": "Yes, you can log in to your dashboard at any time and update your business information."
+      "a1": "Choose \"Register your business\", create an account and complete the business profile.",
+      "q2": "Does it cost anything to join during the pilot?",
+      "a2": "During the pilot, the first 100 businesses receive free access for one year. Any paid offering later will be communicated clearly before it applies.",
+      "q3": "When will my profile be published?",
+      "a3": "Business profiles are reviewed before publication. Processing time may vary.",
+      "q4": "Can I edit the profile after publication?",
+      "a4": "Yes. You can update your business information from the dashboard at any time."
     }
   },
   "privacy": {
     "title": "Privacy Policy",
     "lastUpdated": "Last updated:",
+    "lastUpdatedDate": "27 August 2026",
     "intro": {
-      "heading": "1. Introduction",
-      "p1": "This privacy policy describes how DinLinks (\"we\", \"us\" or \"our\") collects, uses and protects your personal information when you use our platform.",
-      "p2": "We are committed to protecting your privacy and process all personal data in accordance with applicable privacy legislation, including GDPR."
+      "heading": "1. Who is responsible",
+      "p1": "This privacy policy describes how DinLinks processes personal data in the service.",
+      "p2": "DinLinks is operated by Ahmed Hasan, who is the controller for the processing described in this privacy policy. Questions about privacy and requests regarding your rights can be sent to privacy@dinlinks.com."
     },
     "dataCollection": {
-      "heading": "2. Information we collect",
-      "intro": "We collect the following types of information:",
-      "item1": "Contact information (name, email, phone number)",
-      "item2": "Business information (for business accounts)",
-      "item3": "Usage data and preferences",
-      "item4": "Technical information (IP address, browser type)"
+      "heading": "2. What information we process",
+      "intro": "We process these categories of information:",
+      "item1": "Account information, such as name and email address",
+      "item2": "Information related to sign-in and account security",
+      "item3": "The business profile the owner fills in",
+      "item4": "Enquiries you send us by email",
+      "item5": "Technical information generated when using the service, such as IP address and browser information, where relevant for operation and security",
+      "item6": "Subscription and payment related information, only if payment functionality is actually used"
     },
     "dataUse": {
-      "heading": "3. How we use the information",
-      "intro": "We use your personal information to:",
-      "item1": "Provide and improve our services",
-      "item2": "Communicate with you about your account and services",
-      "item3": "Personalise your experience",
-      "item4": "Ensure platform security and prevent fraud"
+      "heading": "3. Why we process it, and legal basis",
+      "intro": "The purpose determines which legal basis applies:",
+      "item1": "Creating and operating your account, giving access to the business profile and delivering the functionality you ask for. Basis: contract, GDPR Article 6(1)(b).",
+      "item2": "Keeping the platform secure, preventing abuse and fraud, keeping the service reliable and answering ordinary enquiries. Basis: legitimate interests, GDPR Article 6(1)(f). The interest is keeping the service safe and running for everyone who uses it.",
+      "item3": "Meeting obligations that follow from law, where the processing is necessary for that. Basis: legal obligation, GDPR Article 6(1)(c).",
+      "item4": "Where we ask you to consent to something specific, consent is the basis for that processing only. Consent can be withdrawn at any time."
     },
     "dataSharing": {
-      "heading": "4. Sharing of information",
-      "text": "We do not sell your personal information. We may share information with service providers who help us operate the platform, but only to the extent necessary to deliver our services."
+      "heading": "4. Sharing and service providers",
+      "intro": "DinLinks does not sell personal data. To operate the service we use providers in these categories:",
+      "item1": "Hosting and infrastructure",
+      "item2": "Database and storage",
+      "item3": "Email and handling of enquiries",
+      "item4": "Payment provider, if payment functionality is used",
+      "item5": "Public authorities or advisers, where we are required to disclose information",
+      "outro": "Providers receive only the information necessary for the task they carry out."
+    },
+    "transfers": {
+      "heading": "5. Transfers outside Norway and the EEA",
+      "text": "Some of our providers may process information outside Norway and the EEA. Where that happens, the transfer relies on a valid transfer mechanism under the GDPR, for example an adequacy decision or the EU Standard Contractual Clauses."
+    },
+    "retention": {
+      "heading": "6. How long we keep information",
+      "intro": "We keep information for as long as it is necessary for the purpose it was collected for:",
+      "item1": "Account and profile data: while the account is active, and afterwards only where necessary for legitimate or legal reasons",
+      "item2": "Enquiries: as long as necessary to handle and document the enquiry",
+      "item3": "Technical and security data: for a limited period necessary for operation, troubleshooting and security",
+      "item4": "Information we are required to keep: for the period the law requires",
+      "outro": "When information is no longer necessary it is deleted or anonymised, unless retention is required by law."
+    },
+    "cookies": {
+      "heading": "7. Cookies and similar technology",
+      "intro": "DinLinks uses technology that is necessary for the service to work, including for:",
+      "item1": "Sign-in and keeping you signed in",
+      "item2": "Security",
+      "item3": "Essential preferences such as language",
+      "outro": "DinLinks does not use advertising cookies and does not track you across websites for marketing."
     },
     "rights": {
-      "heading": "5. Your rights",
+      "heading": "8. Your rights",
       "intro": "You have the right to:",
-      "item1": "Access your personal information",
-      "item2": "Correct inaccurate information",
-      "item3": "Delete your personal information",
-      "item4": "Withdraw consent"
+      "item1": "Access the information we process about you",
+      "item2": "Have incorrect information corrected",
+      "item3": "Have information deleted",
+      "item4": "Request restriction of the processing",
+      "item5": "Receive the information in a machine-readable format, where the right to data portability applies",
+      "item6": "Object to processing based on legitimate interests",
+      "item7": "Withdraw consent, where consent is the basis",
+      "outro": "Requests can be sent to privacy@dinlinks.com. You can also complain to Datatilsynet, the Norwegian Data Protection Authority, if you believe the processing breaches the rules."
+    },
+    "automated": {
+      "heading": "9. Automated decisions",
+      "text": "DinLinks does not make decisions about you that are based solely on automated processing and that produce legal effects or similarly significant effects. Business profiles are reviewed by a person before publication."
+    },
+    "security": {
+      "heading": "10. Security",
+      "text": "DinLinks uses appropriate technical and organisational safeguards to protect information. If you suspect a security issue, you can report it to security@dinlinks.com."
     },
     "contact": {
-      "heading": "6. Contact us",
-      "text": "If you have questions about this privacy policy, please contact us at"
+      "heading": "11. Contact",
+      "text": "If you have questions about this privacy policy, you can contact us at"
     }
   },
   "terms": {
     "title": "Terms and Conditions",
     "lastUpdated": "Last updated:",
+    "lastUpdatedDate": "27 August 2026",
     "acceptance": {
       "heading": "1. Acceptance of terms",
       "text": "By using DinLinks (\"the service\") you agree to be bound by these terms and conditions. If you do not accept these terms, please do not use the service."
