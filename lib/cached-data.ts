@@ -1,6 +1,7 @@
 import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { topLevelOrder, subOrder } from "@/lib/taxonomy-v1";
+import { PUBLIC_DISCOVERY_WHERE } from "@/lib/discovery";
 
 /**
  * Cross-request caches for PUBLIC, NON-USER-SPECIFIC reference data only.
@@ -42,7 +43,7 @@ export const getCategoriesWithCounts = unstable_cache(
         name: true,
         slug: true,
         icon: true,
-        _count: { select: { businesses: { where: { status: "APPROVED" } } } },
+        _count: { select: { businesses: { where: PUBLIC_DISCOVERY_WHERE } } },
       },
     });
     console.log(`[perf] cache MISS getCategoriesWithCounts: ${(performance.now() - start).toFixed(1)}ms`);
@@ -81,7 +82,7 @@ export const getTaxonomyTree = unstable_cache(
         slug: true,
         icon: true,
         parentId: true,
-        _count: { select: { businesses: { where: { status: "APPROVED" } } } },
+        _count: { select: { businesses: { where: PUBLIC_DISCOVERY_WHERE } } },
       },
     });
     console.log(`[perf] cache MISS getTaxonomyTree: ${(performance.now() - start).toFixed(1)}ms`);
@@ -120,7 +121,7 @@ export const getCityCounts = unstable_cache(
     const start = performance.now();
     const groups = await prisma.business.groupBy({
       by: ["city"],
-      where: { status: "APPROVED", city: { not: null } },
+      where: { ...PUBLIC_DISCOVERY_WHERE, city: { not: null } },
       _count: { city: true },
       orderBy: { _count: { city: "desc" } },
       take: 20,

@@ -29,13 +29,16 @@ export async function POST(req: NextRequest) {
 
   const { businessId, rating, comment } = parsed.data;
 
-  // Verify the business exists and is approved
+  // Verify the business exists, is approved, and is a real company. A demo is
+  // a DinLinks example profile, so a review of it would rate a business that
+  // does not exist — refused here as well as hidden in the profile UI, because
+  // the UI is not the security boundary.
   const business = await prisma.business.findUnique({
     where: { id: businessId },
-    select: { id: true, status: true },
+    select: { id: true, status: true, isDemo: true },
   });
 
-  if (!business || business.status !== "APPROVED") {
+  if (!business || business.status !== "APPROVED" || business.isDemo) {
     return NextResponse.json({ error: "Business not found." }, { status: 404 });
   }
 

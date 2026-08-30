@@ -75,9 +75,26 @@ export function watchImageFailure(
 ): void {
   if (!node) return;
 
+  // An <img> that has not been given a source yet is ALSO `complete`, with
+  // nothing decoded — by those two properties alone it is indistinguishable
+  // from one that failed. next/image assigns src/srcSet in the same commit that
+  // runs this ref, and the ref can win that race on a client navigation, so a
+  // perfectly good cover was intermittently recorded as failed before it had
+  // been asked to load anything. Only an element that actually has a source can
+  // have failed at one.
+  //
+  // A source that arrives after this point is not lost: the element falls
+  // through to the listeners below, and assigning src always ends in `load` or
+  // `error` — from cache too — so a genuine failure still reports.
+  const hasSource = !!(
+    node.currentSrc ||
+    node.getAttribute("src") ||
+    node.getAttribute("srcset")
+  );
+
   // `complete` means the browser is finished with this element one way or
   // another; nothing decoded alongside it means it has nothing to paint.
-  if (node.complete) {
+  if (node.complete && hasSource) {
     if (node.naturalWidth === 0) onFailure();
     return; // finished — there is nothing left to listen for
   }

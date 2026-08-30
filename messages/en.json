@@ -1126,6 +1126,7 @@
       "signInToReview": "to leave a review.",
       "noReviews": "No reviews yet",
       "beFirst": "Be the first to share your experience.",
+      "demoDisabled": "Reviews are turned off on example profiles.",
       "reviewPlural": "reviews",
       "reviewSingular": "review"
     },

@@ -1126,6 +1126,7 @@
       "signInToReview": "for å skrive en anmeldelse.",
       "noReviews": "Ingen anmeldelser ennå",
       "beFirst": "Vær den første til å dele din erfaring.",
+      "demoDisabled": "Anmeldelser er slått av på eksempelprofiler.",
       "reviewPlural": "anmeldelser",
       "reviewSingular": "anmeldelse"
     },

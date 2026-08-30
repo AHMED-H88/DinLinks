@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { PUBLIC_DISCOVERY_WHERE } from "@/lib/discovery";
 import { auth } from "@/lib/auth";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -90,6 +91,11 @@ export async function generateMetadata({
     // Locale-prefixed: every public route lives under /[locale], so a bare
     // /business/<id> canonical named a path that only resolves via a redirect.
     alternates: { canonical: `/${locale}/business/${id}` },
+    // Outreach demo profiles are fictional companies. They exist to be opened
+    // from a link, never to be found in a search engine, so they are withheld
+    // from indexing rather than published as a Norwegian business that does
+    // not exist. Real businesses keep the root layout's index/follow default.
+    ...(b.isDemo ? { robots: { index: false, follow: false } } : {}),
     openGraph: {
       title, description,
       type: "website",
@@ -155,10 +161,17 @@ export default async function BusinessProfilePage({
     isFavorite = !!fav;
   }
 
-  // Similar businesses (same category, not this one, approved, max 3)
-  const similarBusinesses = business.categoryId
+  // Similar businesses (same category, not this one, approved, max 3).
+  //
+  // Not fetched at all for a demo. An outreach demo exists to show one business
+  // profile, and a block suggesting other companies both pulls attention off
+  // that and would surface real businesses from inside a fictional one. Skipped
+  // rather than filtered, so a demo costs no query. Normal profiles are
+  // unchanged; `SimilarBusinesses` already renders nothing for an empty list,
+  // so no call site needs a guard.
+  const similarBusinesses = business.categoryId && !business.isDemo
     ? await prisma.business.findMany({
-        where:   { categoryId: business.categoryId, id: { not: id }, status: "APPROVED" },
+        where:   { categoryId: business.categoryId, id: { not: id }, ...PUBLIC_DISCOVERY_WHERE },
         include: { category: true, reviews: { select: { rating: true } } },
         orderBy: { views: "desc" },
         take:    3,
@@ -282,10 +295,16 @@ export default async function BusinessProfilePage({
   // ─────────────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-[#F7F8FA]">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      {/* LocalBusiness structured data describes a real company at a real
+          address. A demo profile is neither, so it emits none — stating a
+          fictional business as fact to a search engine is the one thing this
+          markup must never do. */}
+      {!business.isDemo && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      )}
 
       <Header />
 
@@ -653,13 +672,13 @@ export default async function BusinessProfilePage({
                   </div>
                 </div>
 
-                {session?.user && session.user.id !== business.userId && (
+                {!business.isDemo && session?.user && session.user.id !== business.userId && (
                   <div className="mb-8">
                     <ReviewForm businessId={business.id} />
                   </div>
                 )}
 
-                {!session?.user && (
+                {!business.isDemo && !session?.user && (
                   <div className="mb-6 p-4 rounded-xl border border-gray-200 bg-white text-sm text-gray-500 shadow-subtle">
                     <a href={`/${locale}/login`} className="font-semibold text-gray-900 underline underline-offset-2 hover:text-gray-700">
                       {t("reviews.signIn")}
@@ -678,7 +697,7 @@ export default async function BusinessProfilePage({
                       {t("reviews.noReviews")}
                     </p>
                     <p className="text-xs text-gray-400 mt-1">
-                      {t("reviews.beFirst")}
+                      {business.isDemo ? t("reviews.demoDisabled") : t("reviews.beFirst")}
                     </p>
                   </div>
                 ) : (
@@ -877,16 +896,24 @@ export default async function BusinessProfilePage({
                     sub={t("sidebar.genuineRatings")}
                   />
 
-                  <TrustRow
-                    iconBg="bg-gray-100"
-                    iconColor="text-gray-500"
-                    icon={
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                        d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    }
-                    label={(business.views ?? 0).toLocaleString(isNo ? "nb-NO" : "en-GB")}
-                    sub={t("sidebar.profileViews")}
-                  />
+                  {/* View count is hidden on a demo. An outreach example is
+                      opened from a link by a handful of people, so the number is
+                      always near zero and says nothing about the business being
+                      illustrated — it only draws the eye to how quiet the page
+                      is. Display only: the increment above still runs, so demo
+                      views keep being tracked. Normal profiles are unchanged. */}
+                  {!business.isDemo && (
+                    <TrustRow
+                      iconBg="bg-gray-100"
+                      iconColor="text-gray-500"
+                      icon={
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                          d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      }
+                      label={(business.views ?? 0).toLocaleString(isNo ? "nb-NO" : "en-GB")}
+                      sub={t("sidebar.profileViews")}
+                    />
+                  )}
 
                   <TrustRow
                     iconBg="bg-gray-100"

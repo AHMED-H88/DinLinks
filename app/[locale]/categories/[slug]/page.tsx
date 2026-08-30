@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
+import { PUBLIC_DISCOVERY_WHERE } from "@/lib/discovery";
 import { Link } from "@/i18n/routing";
 import { getTranslations } from "next-intl/server";
 import { useTranslations } from "next-intl";
@@ -36,7 +37,7 @@ export async function generateMetadata({
   // Top-level Category counts span its Subcategories; a leaf counts its own.
   const targetIds = category.children.length > 0 ? category.children.map((c) => c.id) : [category.id];
   const count = await prisma.business.count({
-    where: { categoryId: { in: targetIds }, status: "APPROVED" },
+    where: { categoryId: { in: targetIds }, ...PUBLIC_DISCOVERY_WHERE },
   });
 
   const catName = tCat.has(category.slug) ? tCat(category.slug) : category.name;
@@ -113,10 +114,10 @@ export default async function CategoryDetailPage({
     .sort((a, b) => subOrder(a.slug) - subOrder(b.slug));
 
   const [total, businesses] = await Promise.all([
-    prisma.business.count({ where: { categoryId: { in: targetIds }, status: "APPROVED" } }),
+    prisma.business.count({ where: { categoryId: { in: targetIds }, ...PUBLIC_DISCOVERY_WHERE } }),
 
     prisma.business.findMany({
-      where:   { categoryId: { in: targetIds }, status: "APPROVED" },
+      where:   { categoryId: { in: targetIds }, ...PUBLIC_DISCOVERY_WHERE },
       include: {
         // The business's own (sub)category, so a card on a top-level Category
         // page shows the specific Subcategory (e.g. "Frisør") rather than

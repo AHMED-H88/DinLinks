@@ -3,6 +3,7 @@ import BusinessCard from "@/components/BusinessCard";
 import { getTranslations } from "next-intl/server";
 import { formatCity } from "@/lib/format";
 import { isTopLevelSlug } from "@/lib/taxonomy-v1";
+import { PUBLIC_DISCOVERY_WHERE } from "@/lib/discovery";
 
 interface SearchResultsProps {
   searchParams: {
@@ -27,7 +28,7 @@ export default async function SearchResults({ searchParams }: SearchResultsProps
   const { q, category, city, sort = "popular" } = searchParams;
 
   // ── Build where clause ────────────────────────────────────────────────────
-  const where: any = { status: "APPROVED" };
+  const where: any = { ...PUBLIC_DISCOVERY_WHERE };
 
   if (q?.trim()) {
     where.OR = [

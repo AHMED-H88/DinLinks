@@ -152,6 +152,17 @@ model Business {
 
   openingHours Json?
 
+  // ── Outreach demo profiles ──────────────────────────────────────────────
+  // The authoritative flag for "this Business is a DinLinks example, not a real
+  // company". Demos stay reachable at their own /business/<id> URL so they can
+  // be linked from outreach, and are excluded from every discovery surface,
+  // from search-engine indexing and from public reviews.
+  //
+  // Defaulted false and never written by the business editor or the public
+  // API, so every existing row and every business a real owner creates is a
+  // normal business with unchanged behaviour. Only the seed sets it true.
+  isDemo Boolean @default(false)
+
   views     Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
