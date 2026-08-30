@@ -5,6 +5,7 @@ import Footer from "@/components/Footer";
 import SearchBar from "@/components/SearchBar";
 import BusinessCard from "@/components/BusinessCard";
 import { prisma } from "@/lib/prisma";
+import { PUBLIC_DISCOVERY_WHERE } from "@/lib/discovery";
 import { getTopLevelCategories } from "@/lib/cached-data";
 import { HOMEPAGE_SHORTCUT_SLUGS } from "@/lib/taxonomy-v1";
 
@@ -29,7 +30,7 @@ export default async function HomePage() {
     // Top-level Categories only (parentId = null), in approved Taxonomy v1 order.
     getTopLevelCategories(),
     prisma.business.findMany({
-      where: { status: "APPROVED" },
+      where: PUBLIC_DISCOVERY_WHERE,
       orderBy: { views: "desc" },
       take: 6,
       include: { category: true, reviews: { select: { rating: true } }, _count: { select: { branches: true } } },

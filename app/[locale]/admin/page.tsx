@@ -39,11 +39,17 @@ export default async function AdminPage() {
     ],
   });
 
+  // Headline counts describe real businesses, so outreach demos are left out —
+  // they are DinLinks example profiles, and counting them would overstate how
+  // many companies are actually on the platform. The table below still lists
+  // every row, demos included, so nothing becomes invisible to an admin.
+  const realBusinesses = businesses.filter((b) => !b.isDemo);
+
   const stats = {
-    total:    businesses.length,
-    pending:  businesses.filter((b) => b.status === "PENDING").length,
-    approved: businesses.filter((b) => b.status === "APPROVED").length,
-    rejected: businesses.filter((b) => b.status === "REJECTED").length,
+    total:    realBusinesses.length,
+    pending:  realBusinesses.filter((b) => b.status === "PENDING").length,
+    approved: realBusinesses.filter((b) => b.status === "APPROVED").length,
+    rejected: realBusinesses.filter((b) => b.status === "REJECTED").length,
   };
 
   return (

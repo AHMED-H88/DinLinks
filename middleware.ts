@@ -79,6 +79,15 @@ export default auth((req: any) => {
 });
 
 export const config = {
-  // Run on all paths except static assets and API routes
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+  // Run on all paths except API routes and static files.
+  //
+  // `.*\\.` excludes any path containing a dot — i.e. anything with a file
+  // extension. Without it next-intl treated files in /public as pages and
+  // rewrote them into a locale path that does not exist, so
+  // /placeholder-business.svg became a 307 to /no/placeholder-business.svg and
+  // then a 404. That made every /public asset unreachable, including the
+  // fallback image lib/images.ts serves, and it also broke next/image: the
+  // optimizer fetches a local source over HTTP from this same origin, so it
+  // could not read them either.
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|.*\\.).*)"],
 };
