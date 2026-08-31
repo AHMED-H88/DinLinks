@@ -161,19 +161,17 @@ export type ItemListItem = { name: string | null; url: string };
  * - `name` is the caller's already-localized page title — the same string
  *   the visible page shows — so the markup can never disagree with the page
  *   (the caller's localization fallback, if any, applies to both equally).
- * - `numberOfItems` counts the items actually present in the markup — the
- *   page slice — not the category total: the markup must not claim more than
- *   it shows. Whether paginated pages should instead carry whole-list
- *   semantics is a pagination-policy question deferred to the pagination PR.
- * - Positions continue the visible list's numbering across pages via
- *   `positionOffset`.
+ * - Approved pagination policy: each paginated category URL owns a
+ *   page-specific ItemList describing ONLY the entities rendered on that
+ *   URL. `numberOfItems` counts exactly the marked-up items, and positions
+ *   number the order within THAT page (first visible item = 1) — never a
+ *   whole-category total, never offsets continuing from earlier pages.
  * - Zero items (empty category, or a page beyond the last) → null: an empty
- *   ItemList on a noindexed empty category says nothing worth saying.
+ *   ItemList says nothing worth saying.
  */
 export function buildCategoryItemListJsonLd(input: {
   name: string;
   items: ItemListItem[];
-  positionOffset: number;
 }): Record<string, unknown> | null {
   if (input.items.length === 0) return null;
   return {
@@ -183,7 +181,7 @@ export function buildCategoryItemListJsonLd(input: {
     numberOfItems:   input.items.length,
     itemListElement: input.items.map((item, i) => ({
       "@type":  "ListItem",
-      position: input.positionOffset + i + 1,
+      position: i + 1,
       name:     item.name ?? "",
       url:      item.url,
     })),
