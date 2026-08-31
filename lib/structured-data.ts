@@ -98,8 +98,12 @@ export type LocalBusinessInput = {
  *
  * - AggregateRating appears only when real user reviews exist, valued from
  *   the complete-set aggregate — the same numbers the visible page shows.
- * - Geo uses explicit null checks: 0 is a valid coordinate, and truthiness
- *   would silently discard it. Coordinates are never fabricated.
+ * - Geo is emitted only for finite values inside the real geographic ranges
+ *   (latitude -90..90, longitude -180..180). The business API accepts any
+ *   number, so stored values like latitude 91 exist as a possibility and
+ *   must never reach the markup. 0 is a valid coordinate (truthiness would
+ *   silently discard it); invalid means omitted — never clamped, never
+ *   fabricated.
  */
 export function buildLocalBusinessJsonLd(input: LocalBusinessInput): Record<string, unknown> | null {
   const name = input.name?.trim();
@@ -108,7 +112,9 @@ export function buildLocalBusinessJsonLd(input: LocalBusinessInput): Record<stri
 
   const hasGeo =
     input.latitude != null && Number.isFinite(input.latitude) &&
-    input.longitude != null && Number.isFinite(input.longitude);
+    input.longitude != null && Number.isFinite(input.longitude) &&
+    input.latitude >= -90 && input.latitude <= 90 &&
+    input.longitude >= -180 && input.longitude <= 180;
 
   const hasAggregate = input.aggregate.average != null && input.aggregate.count > 0;
 

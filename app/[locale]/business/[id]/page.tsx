@@ -323,7 +323,7 @@ export default async function BusinessProfilePage({
     showLess:     t("disclosure.showLess"),
     viewAll:      t("disclosure.viewAll"),
     details:      t("disclosure.details"),
-    seeAllReviews: t("disclosure.seeAllReviews"),
+    moreReviews:  t("disclosure.moreReviews"),
   };
 
   // Reviews: show a small preview by default, reveal the rest on demand.
@@ -771,10 +771,11 @@ export default async function BusinessProfilePage({
                     {extraReviews.length > 0 && (
                       <CollapsibleReveal
                         moreLabel={
-                          // Labels the revealed DISPLAY list (newest 20), so
-                          // its count is the list's length — the complete-set
-                          // reviewCount belongs to the aggregate lines above.
-                          `${dsc.seeAllReviews} (${business.reviews.length})`
+                          // "Show more" with the number the control actually
+                          // reveals — never "all": the display list is capped
+                          // at the newest 20 while the complete count lives in
+                          // the aggregate lines above.
+                          `${dsc.moreReviews} (${extraReviews.length})`
                         }
                         lessLabel={dsc.showLess}
                       >

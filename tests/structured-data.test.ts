@@ -133,6 +133,18 @@ test("NaN coordinates are excluded, and averages round to one decimal", () => {
   assert.equal((rounded.aggregateRating as { ratingValue: string }).ratingValue, "4.7");
 });
 
+test("geo range boundaries are valid; out-of-range coordinates are omitted, never clamped", () => {
+  const geoOf = (latitude: number, longitude: number) =>
+    buildLocalBusinessJsonLd(realInput({ latitude, longitude }))!.geo;
+  assert.deepEqual(geoOf(90, 180),   { "@type": "GeoCoordinates", latitude: 90,  longitude: 180 });
+  assert.deepEqual(geoOf(-90, -180), { "@type": "GeoCoordinates", latitude: -90, longitude: -180 });
+  for (const [lat, lng] of [[91, 10], [-91, 10], [10, 181], [10, -181], [999, 10]]) {
+    const node = buildLocalBusinessJsonLd(realInput({ latitude: lat, longitude: lng }))!;
+    assert.ok(!("geo" in node), `lat=${lat} lng=${lng} must not emit geo`);
+    assert.ok(!JSON.stringify(node).includes("Geo"), "no clamped substitute may appear");
+  }
+});
+
 test("SEC-1 regression: owner text cannot break out of the script element", () => {
   const node = buildLocalBusinessJsonLd(realInput({
     name: 'Evil AS</script><script>alert("x")</script>',
