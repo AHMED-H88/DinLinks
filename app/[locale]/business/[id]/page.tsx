@@ -118,8 +118,19 @@ export async function generateMetadata({
     // Outreach demo profiles are fictional companies. They exist to be opened
     // from a link, never to be found in a search engine, so they are withheld
     // from indexing rather than published as a Norwegian business that does
-    // not exist. Real businesses keep the root layout's index/follow default.
-    ...(b.isDemo ? { robots: { index: false, follow: false } } : {}),
+    // not exist — noindex AND nofollow, on every locale.
+    //
+    // Real profiles follow the approved D2 policy: business content is
+    // single-language Norwegian, so /en/business/* is a near-duplicate shell
+    // and is noindexed (follow keeps its links passing signal) until real
+    // English content exists. /no/business/* keeps the layout's index/follow
+    // default. Revisited per-surface when EN content ships; no hreflang
+    // pairing while one side is noindexed.
+    ...(b.isDemo
+      ? { robots: { index: false, follow: false } }
+      : locale !== "no"
+        ? { robots: { index: false, follow: true } }
+        : {}),
     openGraph: {
       title, description,
       type: "website",

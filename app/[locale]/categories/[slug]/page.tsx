@@ -11,7 +11,7 @@ import BusinessCard from "@/components/BusinessCard";
 import CategorySortBar from "@/components/CategorySortBar";
 import SubcategoryChips from "@/components/SubcategoryChips";
 import { subOrder } from "@/lib/taxonomy-v1";
-import { businessUrl } from "@/lib/site";
+import { businessUrl, SITE_URL, SITE_NAME } from "@/lib/site";
 import { safeJsonLdString } from "@/lib/jsonld";
 
 // No `force-dynamic`: this page reads `searchParams` (sort / page), which
@@ -43,13 +43,33 @@ export async function generateMetadata({
 
   const catName = tCat.has(category.slug) ? tCat(category.slug) : category.name;
 
+  const isEmpty = count === 0;
+
   return {
     title: t("metaTitle", { category: catName }),
-    description: t("metaDescription", { count, category: catName.toLowerCase() }),
+    // An empty category must not advertise "0 businesses" as its SERP
+    // snippet; the count-free line describes the page without a number.
+    description: isEmpty
+      ? t("metaDescriptionEmpty", { category: catName.toLowerCase() })
+      : t("metaDescription", { count, category: catName.toLowerCase() }),
+    // Approved D6: permanent taxonomy URLs stay reachable, but an empty
+    // category is thin near-duplicate inventory — noindex while empty, and
+    // this same live count flips it back to indexable automatically when a
+    // qualifying business arrives. follow keeps breadcrumb and chip links
+    // passing signal. The count above uses this page's own targetIds
+    // aggregation (children-if-any-else-self + PUBLIC_DISCOVERY_WHERE) — the
+    // one source that cannot classify a populated top level as empty.
+    ...(isEmpty ? { robots: { index: false, follow: true } } : {}),
     openGraph: {
       title: t("ogTitle", { category: catName }),
-      description: t("ogDescription", { count, category: catName.toLowerCase() }),
+      description: isEmpty
+        ? t("ogDescriptionEmpty", { category: catName.toLowerCase() })
+        : t("ogDescription", { count, category: catName.toLowerCase() }),
       type: "website",
+      // Shallow metadata merge drops the layout og:locale unless restated.
+      locale: locale === "no" ? "nb_NO" : "en_GB",
+      siteName: SITE_NAME,
+      url: `${SITE_URL}/${locale}/categories/${slug}`,
     },
     alternates: {
       canonical: `/${locale}/categories/${slug}`,
@@ -114,8 +134,20 @@ export default async function CategoryDetailPage({
     .map((c) => ({ id: c.id, name: tCat.has(c.slug) ? tCat(c.slug) : c.name, slug: c.slug }))
     .sort((a, b) => subOrder(a.slug) - subOrder(b.slug));
 
-  const [total, businesses] = await Promise.all([
+  const [total, populatedChildren, businesses] = await Promise.all([
     prisma.business.count({ where: { categoryId: { in: targetIds }, ...PUBLIC_DISCOVERY_WHERE } }),
+
+    // Which Subcategories actually hold discoverable businesses. The Taxonomy
+    // Master List permits hiding empty Subcategories from public result
+    // pages; a chip to an empty (noindexed) page helps neither users nor
+    // crawlers. Distinct on categoryId — existence is all that matters here.
+    category.children.length > 0
+      ? prisma.business.findMany({
+          where:    { categoryId: { in: category.children.map((c) => c.id) }, ...PUBLIC_DISCOVERY_WHERE },
+          distinct: ["categoryId"],
+          select:   { categoryId: true },
+        })
+      : Promise.resolve([]),
 
     prisma.business.findMany({
       where:   { categoryId: { in: targetIds }, ...PUBLIC_DISCOVERY_WHERE },
@@ -134,6 +166,13 @@ export default async function CategoryDetailPage({
   ]);
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
+
+  // Chips render only Subcategories that hold at least one discoverable
+  // business (Taxonomy Master List permits hiding empty ones). targetIds
+  // above deliberately keeps ALL children — hiding a chip must never shrink
+  // the page's own business list or counts.
+  const populatedChildIds = new Set(populatedChildren.map((b) => b.categoryId));
+  const visibleSubcategories = subcategories.filter((sc) => populatedChildIds.has(sc.id));
 
   // ── JSON-LD (ItemList of businesses) ─────────────────────────────────────
   const jsonLd = {
@@ -201,8 +240,8 @@ export default async function CategoryDetailPage({
             {/* Subcategories — shown for a top-level Category so its two-level
                 structure is clear. Never renders Subcategories as top-level.
                 Desktop shows all; mobile shows the first four with Vis alle. */}
-            {isTopLevel && subcategories.length > 0 && (
-              <SubcategoryChips subcategories={subcategories} />
+            {isTopLevel && visibleSubcategories.length > 0 && (
+              <SubcategoryChips subcategories={visibleSubcategories} />
             )}
           </div>
         </section>

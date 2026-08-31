@@ -1,4 +1,6 @@
+import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
+import { SITE_URL, SITE_NAME } from "@/lib/site";
 import { Link } from "@/i18n/routing";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -13,6 +15,33 @@ import { HOMEPAGE_SHORTCUT_SLUGS } from "@/lib/taxonomy-v1";
 // read client-side in <Header> — so it is safe to render on an interval
 // instead of on every request.
 export const revalidate = 300; // 5 minutes
+
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: string };
+}): Promise<Metadata> {
+  const t = await getTranslations({ locale: params.locale, namespace: "layout" });
+  return {
+    // The homepage owns the brand identity the root layout uses as its
+    // fallback. `absolute` keeps the "%s | DinLinks" template from doubling
+    // the name; the strings are the existing approved layout copy.
+    title: { absolute: t("metaTitle") },
+    description: t("metaDescription"),
+    alternates: { canonical: `/${params.locale}` },
+    openGraph: {
+      title: t("ogTitle"),
+      description: t("ogDescription"),
+      type: "website",
+      // Page-level openGraph replaces the layout's wholesale (shallow merge),
+      // so og:locale must ride along or it disappears.
+      locale: params.locale === "no" ? "nb_NO" : "en_GB",
+      siteName: SITE_NAME,
+      // The locale homepage itself — not the bare origin, which redirects.
+      url: `${SITE_URL}/${params.locale}`,
+    },
+  };
+}
 
 // Three equal information cards — no decorative icons.
 const trustItems = [

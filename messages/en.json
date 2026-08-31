@@ -235,6 +235,8 @@
     "businesses": "businesses"
   },
   "categoryPage": {
+    "metaDescriptionEmpty": "Explore the {category} category on DinLinks.",
+    "ogDescriptionEmpty": "Explore the {category} category on DinLinks.",
     "metaNotFound": "Not found",
     "metaTitle": "{category} businesses in Norway",
     "metaDescription": "Browse {count} {category} businesses on DinLinks. Find contact details, opening hours, and reviews.",
@@ -876,6 +878,8 @@
     "signOut": "Sign out"
   },
   "about": {
+    "metaTitle": "About us",
+    "metaDescription": "Read about DinLinks, a Norwegian business directory that helps you find and understand local businesses.",
     "title": "About DinLinks",
     "subtitle": "DinLinks makes it easier to find businesses and the information you need",
     "vision": {
@@ -906,6 +910,8 @@
     }
   },
   "contact": {
+    "metaTitle": "Contact",
+    "metaDescription": "Contact DinLinks. We answer questions about the directory, business profiles and your account.",
     "title": "Contact us",
     "subtitle": "Have questions or feedback? We'd love to hear from you!",
     "info": {
@@ -933,6 +939,8 @@
     }
   },
   "privacy": {
+    "metaTitle": "Privacy",
+    "metaDescription": "The DinLinks privacy policy. How we collect, use and protect your information.",
     "title": "Privacy Policy",
     "lastUpdated": "Last updated:",
     "lastUpdatedDate": "27 August 2026",
@@ -1016,6 +1024,8 @@
     }
   },
   "terms": {
+    "metaTitle": "Terms of use",
+    "metaDescription": "The terms for using DinLinks, for visitors and registered businesses.",
     "title": "Terms and Conditions",
     "lastUpdated": "Last updated:",
     "lastUpdatedDate": "27 August 2026",
