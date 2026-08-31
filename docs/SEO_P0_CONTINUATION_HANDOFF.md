@@ -5,25 +5,45 @@ FINAL ACCEPTED state of the SEO P0 workstream (SEC-1 and PR-1 through PR-5)
 and the starting point for PR-6. It does not replace the DinLinks Playbook or
 the approved P0 Specification; where this document is silent, they govern.
 
-Approved planning baselines (published, account-private):
+Historical reference links (account-private artifacts from the retired
+planning session — useful if accessible, NOT a prerequisite for continuing):
 
 - Assessment: "DinLinks Search Readiness" —
   https://claude.ai/code/artifact/f7c71683-1277-4dff-94d1-92067d1b09b0
 - P0 Specification: "DinLinks P0 Specification" —
   https://claude.ai/code/artifact/73b18264-318b-4863-ac20-5090fa2d5de6
 
+If those artifacts are not accessible in a fresh session: do NOT reconstruct
+them from old chat history and do NOT block PR-6. The Playbook, this handoff,
+and the current shipped code contain the accepted continuation constraints
+required to specify PR-6. If a decision PR-6 genuinely needs is absent from
+those sources, STOP and ask rather than guessing.
+
 ---
 
 # 1. Current state
 
-- `main` SHA: `f192e6dafcdf1ae986b32032f318b790bfc4c64a` (merge of PR #37).
-- Production (Vercel, www.dinlinks.com) is deployed from that commit and
-  verified healthy. Every P0 code PR below is merged and production-verified.
-- Production inventory: 4 Business rows — 3 outreach demos (`isDemo = true`,
-  `shortId` NULL) and 1 real business in `PENDING` (shortId `cc3e0f0cf6`).
-  There are ZERO approved real businesses, so no business profile, populated
-  category, or pagination page is publicly reachable yet. Several
-  verifications are therefore inventory-gated (section 7).
+- PR-1 through PR-5 code baseline SHA:
+  `f192e6dafcdf1ae986b32032f318b790bfc4c64a` (merge of PR #37) — the exact
+  code state this handoff was prepared and cross-checked against. Current
+  `main` will move past it (starting with the merge of this document), so a
+  fresh session must NOT require `main` to equal it. Instead verify:
+  (a) `docs/SEO_P0_CONTINUATION_HANDOFF.md` is present on current `main`;
+  (b) the baseline is an ancestor of current `main`
+  (`git merge-base --is-ancestor f192e6dafcdf1ae986b32032f318b790bfc4c64a HEAD`);
+  (c) any commits after the baseline are inspected — not assumed to be
+  errors — and none has altered the accepted PR-1..PR-5 invariants recorded
+  here before PR-6 begins.
+- Production (Vercel, www.dinlinks.com) was deployed from that baseline and
+  verified healthy at handoff creation. Every P0 code PR below is merged and
+  was production-verified.
+- Production inventory — SNAPSHOT AT HANDOFF CREATION (2026-09-01), re-query
+  before relying on it: 4 Business rows — 3 outreach demos (`isDemo = true`,
+  `shortId` NULL) and 1 real business in `PENDING` (shortId `cc3e0f0cf6`);
+  zero approved real businesses, so at that time no business profile,
+  populated category, or pagination page was publicly reachable. The
+  inventory-gated checklist (section 7) is valid regardless of how this
+  snapshot has since changed.
 - The `shortId` schema migration (`20260831120000_add_business_short_id`) is
   applied to the production database.
 - Stack facts that matter here: Next.js 14.2.5 App Router, next-intl 4.13.0
@@ -32,8 +52,9 @@ Approved planning baselines (published, account-private):
   `npm test` (Node test runner through `tsx`; 40 passing).
 - No robots.txt and no sitemap exist — both 404 in production by design,
   because **PR-6 has NOT started**.
-- Google Search Console is not yet verified/configured (deliberately queued
-  behind PR-6).
+- Google Search Console ownership/configuration status has not been
+  independently verified in this workstream. Search Console baseline/setup
+  and sitemap submission remain queued after PR-6.
 
 # 2. Completed P0 work — final accepted state
 
@@ -315,8 +336,10 @@ PR-6 must not reopen or alter:
 4. Representative URL Inspection checks.
 5. PR-7: rewrite `docs/08_SEO_STANDARD.md` to encode the accepted, shipped
    system (Playbook process; approved decision D7).
-6. Stop technical P0 SEO work and return focus to real-business acquisition
-   — inventory, not code, is the remaining ranking factor.
+6. Stop expanding technical P0 SEO and shift the primary focus back to
+   real-business acquisition. Inventory/content density is the next
+   practical constraint on DinLinks' search usefulness and growth — not the
+   only ranking factor, and nothing here promises rankings.
 
 # 11. Fresh-session startup instructions
 
@@ -327,8 +350,10 @@ Reading order for the fresh session, in order:
    minimum: Constitution, Development Rules, SEO Standard, Localization
    Standard, Verification Standard, and
    `docs/specifications/03_TAXONOMY_MASTER_LIST.md`.
-3. The approved DinLinks P0 Specification (artifact link at the top of this
-   document).
+3. The approved DinLinks P0 Specification IF the artifact link at the top of
+   this document is accessible; if it is not, skip it — do not reconstruct
+   it and do not block on it (this handoff + Playbook + shipped code carry
+   the constraints PR-6 needs).
 4. `docs/SEO_P0_CONTINUATION_HANDOFF.md` (this document).
 5. The current implementations relevant to PR-6, before proposing anything:
    `middleware.ts`, `i18n/routing.ts`, `lib/site.ts`, `lib/discovery.ts`,
