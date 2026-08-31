@@ -27,6 +27,7 @@ import { buildDisplayLocations } from "@/lib/locations";
 export const dynamic = "force-dynamic";
 
 import { SITE_URL } from "@/lib/site";
+import { safeJsonLdString } from "@/lib/jsonld";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -302,7 +303,7 @@ export default async function BusinessProfilePage({
       {!business.isDemo && (
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          dangerouslySetInnerHTML={{ __html: safeJsonLdString(jsonLd) }}
         />
       )}
 

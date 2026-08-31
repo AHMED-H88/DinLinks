@@ -12,6 +12,7 @@ import CategorySortBar from "@/components/CategorySortBar";
 import SubcategoryChips from "@/components/SubcategoryChips";
 import { subOrder } from "@/lib/taxonomy-v1";
 import { businessUrl } from "@/lib/site";
+import { safeJsonLdString } from "@/lib/jsonld";
 
 // No `force-dynamic`: this page reads `searchParams` (sort / page), which
 // already forces dynamic rendering. The flag was redundant.
@@ -155,7 +156,7 @@ export default async function CategoryDetailPage({
       {/* JSON-LD */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLdString(jsonLd) }}
       />
 
       <main>
