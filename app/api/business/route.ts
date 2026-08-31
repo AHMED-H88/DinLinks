@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
+import { generateBusinessShortId } from "@/lib/shortid";
 import { validateBusinessExtras } from "@/lib/business-fields";
 import { validateSelectedSubcategory } from "@/lib/taxonomy-v1";
 
@@ -108,16 +110,32 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid category selection.", code: catCheck.code, field: "categoryId" }, { status: 400 });
     }
 
-    const business = await prisma.business.create({
-      data: {
-        userId: session.user.id,
-        status: "PENDING",
-        ...pickFields(data),
-        ...extras.data,
-      },
-    });
-
-    return NextResponse.json(business, { status: 201 });
+    // shortId is the immutable public URL identity. Generated server-side only
+    // (it is not in the pickFields whitelist, so a client can never set it) and
+    // retried on the practically-unreachable unique-constraint collision. Any
+    // other error — including the one-business-per-user userId collision —
+    // rethrows unchanged to the handler's 500 path.
+    for (let attempt = 0; attempt < 5; attempt++) {
+      try {
+        const business = await prisma.business.create({
+          data: {
+            userId: session.user.id,
+            status: "PENDING",
+            ...pickFields(data),
+            ...extras.data,
+            shortId: generateBusinessShortId(),
+          },
+        });
+        return NextResponse.json(business, { status: 201 });
+      } catch (err) {
+        const isShortIdCollision =
+          err instanceof Prisma.PrismaClientKnownRequestError &&
+          err.code === "P2002" &&
+          String(err.meta?.target ?? "").includes("shortId");
+        if (!isShortIdCollision) throw err;
+      }
+    }
+    throw new Error("could not allocate a unique business shortId in 5 attempts");
   } catch (err) {
     console.error("[POST /api/business]", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

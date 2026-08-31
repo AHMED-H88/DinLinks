@@ -1,10 +1,13 @@
 import { Link } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
 import { formatCity } from "@/lib/format";
+import { businessPath } from "@/lib/site";
 import SafeImage from "@/components/SafeImage";
 
 interface BusinessCardProps {
   id: string;
+  /** Stable public URL key. Cards render only real, discoverable businesses. */
+  shortId?: string | null;
   name: string;
   description: string;
   category: string;
@@ -58,6 +61,7 @@ function Highlighted({ text, query }: { text: string; query?: string }) {
 
 export default function BusinessCard({
   id,
+  shortId,
   name,
   description,
   category,
@@ -79,7 +83,7 @@ export default function BusinessCard({
 
   return (
     <Link
-      href={`/business/${id}`}
+      href={businessPath({ id, name, shortId })}
       // A results page renders up to 48 cards; prefetching each one floods the
       // network with RSC payloads. Navigation still works normally on click.
       prefetch={false}

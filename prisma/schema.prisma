@@ -163,6 +163,20 @@ model Business {
   // normal business with unchanged behaviour. Only the seed sets it true.
   isDemo Boolean @default(false)
 
+  // ── Public URL identity ─────────────────────────────────────────────────
+  // Immutable 10-char lowercase-alphanumeric key the public business URL is
+  // resolved from: /{locale}/business/{name-derived-slug}-{shortId}. The
+  // readable slug is derived from the current name at render time and is
+  // presentation only — identity lives here, so renames need no slug history.
+  //
+  // Nullable: demo profiles keep NULL (their /business/<id> outreach URLs must
+  // never change), and a real row without one serves its id URL as canonical —
+  // no redirect can fire without a shortId. The migration's backfill UPDATE is
+  // guarded with "shortId" IS NULL, so re-running it repairs such rows.
+  // Written once at creation (lib/shortid.ts) and by the backfill migration;
+  // never editable through the API (not in the pickFields whitelist).
+  shortId String? @unique
+
   views     Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -1,4 +1,5 @@
 "use client";
+import { businessPath } from "@/lib/site";
 
 import { useState, useTransition, useMemo } from "react";
 import { useRouter } from "next/navigation";
@@ -11,6 +12,9 @@ type Status = "PENDING" | "APPROVED" | "REJECTED";
 
 interface BusinessRow {
   id: string;
+  // URL identity for the admin "open profile" link (see BusinessForm note).
+  shortId?: string | null;
+  isDemo?: boolean;
   name: string | null;
   description: string | null;
   status: Status;
@@ -274,7 +278,7 @@ function DetailPanel({
           {business.status === "APPROVED" && (
             <a
               // Was hard-coded to /en/, so a Norwegian admin opened the English profile.
-              href={`/${locale}/business/${business.id}`}
+              href={`/${locale}${businessPath(business)}`}
               target="_blank"
               rel="noopener noreferrer"
               className="flex-1 btn btn-secondary btn-sm justify-center"

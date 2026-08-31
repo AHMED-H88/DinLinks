@@ -1,4 +1,5 @@
 "use client";
+import { businessPath } from "@/lib/site";
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -40,6 +41,11 @@ export interface ServiceItem {
 
 interface Business {
   id: string;
+  // URL identity for the "view public profile" preview link; optional because
+  // the value rides in on the full Prisma row, but declared so a future
+  // narrowed select loses the canonical URL visibly instead of silently.
+  shortId?: string | null;
+  isDemo?: boolean;
   userId: string;
   name: string | null;
   description: string | null;
@@ -1444,7 +1450,7 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
       <div className="flex items-center justify-end gap-2.5 mb-4">
         {isEdit && business.status === "APPROVED" && (
           <a
-            href={`/${locale}/business/${business.id}`}
+            href={`/${locale}${businessPath(business)}`}
             target="_blank"
             rel="noopener noreferrer"
             className="btn btn-secondary btn-sm inline-flex items-center gap-2"

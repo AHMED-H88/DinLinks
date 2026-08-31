@@ -158,6 +158,7 @@ export default async function HomePage() {
                     <BusinessCard
                       key={b.id}
                       id={b.id}
+                      shortId={b.shortId}
                       name={b.name ?? ""}
                       description={b.description ?? ""}
                       category={b.category?.name ?? ""}

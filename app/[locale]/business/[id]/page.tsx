@@ -1,4 +1,5 @@
-import { notFound } from "next/navigation";
+import { cache } from "react";
+import { notFound, permanentRedirect } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
@@ -26,7 +27,7 @@ import { buildDisplayLocations } from "@/lib/locations";
 
 export const dynamic = "force-dynamic";
 
-import { SITE_URL } from "@/lib/site";
+import { businessUrl, localeBusinessPath, businessUrlSegment, shortIdFromBusinessRouteParam } from "@/lib/site";
 import { safeJsonLdString } from "@/lib/jsonld";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -57,6 +58,25 @@ function avgRatingOf(reviews: { rating: number }[]): number | null {
   return reviews.reduce((s, r) => s + r.rating, 0) / reviews.length;
 }
 
+/**
+ * Resolve which business a /business/[param] URL identifies.
+ *
+ * Order: shortId first (canonical `slug-shortId`, stale-slug and bare forms),
+ * then exact id (legacy cuids and the demo ids). Every lookup is an exact
+ * unique key, so no input can resolve to the wrong row — a token that merely
+ * looks like a shortId misses the lookup and falls through. Returns the
+ * primary id, or null for the existing hard-404 path.
+ */
+const resolveBusinessId = cache(async (param: string): Promise<string | null> => {
+  const shortId = shortIdFromBusinessRouteParam(param);
+  if (shortId) {
+    const hit = await prisma.business.findUnique({ where: { shortId }, select: { id: true } });
+    if (hit) return hit.id;
+  }
+  const exact = await prisma.business.findUnique({ where: { id: param }, select: { id: true } });
+  return exact?.id ?? null;
+});
+
 // ─── Metadata ─────────────────────────────────────────────────────────────────
 
 export async function generateMetadata({
@@ -64,13 +84,16 @@ export async function generateMetadata({
 }: {
   params: Promise<{ id: string; locale: string }>;
 }): Promise<Metadata> {
-  const { id, locale } = await params;
+  const { id: routeParam, locale } = await params;
   const t = await getTranslations({ locale, namespace: "profile" });
 
-  const b = await prisma.business.findUnique({
-    where:   { id, status: "APPROVED" },
-    include: { category: true, reviews: { select: { rating: true } } },
-  });
+  const businessId = await resolveBusinessId(routeParam);
+  const b = businessId
+    ? await prisma.business.findUnique({
+        where:   { id: businessId, status: "APPROVED" },
+        include: { category: true, reviews: { select: { rating: true } } },
+      })
+    : null;
   if (!b) return { title: t("meta.notFound") };
 
   const rating    = avgRatingOf(b.reviews);
@@ -91,7 +114,7 @@ export async function generateMetadata({
     description,
     // Locale-prefixed: every public route lives under /[locale], so a bare
     // /business/<id> canonical named a path that only resolves via a redirect.
-    alternates: { canonical: `/${locale}/business/${id}` },
+    alternates: { canonical: businessUrl(locale, b) },
     // Outreach demo profiles are fictional companies. They exist to be opened
     // from a link, never to be found in a search engine, so they are withheld
     // from indexing rather than published as a Norwegian business that does
@@ -100,7 +123,7 @@ export async function generateMetadata({
     openGraph: {
       title, description,
       type: "website",
-      url:  `${SITE_URL}/${locale}/business/${id}`,
+      url:  businessUrl(locale, b),
       siteName: "DinLinks",
       ...(ogImage ? { images: [{ url: ogImage, width: 1200, height: 630, alt: b.name ?? "" }] } : {}),
     },
@@ -116,11 +139,13 @@ export async function generateMetadata({
 
 export default async function BusinessProfilePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string; locale: string }>;
+  searchParams?: { [key: string]: string | string[] | undefined };
 }) {
   const session        = await auth();
-  const { id, locale } = await params;
+  const { id: routeParam, locale } = await params;
   const t = await getTranslations({ locale, namespace: "profile" });
   const tCat = await getTranslations({ locale, namespace: "categories" });
   // Reused for the Why-choose-us highlight labels (same source the owner form edits).
@@ -138,8 +163,11 @@ export default async function BusinessProfilePage({
   const isNo           = locale === "no";
 
   // ── Data ──────────────────────────────────────────────────────────────────
+  const businessId = await resolveBusinessId(routeParam);
+  if (!businessId) notFound();
+
   const business = await prisma.business.findUnique({
-    where:   { id },
+    where:   { id: businessId },
     include: {
       category: true,
       reviews:  { orderBy: { createdAt: "desc" }, take: 20 },
@@ -150,14 +178,34 @@ export default async function BusinessProfilePage({
 
   if (!business || business.status !== "APPROVED") notFound();
 
-  // Fire-and-forget view increment
-  prisma.business.update({ where: { id }, data: { views: { increment: 1 } } }).catch(() => {});
+  // One 308 to the canonical URL when the request used any other form — a
+  // legacy cuid, a stale name slug, or a bare shortId. Demos never redirect:
+  // their /business/<id> outreach address is permanent (the isDemo check
+  // deliberately restates businessUrlSegment's demo rule as defense in depth —
+  // that helper owns the URL shape, this guard owns "never redirect a demo").
+  // Checked before the view increment so a redirected request is not counted
+  // twice, and the query string is carried over: already-distributed legacy
+  // links hold campaign parameters a bare redirect would destroy.
+  const canonicalSegment = businessUrlSegment(business);
+  if (!business.isDemo && routeParam !== canonicalSegment) {
+    const query = new URLSearchParams();
+    for (const [key, value] of Object.entries(searchParams ?? {})) {
+      if (Array.isArray(value)) for (const v of value) query.append(key, v);
+      else if (value != null) query.append(key, value);
+    }
+    const qs = query.toString();
+    permanentRedirect(`/${locale}/business/${canonicalSegment}${qs ? `?${qs}` : ""}`);
+  }
+
+  // Fire-and-forget view increment — keyed on the resolved primary id, never
+  // the route param (a slug-form param would silently miss the row).
+  prisma.business.update({ where: { id: business.id }, data: { views: { increment: 1 } } }).catch(() => {});
 
   // Favourite state
   let isFavorite = false;
   if (session?.user?.id) {
     const fav = await prisma.favorite.findUnique({
-      where: { userId_businessId: { userId: session.user.id, businessId: id } },
+      where: { userId_businessId: { userId: session.user.id, businessId: business.id } },
     });
     isFavorite = !!fav;
   }
@@ -172,7 +220,7 @@ export default async function BusinessProfilePage({
   // so no call site needs a guard.
   const similarBusinesses = business.categoryId && !business.isDemo
     ? await prisma.business.findMany({
-        where:   { categoryId: business.categoryId, id: { not: id }, ...PUBLIC_DISCOVERY_WHERE },
+        where:   { categoryId: business.categoryId, id: { not: business.id }, ...PUBLIC_DISCOVERY_WHERE },
         include: { category: true, reviews: { select: { rating: true } } },
         orderBy: { views: "desc" },
         take:    3,
@@ -201,7 +249,7 @@ export default async function BusinessProfilePage({
   // keys nothing recognises shows no card instead of an empty one.
   const hasHours      = weekDays.length > 0;
   const openNow       = hasHours ? isOpenNow(openingHours) : null;
-  const profileUrl    = `${SITE_URL}/${locale}/business/${id}`;
+  const profileUrl    = businessUrl(locale, business);
 
   // Identity summary — short factual statement shown in the hero, in the
   // page's language. Falls back to nothing (no empty gap) when absent.
@@ -266,7 +314,7 @@ export default async function BusinessProfilePage({
     "@type":     "LocalBusiness",
     name:         business.name        ?? undefined,
     description:  business.description ?? undefined,
-    url:         `${SITE_URL}/${locale}/business/${id}`,
+    url:         profileUrl,
     telephone:    business.phone       ?? undefined,
     email:        business.email       ?? undefined,
     ...(business.website ? { sameAs: [business.website] } : {}),
@@ -982,7 +1030,7 @@ function SimilarBusinesses({
                             return (
                               <Link
                                 key={sb.id}
-                                href={`/${locale}/business/${sb.id}`}
+                                href={localeBusinessPath(locale, sb)}
                                 className="group flex flex-col rounded-2xl border border-gray-200 bg-white shadow-subtle hover:border-gray-300 hover:shadow-soft transition-all duration-200 overflow-hidden"
                               >
                                 {/* Mini cover */}
