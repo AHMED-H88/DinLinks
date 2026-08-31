@@ -158,21 +158,20 @@ test("SEC-1 regression: owner text cannot break out of the script element", () =
 // ── Category ItemList ────────────────────────────────────────────────────────
 
 test("empty item list emits nothing", () => {
-  assert.equal(buildCategoryItemListJsonLd({ name: "Rørlegger-bedrifter i Norge", items: [], positionOffset: 0 }), null);
+  assert.equal(buildCategoryItemListJsonLd({ name: "Rørlegger-bedrifter i Norge", items: [] }), null);
 });
 
-test("numberOfItems counts the marked-up items and positions continue across pages", () => {
+test("each page's ItemList is page-scoped: numberOfItems = marked-up items, positions start at 1", () => {
   const node = buildCategoryItemListJsonLd({
     name: "Plumber businesses in Norway",
     items: [
       { name: "A", url: "https://www.dinlinks.com/en/business/a-1234567890" },
       { name: null, url: "https://www.dinlinks.com/en/business/b-0987654321" },
     ],
-    positionOffset: 12,
   })!;
   assert.equal(node.numberOfItems, 2);
   const els = node.itemListElement as Array<{ position: number; name: string }>;
-  assert.deepEqual(els.map((e) => e.position), [13, 14]);
+  assert.deepEqual(els.map((e) => e.position), [1, 2]);
   assert.equal(els[1].name, "");
   assert.equal(node.name, "Plumber businesses in Norway");
 });

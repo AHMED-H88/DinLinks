@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { PUBLIC_DISCOVERY_WHERE } from "@/lib/discovery";
@@ -14,6 +14,7 @@ import { subOrder } from "@/lib/taxonomy-v1";
 import { businessUrl, SITE_URL, SITE_NAME, localeHreflang } from "@/lib/site";
 import { safeJsonLdString } from "@/lib/jsonld";
 import { buildCategoryItemListJsonLd } from "@/lib/structured-data";
+import { parseCategoryListingQuery, type CategorySort, type RawSearchParams } from "@/lib/category-listing";
 
 // No `force-dynamic`: this page reads `searchParams` (sort / page), which
 // already forces dynamic rendering. The flag was redundant.
@@ -24,12 +25,20 @@ const PAGE_SIZE = 12;
 
 export async function generateMetadata({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string; locale: string }>;
+  searchParams: RawSearchParams;
 }): Promise<Metadata> {
   const { slug, locale } = await params;
   const t = await getTranslations({ locale, namespace: "categoryPage" });
   const tCat = await getTranslations({ locale, namespace: "categories" });
+
+  // The exact same parser the renderer uses — metadata and page can never
+  // disagree about what this URL means. Invalid → the renderer hard-404s.
+  const listing = parseCategoryListingQuery(searchParams);
+  if (!listing) return { title: t("metaNotFound") };
+
   const category = await prisma.category.findUnique({
     where: { slug },
     select: { id: true, name: true, slug: true, children: { select: { id: true } } },
@@ -46,6 +55,16 @@ export async function generateMetadata({
 
   const isEmpty = count === 0;
 
+  // The renderer hard-404s beyond the real range; the 404 response's head
+  // must not assert a self-canonical and hreflang pair for a page that does
+  // not exist, so metadata collapses to the not-found title on the same
+  // range rule.
+  if (listing.page > 1 && listing.page > Math.ceil(count / PAGE_SIZE)) {
+    return { title: t("metaNotFound") };
+  }
+
+  const path = `/categories/${slug}${listing.canonicalSearch}`;
+
   return {
     title: t("metaTitle", { category: catName }),
     // An empty category must not advertise "0 businesses" as its SERP
@@ -60,7 +79,11 @@ export async function generateMetadata({
     // passing signal. The count above uses this page's own targetIds
     // aggregation (children-if-any-else-self + PUBLIC_DISCOVERY_WHERE) — the
     // one source that cannot classify a populated top level as empty.
-    ...(isEmpty ? { robots: { index: false, follow: true } } : {}),
+    //
+    // Alternative orderings (?sort=reviewed/newest/alpha) are noindexed
+    // reorderings of the same collection, per Google's guidance against
+    // indexing alternative sort URLs — users keep them, the index does not.
+    ...(isEmpty || listing.isSorted ? { robots: { index: false, follow: true } } : {}),
     openGraph: {
       title: t("ogTitle", { category: catName }),
       description: isEmpty
@@ -70,14 +93,20 @@ export async function generateMetadata({
       // Shallow metadata merge drops the layout og:locale unless restated.
       locale: locale === "no" ? "nb_NO" : "en_GB",
       siteName: SITE_NAME,
-      url: `${SITE_URL}/${locale}/categories/${slug}`,
+      // og:url follows the canonical target — the default-sort form of this
+      // page number — so sorted variants advertise their canonical, and page
+      // 2+ advertises itself rather than page 1.
+      url: `${SITE_URL}/${locale}${path}`,
     },
     alternates: {
-      canonical: `/${locale}/categories/${slug}`,
-      // hreflang only while BOTH locale versions are indexable: an empty
-      // category is noindexed (D6), and a language pair must never point at
-      // a noindexed counterpart. Flips on automatically with the count.
-      ...(isEmpty ? {} : { languages: localeHreflang(`/categories/${slug}`) }),
+      // Page 2+ self-canonicalizes (?page=N, default-sort form); page 1 is
+      // the bare URL. Sorted variants canonicalize to the same default-sort
+      // page target instead of being indexed as duplicate orderings.
+      canonical: `/${locale}${path}`,
+      // hreflang only between mutually indexable pair members: not for empty
+      // categories (D6 noindex) and not for noindexed sorted variants. Page
+      // 2 pairs with page 2 — same page number in both locales, never page 1.
+      ...(isEmpty || listing.isSorted ? {} : { languages: localeHreflang(path) }),
     },
   };
 }
@@ -89,12 +118,16 @@ function avgRating(reviews: { rating: number }[]): number | null {
   return reviews.reduce((s, r) => s + r.rating, 0) / reviews.length;
 }
 
-function buildOrderBy(sort: string): any {
+// Every ordering carries the immutable unique id as a secondary key: the
+// primary keys all admit ties (equal views, counts, timestamps, names), and
+// Postgres gives tied rows no stable order — without the tie-breaker a
+// business could appear on two pages or on none.
+function buildOrderBy(sort: CategorySort) {
   switch (sort) {
-    case "reviewed":  return { reviews:   { _count: "desc" } };
-    case "newest":    return { createdAt: "desc" };
-    case "alpha":     return { name:      "asc"  };
-    default:          return { views:     "desc" };   // popular
+    case "reviewed": return [{ reviews:   { _count: "desc" as const } }, { id: "asc" as const }];
+    case "newest":   return [{ createdAt: "desc" as const },             { id: "asc" as const }];
+    case "alpha":    return [{ name:      "asc"  as const },             { id: "asc" as const }];
+    case "popular":  return [{ views:     "desc" as const },             { id: "asc" as const }];
   }
 }
 
@@ -108,13 +141,22 @@ export default async function CategoryDetailPage({
   // app/[locale] — it simply was not declared, which is why the JSON-LD item
   // URLs below used to hard-code "/en/" for Norwegian visitors too.
   params: Promise<{ slug: string; locale: string }>;
-  searchParams: { sort?: string; page?: string };
+  searchParams: RawSearchParams;
 }) {
   const { slug, locale } = await params;
   const t         = await getTranslations("categoryPage");
   const tCat      = await getTranslations("categories");
-  const sort      = searchParams.sort ?? "popular";
-  const page      = Math.max(1, parseInt(searchParams.page ?? "1", 10));
+
+  // One authoritative parse — invalid page/sort syntax is a hard 404, never
+  // a silent page 1; valid-but-noncanonical forms (?page=1, ?page=01,
+  // ?sort=popular) permanently redirect ONCE to the canonical form, with
+  // unrelated (campaign) parameters preserved across the hop.
+  const listing = parseCategoryListingQuery(searchParams);
+  if (!listing) notFound();
+  if (listing.redirectSearch !== null) {
+    permanentRedirect(`/${locale}/categories/${slug}${listing.redirectSearch}`);
+  }
+  const { page, sort, isSorted } = listing;
 
   const category = await prisma.category.findUnique({
     where: { slug },
@@ -139,7 +181,9 @@ export default async function CategoryDetailPage({
     .map((c) => ({ id: c.id, name: tCat.has(c.slug) ? tCat(c.slug) : c.name, slug: c.slug }))
     .sort((a, b) => subOrder(a.slug) - subOrder(b.slug));
 
-  const [total, populatedChildren, businesses] = await Promise.all([
+  // The count runs BEFORE the page-slice query so an out-of-range page is
+  // a hard 404 without a huge `skip` ever reaching Prisma.
+  const [total, populatedChildren] = await Promise.all([
     prisma.business.count({ where: { categoryId: { in: targetIds }, ...PUBLIC_DISCOVERY_WHERE } }),
 
     // Which Subcategories actually hold discoverable businesses. The Taxonomy
@@ -153,24 +197,29 @@ export default async function CategoryDetailPage({
           select:   { categoryId: true },
         })
       : Promise.resolve([]),
-
-    prisma.business.findMany({
-      where:   { categoryId: { in: targetIds }, ...PUBLIC_DISCOVERY_WHERE },
-      include: {
-        // The business's own (sub)category, so a card on a top-level Category
-        // page shows the specific Subcategory (e.g. "Frisør") rather than
-        // repeating the parent Category ("Tjenester").
-        category: { select: { name: true, slug: true } },
-        reviews:  { select: { rating: true } },
-        _count:   { select: { branches: true } },
-      },
-      orderBy: buildOrderBy(sort),
-      skip:  (page - 1) * PAGE_SIZE,
-      take:  PAGE_SIZE,
-    }),
   ]);
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
+
+  // Beyond the real range → hard 404. Page 1 stays reachable even at zero
+  // inventory: the D6 empty-category page is a valid (noindexed) URL, but
+  // ?page=2 on it is not a category state — it is an invalid pagination URL.
+  if (page > 1 && page > totalPages) notFound();
+
+  const businesses = await prisma.business.findMany({
+    where:   { categoryId: { in: targetIds }, ...PUBLIC_DISCOVERY_WHERE },
+    include: {
+      // The business's own (sub)category, so a card on a top-level Category
+      // page shows the specific Subcategory (e.g. "Frisør") rather than
+      // repeating the parent Category ("Tjenester").
+      category: { select: { name: true, slug: true } },
+      reviews:  { select: { rating: true } },
+      _count:   { select: { branches: true } },
+    },
+    orderBy: buildOrderBy(sort),
+    skip:  (page - 1) * PAGE_SIZE,
+    take:  PAGE_SIZE,
+  });
 
   // Chips render only Subcategories that hold at least one discoverable
   // business (Taxonomy Master List permits hiding empty ones). targetIds
@@ -181,14 +230,16 @@ export default async function CategoryDetailPage({
 
   // ── JSON-LD (ItemList of businesses) ─────────────────────────────────────
   // The name is the localized page title so the markup language matches the
-  // visible page (the raw DB category name is Norwegian on every locale).
-  // numberOfItems counts the items actually in the markup; zero items — an
-  // empty category, or a page beyond the last — emits no ItemList at all.
-  const itemListJsonLd = buildCategoryItemListJsonLd({
-    name:           t("metaTitle", { category: catName }),
-    items:          businesses.map((b) => ({ name: b.name, url: businessUrl(locale, b) })),
-    positionOffset: (page - 1) * PAGE_SIZE,
-  });
+  // visible page. Approved pagination policy: each indexable default-sort
+  // page owns a page-scoped ItemList — only the entities rendered here,
+  // positions starting at 1. Noindexed sorted variants emit none, matching
+  // their robots policy; zero items emit none.
+  const itemListJsonLd = isSorted
+    ? null
+    : buildCategoryItemListJsonLd({
+        name:  t("metaTitle", { category: catName }),
+        items: businesses.map((b) => ({ name: b.name, url: businessUrl(locale, b) })),
+      });
 
   return (
     <div className="min-h-screen bg-gray-50">
