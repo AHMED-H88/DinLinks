@@ -23,8 +23,23 @@
 --   scale) would fail the migration visibly instead of corrupting silently.
 --   Postgres unique indexes ignore NULLs, so the demo rows cannot conflict.
 --
+-- Atomicity: the explicit BEGIN/COMMIT below is what guarantees all three
+-- statements apply or none do. Verified empirically against this project's
+-- exact toolchain (Prisma CLI 5.22.0, PostgreSQL 14): the CLI accepts
+-- explicit transaction blocks in migration files, and an induced
+-- mid-migration failure rolls back the column, the backfill and the index
+-- together. Prisma 5.22 happened to apply the whole script atomically even
+-- without the block, but that is CLI implementation detail; the explicit
+-- transaction makes atomicity a property of this file, independent of the
+-- CLI version that runs it. All three statements are transaction-safe (the
+-- index is NOT built CONCURRENTLY, which would be incompatible - unneeded at
+-- this table's row counts). On failure Prisma marks the migration failed;
+-- recover with `prisma migrate resolve --rolled-back <name>` and redeploy.
+--
 -- New rows get a crypto-random [a-z0-9]{10} shortId at creation
 -- (lib/shortid.ts), with a retry on the unique constraint.
+
+BEGIN;
 
 -- AlterTable
 ALTER TABLE "businesses" ADD COLUMN     "shortId" TEXT;
@@ -34,3 +49,5 @@ UPDATE "businesses" SET "shortId" = substr(md5(id), 1, 10) WHERE "isDemo" = fals
 
 -- CreateIndex
 CREATE UNIQUE INDEX "businesses_shortId_key" ON "businesses"("shortId");
+
+COMMIT;
