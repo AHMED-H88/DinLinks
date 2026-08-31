@@ -13,6 +13,7 @@ import SubcategoryChips from "@/components/SubcategoryChips";
 import { subOrder } from "@/lib/taxonomy-v1";
 import { businessUrl, SITE_URL, SITE_NAME, localeHreflang } from "@/lib/site";
 import { safeJsonLdString } from "@/lib/jsonld";
+import { buildCategoryItemListJsonLd } from "@/lib/structured-data";
 
 // No `force-dynamic`: this page reads `searchParams` (sort / page), which
 // already forces dynamic rendering. The flag was redundant.
@@ -179,28 +180,27 @@ export default async function CategoryDetailPage({
   const visibleSubcategories = subcategories.filter((sc) => populatedChildIds.has(sc.id));
 
   // ── JSON-LD (ItemList of businesses) ─────────────────────────────────────
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type":    "ItemList",
-    name:       `${category.name} businesses on DinLinks`,
-    numberOfItems: total,
-    itemListElement: businesses.map((b, i) => ({
-      "@type":    "ListItem",
-      position:  (page - 1) * PAGE_SIZE + i + 1,
-      name:       b.name ?? "",
-      url:       businessUrl(locale, b),
-    })),
-  };
+  // The name is the localized page title so the markup language matches the
+  // visible page (the raw DB category name is Norwegian on every locale).
+  // numberOfItems counts the items actually in the markup; zero items — an
+  // empty category, or a page beyond the last — emits no ItemList at all.
+  const itemListJsonLd = buildCategoryItemListJsonLd({
+    name:           t("metaTitle", { category: catName }),
+    items:          businesses.map((b) => ({ name: b.name, url: businessUrl(locale, b) })),
+    positionOffset: (page - 1) * PAGE_SIZE,
+  });
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
 
-      {/* JSON-LD */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: safeJsonLdString(jsonLd) }}
-      />
+      {/* JSON-LD — absent when there is nothing truthful to list. */}
+      {itemListJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: safeJsonLdString(itemListJsonLd) }}
+        />
+      )}
 
       <main>
         {/* Hero */}
