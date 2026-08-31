@@ -7,6 +7,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { getTaxonomyTree, getCityCounts } from "@/lib/cached-data";
 import { getTranslations } from "next-intl/server";
+import { SITE_URL, SITE_NAME } from "@/lib/site";
 
 // NOTE: no `force-dynamic` needed. This page reads `searchParams`, which already
 // makes it dynamically rendered in the App Router. Removing the explicit flag
@@ -34,6 +35,23 @@ export async function generateMetadata({
     title,
     description: t("metaDescription"),
     alternates: { canonical: `/${params.locale}/search` },
+    // Approved indexation policy: the search surface is a utility, not an
+    // indexable page — every ?q/?category/?city variant is noindexed. follow
+    // keeps the server-rendered result links passing signal, and the page is
+    // deliberately NOT robots.txt-blocked so crawlers can read this directive.
+    robots: { index: false, follow: true },
+    openGraph: {
+      title,
+      description: t("metaDescription"),
+      type: "website",
+      // Page-level openGraph replaces the layout's wholesale (shallow merge),
+      // so og:locale must ride along or it disappears.
+      locale: params.locale === "no" ? "nb_NO" : "en_GB",
+      siteName: SITE_NAME,
+      // The bare search page, matching the canonical — never a parameterized
+      // variant, and not the bare origin the layout default points at.
+      url: `${SITE_URL}/${params.locale}/search`,
+    },
   };
 }
 

@@ -235,6 +235,8 @@
     "businesses": "bedrifter"
   },
   "categoryPage": {
+    "metaDescriptionEmpty": "Utforsk kategorien {category} på DinLinks.",
+    "ogDescriptionEmpty": "Utforsk kategorien {category} på DinLinks.",
     "metaNotFound": "Ikke funnet",
     "metaTitle": "{category}-bedrifter i Norge",
     "metaDescription": "Se {count} {category}-bedrifter på DinLinks. Finn kontaktinfo, åpningstider og anmeldelser.",
@@ -876,6 +878,8 @@
     "signOut": "Logg ut"
   },
   "about": {
+    "metaTitle": "Om oss",
+    "metaDescription": "Les om DinLinks, en norsk bedriftskatalog som hjelper deg med å finne og forstå lokale bedrifter.",
     "title": "Om DinLinks",
     "subtitle": "DinLinks gjør det enklere å finne bedrifter og informasjonen du trenger",
     "vision": {
@@ -906,6 +910,8 @@
     }
   },
   "contact": {
+    "metaTitle": "Kontakt",
+    "metaDescription": "Kontakt DinLinks. Vi svarer på spørsmål om katalogen, bedriftsprofiler og kontoen din.",
     "title": "Kontakt oss",
     "subtitle": "Har du spørsmål eller tilbakemeldinger? Vi hører gjerne fra deg!",
     "info": {
@@ -933,6 +939,8 @@
     }
   },
   "privacy": {
+    "metaTitle": "Personvern",
+    "metaDescription": "Personvernerklæringen for DinLinks. Slik samler vi inn, bruker og beskytter opplysningene dine.",
     "title": "Personvernerklæring",
     "lastUpdated": "Sist oppdatert:",
     "lastUpdatedDate": "27. august 2026",
@@ -1016,6 +1024,8 @@
     }
   },
   "terms": {
+    "metaTitle": "Vilkår",
+    "metaDescription": "Vilkårene for bruk av DinLinks, for besøkende og registrerte bedrifter.",
     "title": "Vilkår og betingelser",
     "lastUpdated": "Sist oppdatert:",
     "lastUpdatedDate": "27. august 2026",

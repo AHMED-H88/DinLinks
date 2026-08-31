@@ -1,3 +1,6 @@
+import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
+import { SITE_URL, SITE_NAME } from "@/lib/site";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useTranslations } from "next-intl";
@@ -13,6 +16,29 @@ const CHANNELS = [
   { key: "privacy",  address: "privacy@dinlinks.com" },
   { key: "security", address: "security@dinlinks.com" },
 ] as const;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: string };
+}): Promise<Metadata> {
+  const t = await getTranslations({ locale: params.locale, namespace: "contact" });
+  return {
+    title: t("metaTitle"),
+    description: t("metaDescription"),
+    alternates: { canonical: `/${params.locale}/contact` },
+    openGraph: {
+      title: t("metaTitle"),
+      description: t("metaDescription"),
+      type: "website",
+      // Page-level openGraph replaces the layout's wholesale (shallow merge),
+      // so og:locale must ride along or it disappears.
+      locale: params.locale === "no" ? "nb_NO" : "en_GB",
+      siteName: SITE_NAME,
+      url: `${SITE_URL}/${params.locale}/contact`,
+    },
+  };
+}
 
 export default function ContactPage() {
   const t = useTranslations("contact");

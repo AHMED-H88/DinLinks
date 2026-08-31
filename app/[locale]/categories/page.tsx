@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { SITE_URL, SITE_NAME } from "@/lib/site";
 import { getTaxonomyTree } from "@/lib/cached-data";
 import { Link } from "@/i18n/routing";
 import { getTranslations } from "next-intl/server";
@@ -21,10 +22,16 @@ export async function generateMetadata({
     // keeps the brand explicitly — the same split every other page uses.
     title: t("metaTitle"),
     description: t("metaDescription"),
+    alternates: { canonical: `/${params.locale}/categories` },
     openGraph: {
       title: t("ogTitle"),
       description: t("ogDescription"),
       type: "website",
+      // Page-level openGraph replaces the layout's wholesale (shallow merge),
+      // so og:locale must ride along or it disappears.
+      locale: params.locale === "no" ? "nb_NO" : "en_GB",
+      siteName: SITE_NAME,
+      url: `${SITE_URL}/${params.locale}/categories`,
     },
   };
 }
