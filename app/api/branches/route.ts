@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { PUBLIC_DISCOVERY_WHERE } from "@/lib/discovery";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -23,12 +24,27 @@ async function verifyOwnership(userId: string, businessId: string) {
 }
 
 // ─── GET /api/branches?businessId=xxx ────────────────────────────────────────
-// Public: returns all branches for a business (ordered: main first, then by name)
+// Public: returns all branches of a publicly discoverable business (ordered:
+// main first, then by name).
+//
+// The parent business must pass PUBLIC_DISCOVERY_WHERE. Without that gate this
+// endpoint returned branch names, addresses, phones and emails for PENDING,
+// REJECTED and demo businesses — data no public page exposes. A non-public
+// businessId gets the same 404 as a nonexistent one, so the endpoint does not
+// reveal which of the two it was. Owners manage branches through the
+// auth-gated POST here and PUT/DELETE in [id]/route.ts, which are unchanged.
 
 export async function GET(req: NextRequest) {
   const businessId = req.nextUrl.searchParams.get("businessId");
   if (!businessId)
     return NextResponse.json({ error: "Missing businessId query param" }, { status: 400 });
+
+  const business = await prisma.business.findUnique({
+    where:  { id: businessId, ...PUBLIC_DISCOVERY_WHERE },
+    select: { id: true },
+  });
+  if (!business)
+    return NextResponse.json({ error: "Business not found" }, { status: 404 });
 
   const branches = await prisma.branch.findMany({
     where:   { businessId },
