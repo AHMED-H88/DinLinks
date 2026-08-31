@@ -30,6 +30,9 @@ export default async function DashboardLayout({
     where:  { userId: session.user.id },
     select: {
       id: true, name: true, logo: true, city: true, status: true,
+      // URL identity: without these the sidebar's "View public profile" link
+      // silently degrades to the legacy id URL and eats a 308 on every click.
+      shortId: true, isDemo: true,
       category: { select: { slug: true, name: true } },
     },
   });
@@ -37,6 +40,8 @@ export default async function DashboardLayout({
   const identity = business
     ? {
         id:           business.id,
+        shortId:      business.shortId,
+        isDemo:       business.isDemo,
         name:         business.name,
         logo:         business.logo,
         city:         business.city,

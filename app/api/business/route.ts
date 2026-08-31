@@ -112,11 +112,12 @@ export async function POST(req: Request) {
 
     // shortId is the immutable public URL identity. Generated server-side only
     // (it is not in the pickFields whitelist, so a client can never set it) and
-    // retried on the practically-unreachable unique-constraint collision.
-    let business;
-    for (let attempt = 0; ; attempt++) {
+    // retried on the practically-unreachable unique-constraint collision. Any
+    // other error — including the one-business-per-user userId collision —
+    // rethrows unchanged to the handler's 500 path.
+    for (let attempt = 0; attempt < 5; attempt++) {
       try {
-        business = await prisma.business.create({
+        const business = await prisma.business.create({
           data: {
             userId: session.user.id,
             status: "PENDING",
@@ -125,17 +126,16 @@ export async function POST(req: Request) {
             shortId: generateBusinessShortId(),
           },
         });
-        break;
+        return NextResponse.json(business, { status: 201 });
       } catch (err) {
         const isShortIdCollision =
           err instanceof Prisma.PrismaClientKnownRequestError &&
           err.code === "P2002" &&
           String(err.meta?.target ?? "").includes("shortId");
-        if (!isShortIdCollision || attempt >= 4) throw err;
+        if (!isShortIdCollision) throw err;
       }
     }
-
-    return NextResponse.json(business, { status: 201 });
+    throw new Error("could not allocate a unique business shortId in 5 attempts");
   } catch (err) {
     console.error("[POST /api/business]", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

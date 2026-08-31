@@ -170,8 +170,9 @@ model Business {
   // presentation only — identity lives here, so renames need no slug history.
   //
   // Nullable: demo profiles keep NULL (their /business/<id> outreach URLs must
-  // never change), and a real row without one simply falls back to its id URL,
-  // which the profile route permanently redirects to the canonical form.
+  // never change), and a real row without one serves its id URL as canonical —
+  // no redirect can fire without a shortId. The migration's backfill UPDATE is
+  // guarded with "shortId" IS NULL, so re-running it repairs such rows.
   // Written once at creation (lib/shortid.ts) and by the backfill migration;
   // never editable through the API (not in the pickFields whitelist).
   shortId String? @unique

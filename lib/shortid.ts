@@ -1,4 +1,4 @@
-import { randomBytes } from "crypto";
+import { randomInt } from "crypto";
 
 /**
  * The public URL identity key for a business: exactly 10 lowercase
@@ -13,16 +13,10 @@ export const SHORT_ID_LENGTH = 10;
 export const SHORT_ID_ALPHABET = "abcdefghijklmnopqrstuvwxyz0123456789";
 
 export function generateBusinessShortId(): string {
-  const out: string[] = [];
-  while (out.length < SHORT_ID_LENGTH) {
-    // Rejection sampling: 252 is the largest multiple of 36 below 256, so
-    // taking bytes < 252 modulo 36 keeps every character equally likely.
-    for (const byte of randomBytes(SHORT_ID_LENGTH)) {
-      if (byte < 252) {
-        out.push(SHORT_ID_ALPHABET[byte % 36]);
-        if (out.length === SHORT_ID_LENGTH) break;
-      }
-    }
+  // crypto.randomInt is cryptographically secure and unbiased by contract.
+  let out = "";
+  for (let i = 0; i < SHORT_ID_LENGTH; i++) {
+    out += SHORT_ID_ALPHABET[randomInt(SHORT_ID_ALPHABET.length)];
   }
-  return out.join("");
+  return out;
 }

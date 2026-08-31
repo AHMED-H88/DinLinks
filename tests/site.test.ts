@@ -1,10 +1,12 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
+  SITE_URL,
   slugifyBusinessName,
   shortIdFromBusinessRouteParam,
   businessUrlSegment,
   businessPath,
+  localeBusinessPath,
   businessUrl,
 } from "../lib/site";
 import { generateBusinessShortId, SHORT_ID_LENGTH } from "../lib/shortid";
@@ -13,6 +15,9 @@ import { generateBusinessShortId, SHORT_ID_LENGTH } from "../lib/shortid";
 
 test("Norwegian letters use the native ASCII convention", () => {
   assert.equal(slugifyBusinessName("Stenerud Rørservice"), "stenerud-roerservice");
+  // Decomposed input (a + combining ring / e + combining acute, as macOS
+  // paste produces) must fold identically to the precomposed form.
+  assert.equal(slugifyBusinessName("Bla\u030Aveis Cafe\u0301"), "blaaveis-cafe");
   assert.equal(slugifyBusinessName("Bærum Såpe & Vask AS"), "baerum-saape-vask-as");
   assert.equal(slugifyBusinessName("Blåveis Café"), "blaaveis-cafe");
 });
@@ -71,7 +76,10 @@ test("real business with shortId gets slug-shortId; round-trips through the pars
   assert.equal(segment, "stenerud-roerservice-k7x2f9m4qd");
   assert.equal(shortIdFromBusinessRouteParam(segment), real.shortId);
   assert.equal(businessPath(real), `/business/${segment}`);
-  assert.equal(businessUrl("no", real), `https://www.dinlinks.com/no/business/${segment}`);
+  assert.equal(localeBusinessPath("no", real), `/no/business/${segment}`);
+  // Expected origin comes from SITE_URL itself so the test holds in any
+  // environment where NEXT_PUBLIC_SITE_URL is set.
+  assert.equal(businessUrl("no", real), `${SITE_URL}/no/business/${segment}`);
 });
 
 test("nameless business canonicalizes to the bare shortId", () => {

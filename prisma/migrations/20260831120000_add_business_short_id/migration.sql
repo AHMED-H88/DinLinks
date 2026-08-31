@@ -11,8 +11,11 @@
 --
 -- Backfill notes:
 -- - substr(md5(id), 1, 10) is 10 lowercase hex characters — a subset of the
---   approved [a-z0-9] alphabet — derived from the immutable primary key, so
---   re-running the statement is idempotent and produces the same values.
+--   approved [a-z0-9] alphabet — derived from the immutable primary key. The
+--   "shortId" IS NULL guard makes the statement safe to re-execute as a
+--   repair (a row created by a not-yet-deployed old app version after this
+--   migration ran would otherwise keep NULL forever) without ever touching a
+--   row that already has a shortId, including crypto-generated ones.
 -- - Demo rows are skipped (isDemo = true keeps shortId NULL): their
 --   /business/<id> outreach URLs must never change, and the profile route
 --   never redirects a demo.
@@ -27,7 +30,7 @@
 ALTER TABLE "businesses" ADD COLUMN     "shortId" TEXT;
 
 -- Backfill real businesses deterministically from their immutable id.
-UPDATE "businesses" SET "shortId" = substr(md5(id), 1, 10) WHERE "isDemo" = false;
+UPDATE "businesses" SET "shortId" = substr(md5(id), 1, 10) WHERE "isDemo" = false AND "shortId" IS NULL;
 
 -- CreateIndex
 CREATE UNIQUE INDEX "businesses_shortId_key" ON "businesses"("shortId");

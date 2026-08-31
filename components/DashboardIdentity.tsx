@@ -3,6 +3,8 @@ import { formatCity } from "@/lib/format";
 
 export interface DashboardBusinessIdentity {
   id:           string;
+  shortId:      string | null;
+  isDemo:       boolean;
   name:         string | null;
   logo:         string | null;
   city:         string | null;

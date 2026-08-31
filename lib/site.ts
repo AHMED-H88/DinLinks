@@ -54,7 +54,11 @@ const SHORT_ID_SEGMENT_RE = /^[a-z0-9]{10}$/;
  * business name itself — this is URL encoding, not a copy edit.
  */
 export function slugifyBusinessName(name: string): string {
+  // NFC first: a decomposed "å" (a + combining ring, as macOS paste produces)
+  // must become the precomposed character the æ/ø/å folds below match, or the
+  // NFD strip would reduce it to a bare "a".
   const slug = name
+    .normalize("NFC")
     .toLowerCase()
     .replace(/æ/g, "ae")
     .replace(/ø/g, "oe")
@@ -100,8 +104,11 @@ export function shortIdFromBusinessRouteParam(param: string): string | null {
  *   form is canonical).
  * - Demo profile: always its id — outreach links must stay byte-stable, and
  *   demos are noindexed so readable URLs buy nothing.
- * - Row without a shortId (pre-backfill or partial data): its id, which the
+ * - Caller holding a row's id but not its shortId: the id URL, which the
  *   profile route resolves and permanently redirects to the canonical form.
+ * - Row whose shortId is NULL in the database: its id URL is then itself the
+ *   canonical form — no redirect can fire. The migration's backfill UPDATE is
+ *   guarded with "shortId" IS NULL, so re-running it repairs such rows.
  */
 export function businessUrlSegment(b: BusinessUrlParts): string {
   if (b.isDemo || !b.shortId) return b.id;
@@ -114,7 +121,12 @@ export function businessPath(b: BusinessUrlParts): string {
   return `/business/${businessUrlSegment(b)}`;
 }
 
+/** Locale-prefixed relative path, for raw anchors outside the locale-aware Link. */
+export function localeBusinessPath(locale: string, b: BusinessUrlParts): string {
+  return `/${locale}${businessPath(b)}`;
+}
+
 /** The absolute, locale-prefixed address of a business profile. */
 export function businessUrl(locale: string, b: BusinessUrlParts): string {
-  return `${SITE_URL}/${locale}${businessPath(b)}`;
+  return `${SITE_URL}${localeBusinessPath(locale, b)}`;
 }

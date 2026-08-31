@@ -41,6 +41,11 @@ export interface ServiceItem {
 
 interface Business {
   id: string;
+  // URL identity for the "view public profile" preview link; optional because
+  // the value rides in on the full Prisma row, but declared so a future
+  // narrowed select loses the canonical URL visibly instead of silently.
+  shortId?: string | null;
+  isDemo?: boolean;
   userId: string;
   name: string | null;
   description: string | null;

@@ -12,6 +12,9 @@ type Status = "PENDING" | "APPROVED" | "REJECTED";
 
 interface BusinessRow {
   id: string;
+  // URL identity for the admin "open profile" link (see BusinessForm note).
+  shortId?: string | null;
+  isDemo?: boolean;
   name: string | null;
   description: string | null;
   status: Status;

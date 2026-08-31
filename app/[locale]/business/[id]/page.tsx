@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { notFound, permanentRedirect } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -26,7 +27,7 @@ import { buildDisplayLocations } from "@/lib/locations";
 
 export const dynamic = "force-dynamic";
 
-import { businessUrl, businessPath, businessUrlSegment, shortIdFromBusinessRouteParam } from "@/lib/site";
+import { businessUrl, localeBusinessPath, businessUrlSegment, shortIdFromBusinessRouteParam } from "@/lib/site";
 import { safeJsonLdString } from "@/lib/jsonld";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -66,7 +67,7 @@ function avgRatingOf(reviews: { rating: number }[]): number | null {
  * looks like a shortId misses the lookup and falls through. Returns the
  * primary id, or null for the existing hard-404 path.
  */
-async function resolveBusinessId(param: string): Promise<string | null> {
+const resolveBusinessId = cache(async (param: string): Promise<string | null> => {
   const shortId = shortIdFromBusinessRouteParam(param);
   if (shortId) {
     const hit = await prisma.business.findUnique({ where: { shortId }, select: { id: true } });
@@ -74,7 +75,7 @@ async function resolveBusinessId(param: string): Promise<string | null> {
   }
   const exact = await prisma.business.findUnique({ where: { id: param }, select: { id: true } });
   return exact?.id ?? null;
-}
+});
 
 // ─── Metadata ─────────────────────────────────────────────────────────────────
 
@@ -138,8 +139,10 @@ export async function generateMetadata({
 
 export default async function BusinessProfilePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string; locale: string }>;
+  searchParams?: { [key: string]: string | string[] | undefined };
 }) {
   const session        = await auth();
   const { id: routeParam, locale } = await params;
@@ -177,11 +180,21 @@ export default async function BusinessProfilePage({
 
   // One 308 to the canonical URL when the request used any other form — a
   // legacy cuid, a stale name slug, or a bare shortId. Demos never redirect:
-  // their /business/<id> outreach address is permanent. Checked before the
-  // view increment so a redirected request is not counted twice.
+  // their /business/<id> outreach address is permanent (the isDemo check
+  // deliberately restates businessUrlSegment's demo rule as defense in depth —
+  // that helper owns the URL shape, this guard owns "never redirect a demo").
+  // Checked before the view increment so a redirected request is not counted
+  // twice, and the query string is carried over: already-distributed legacy
+  // links hold campaign parameters a bare redirect would destroy.
   const canonicalSegment = businessUrlSegment(business);
   if (!business.isDemo && routeParam !== canonicalSegment) {
-    permanentRedirect(`/${locale}/business/${canonicalSegment}`);
+    const query = new URLSearchParams();
+    for (const [key, value] of Object.entries(searchParams ?? {})) {
+      if (Array.isArray(value)) for (const v of value) query.append(key, v);
+      else if (value != null) query.append(key, value);
+    }
+    const qs = query.toString();
+    permanentRedirect(`/${locale}/business/${canonicalSegment}${qs ? `?${qs}` : ""}`);
   }
 
   // Fire-and-forget view increment — keyed on the resolved primary id, never
@@ -301,7 +314,7 @@ export default async function BusinessProfilePage({
     "@type":     "LocalBusiness",
     name:         business.name        ?? undefined,
     description:  business.description ?? undefined,
-    url:         businessUrl(locale, business),
+    url:         profileUrl,
     telephone:    business.phone       ?? undefined,
     email:        business.email       ?? undefined,
     ...(business.website ? { sameAs: [business.website] } : {}),
@@ -1017,7 +1030,7 @@ function SimilarBusinesses({
                             return (
                               <Link
                                 key={sb.id}
-                                href={`/${locale}${businessPath(sb)}`}
+                                href={localeBusinessPath(locale, sb)}
                                 className="group flex flex-col rounded-2xl border border-gray-200 bg-white shadow-subtle hover:border-gray-300 hover:shadow-soft transition-all duration-200 overflow-hidden"
                               >
                                 {/* Mini cover */}
