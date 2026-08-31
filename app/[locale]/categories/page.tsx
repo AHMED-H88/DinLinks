@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { SITE_URL, SITE_NAME } from "@/lib/site";
+import { SITE_URL, SITE_NAME, localeHreflang } from "@/lib/site";
 import { getTaxonomyTree } from "@/lib/cached-data";
 import { Link } from "@/i18n/routing";
 import { getTranslations } from "next-intl/server";
@@ -22,7 +22,7 @@ export async function generateMetadata({
     // keeps the brand explicitly — the same split every other page uses.
     title: t("metaTitle"),
     description: t("metaDescription"),
-    alternates: { canonical: `/${params.locale}/categories` },
+    alternates: { canonical: `/${params.locale}/categories`, languages: localeHreflang("/categories") },
     openGraph: {
       title: t("ogTitle"),
       description: t("ogDescription"),

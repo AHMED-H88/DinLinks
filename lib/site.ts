@@ -116,6 +116,29 @@ export function businessUrlSegment(b: BusinessUrlParts): string {
   return slug ? `${slug}-${b.shortId}` : b.shortId;
 }
 
+/**
+ * Reciprocal hreflang alternates for a translated page that is indexable in
+ * BOTH locales — the only condition under which a language pair is declared.
+ * `path` is the locale-less route path: "" for the homepage, "/about",
+ * "/categories/mat".
+ *
+ * One Norwegian code everywhere: "no" (the macrolanguage, matching the html
+ * lang attribute and the /no URL prefix; Google accepts ISO 639-1 "no").
+ * English is the generic "en" — no region targeting. Both entries are
+ * absolute canonical 200 URLs built from SITE_URL,each set includes the page
+ * itself, and the paired page emits the identical set. No x-default in this
+ * phase. Never call this for a surface that is noindexed on either side
+ * (search, auth, empty categories, EN business profiles, demos) — HTML
+ * metadata is the single hreflang source; the middleware header alternates
+ * are disabled in i18n/routing.ts.
+ */
+export function localeHreflang(path: string): Record<string, string> {
+  return {
+    no: `${SITE_URL}/no${path}`,
+    en: `${SITE_URL}/en${path}`,
+  };
+}
+
 /** Locale-less path for the locale-aware <Link> from @/i18n/routing. */
 export function businessPath(b: BusinessUrlParts): string {
   return `/business/${businessUrlSegment(b)}`;

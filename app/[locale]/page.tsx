@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { SITE_URL, SITE_NAME } from "@/lib/site";
+import { SITE_URL, SITE_NAME, localeHreflang } from "@/lib/site";
 import { Link } from "@/i18n/routing";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -28,7 +28,7 @@ export async function generateMetadata({
     // the name; the strings are the existing approved layout copy.
     title: { absolute: t("metaTitle") },
     description: t("metaDescription"),
-    alternates: { canonical: `/${params.locale}` },
+    alternates: { canonical: `/${params.locale}`, languages: localeHreflang("") },
     openGraph: {
       title: t("ogTitle"),
       description: t("ogDescription"),

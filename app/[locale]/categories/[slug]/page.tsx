@@ -11,7 +11,7 @@ import BusinessCard from "@/components/BusinessCard";
 import CategorySortBar from "@/components/CategorySortBar";
 import SubcategoryChips from "@/components/SubcategoryChips";
 import { subOrder } from "@/lib/taxonomy-v1";
-import { businessUrl, SITE_URL, SITE_NAME } from "@/lib/site";
+import { businessUrl, SITE_URL, SITE_NAME, localeHreflang } from "@/lib/site";
 import { safeJsonLdString } from "@/lib/jsonld";
 
 // No `force-dynamic`: this page reads `searchParams` (sort / page), which
@@ -73,6 +73,10 @@ export async function generateMetadata({
     },
     alternates: {
       canonical: `/${locale}/categories/${slug}`,
+      // hreflang only while BOTH locale versions are indexable: an empty
+      // category is noindexed (D6), and a language pair must never point at
+      // a noindexed counterpart. Flips on automatically with the count.
+      ...(isEmpty ? {} : { languages: localeHreflang(`/categories/${slug}`) }),
     },
   };
 }
