@@ -29,6 +29,7 @@ export const dynamic = "force-dynamic";
 
 import { businessUrl, localeBusinessPath, businessUrlSegment, shortIdFromBusinessRouteParam } from "@/lib/site";
 import { safeJsonLdString } from "@/lib/jsonld";
+import { buildLocalBusinessJsonLd, buildOpeningHoursSpecification } from "@/lib/structured-data";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -77,6 +78,23 @@ const resolveBusinessId = cache(async (param: string): Promise<string | null> =>
   return exact?.id ?? null;
 });
 
+/**
+ * The one authoritative review aggregate: computed by the database over the
+ * COMPLETE public review set (every stored review is public — the Review
+ * model has no moderation state, and creation is auth-gated and refused for
+ * demos). Cached per request so metadata and the page share one query. The
+ * rendered review list stays capped at the newest 20; "reviews displayed"
+ * and "aggregate over all reviews" are deliberately separate concerns.
+ */
+const getReviewAggregate = cache(async (businessId: string) => {
+  const agg = await prisma.review.aggregate({
+    where:  { businessId },
+    _avg:   { rating: true },
+    _count: { _all: true },
+  });
+  return { average: agg._avg.rating, count: agg._count._all };
+});
+
 // ─── Metadata ─────────────────────────────────────────────────────────────────
 
 export async function generateMetadata({
@@ -91,12 +109,12 @@ export async function generateMetadata({
   const b = businessId
     ? await prisma.business.findUnique({
         where:   { id: businessId, status: "APPROVED" },
-        include: { category: true, reviews: { select: { rating: true } } },
+        include: { category: true },
       })
     : null;
   if (!b) return { title: t("meta.notFound") };
 
-  const rating    = avgRatingOf(b.reviews);
+  const { average: rating } = await getReviewAggregate(b.id);
   const ratingStr = rating ? ` · ${rating.toFixed(1)}⭐` : "";
   // No " | DinLinks" here: the root layout's title template appends it to
   // every page title, and spelling it out again produced
@@ -177,15 +195,19 @@ export default async function BusinessProfilePage({
   const businessId = await resolveBusinessId(routeParam);
   if (!businessId) notFound();
 
-  const business = await prisma.business.findUnique({
-    where:   { id: businessId },
-    include: {
-      category: true,
-      reviews:  { orderBy: { createdAt: "desc" }, take: 20 },
-      branches: { orderBy: [{ isMainBranch: "desc" }, { name: "asc" }] },
-      _count:   { select: { favorites: true } },
-    },
-  });
+  const [business, reviewAggregate] = await Promise.all([
+    prisma.business.findUnique({
+      where:   { id: businessId },
+      include: {
+        category: true,
+        // Newest 20 for DISPLAY only — the aggregate below covers all rows.
+        reviews:  { orderBy: { createdAt: "desc" }, take: 20 },
+        branches: { orderBy: [{ isMainBranch: "desc" }, { name: "asc" }] },
+        _count:   { select: { favorites: true } },
+      },
+    }),
+    getReviewAggregate(businessId),
+  ]);
 
   if (!business || business.status !== "APPROVED") notFound();
 
@@ -248,7 +270,10 @@ export default async function BusinessProfilePage({
   // Business fields) first, then the additional Branch records, de-duplicated.
   const displayLocations = buildDisplayLocations(business, branches);
   const galleryImages = business.images;
-  const avgRating     = avgRatingOf(business.reviews);
+  // Visible rating and count come from the complete-set aggregate — the
+  // display-capped `business.reviews` list must never be their source.
+  const avgRating   = reviewAggregate.average;
+  const reviewCount = reviewAggregate.count;
   // Keyed by canonical English day. `openingHours` is a jsonb column, and
   // Postgres does not preserve the key order it was written in — it stores
   // object keys sorted by length then bytes, which is why the week rendered as
@@ -307,59 +332,39 @@ export default async function BusinessProfilePage({
   const extraReviews   = business.reviews.slice(REVIEW_PREVIEW);
 
   // ── JSON-LD ───────────────────────────────────────────────────────────────
-  // schema.org only recognises the English day names, and it reads the stored
-  // key verbatim — so a record written with Norwegian keys used to emit
-  // `schema.org/Mandag`, which is not a term Google resolves. The normalised
-  // key is used instead, in week order.
-  const openingHoursSpec = weekDays
-    .filter((day) => !orderedHours[day]?.closed)
-    .map((day) => ({
-      "@type":   "OpeningHoursSpecification",
-      dayOfWeek: `https://schema.org/${day.charAt(0).toUpperCase() + day.slice(1)}`,
-      opens:     orderedHours[day]?.open  ?? "09:00",
-      closes:    orderedHours[day]?.close ?? "17:00",
-    }));
-
-  const jsonLd: Record<string, any> = {
-    "@context":  "https://schema.org",
-    "@type":     "LocalBusiness",
-    name:         business.name        ?? undefined,
-    description:  business.description ?? undefined,
-    url:         profileUrl,
-    telephone:    business.phone       ?? undefined,
-    email:        business.email       ?? undefined,
-    ...(business.website ? { sameAs: [business.website] } : {}),
-    ...(business.logo    ? { image:  business.logo }       : {}),
-    address: business.address ? {
-      "@type":        "PostalAddress",
-      streetAddress:   business.address,
-      addressLocality: business.city       ?? undefined,
-      postalCode:      business.postalCode ?? undefined,
-      addressCountry: "NO",
-    } : undefined,
-    ...(openingHoursSpec.length ? { openingHoursSpecification: openingHoursSpec } : {}),
-    ...(avgRating != null ? {
-      aggregateRating: {
-        "@type":      "AggregateRating",
-        ratingValue:   avgRating.toFixed(1),
-        reviewCount:   business.reviews.length,
-        bestRating:   "5",
-        worstRating:  "1",
-      },
-    } : {}),
-    ...(business.latitude && business.longitude ? {
-      geo: { "@type": "GeoCoordinates", latitude: business.latitude, longitude: business.longitude },
-    } : {}),
-  };
+  // LocalBusiness markup is emitted only where it is truthful AND indexable:
+  // the Norwegian profile of a real business (schema eligibility follows the
+  // D2 indexability policy — the noindexed EN shell emits none), and only
+  // when the Google-required name and physical address genuinely exist. A
+  // demo emits none: a fictional company must never be stated as fact to a
+  // search engine. Missing data is omitted, never fabricated — no default
+  // hours, no placeholder address, no invented coordinates — and the
+  // aggregate rating is the same complete-set number the visible page shows.
+  const jsonLd = !business.isDemo && locale === "no"
+    ? buildLocalBusinessJsonLd({
+        name:         business.name,
+        description:  business.description,
+        url:          profileUrl,
+        phone:        business.phone,
+        email:        business.email,
+        website:      business.website,
+        logo:         business.logo,
+        address:      business.address,
+        city:         business.city,
+        postalCode:   business.postalCode,
+        latitude:     business.latitude,
+        longitude:    business.longitude,
+        aggregate:    reviewAggregate,
+        openingHours: buildOpeningHoursSpecification(orderedHours, weekDays),
+      })
+    : null;
 
   // ─────────────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-[#F7F8FA]">
-      {/* LocalBusiness structured data describes a real company at a real
-          address. A demo profile is neither, so it emits none — stating a
-          fictional business as fact to a search engine is the one thing this
-          markup must never do. */}
-      {!business.isDemo && (
+      {/* Null when the markup would be untruthful or the surface is not the
+          indexable NO profile — eligibility is decided where jsonLd is built. */}
+      {jsonLd && (
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: safeJsonLdString(jsonLd) }}
@@ -465,7 +470,7 @@ export default async function BusinessProfilePage({
                           <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                         </svg>
                         <span className="font-semibold text-white/90">{avgRating.toFixed(1)}</span>
-                        <span className="text-white/50">({business.reviews.length})</span>
+                        <span className="text-white/50">({reviewCount})</span>
                       </span>
                     )}
                     {displayLocations.length > 0 && (
@@ -725,7 +730,7 @@ export default async function BusinessProfilePage({
                         </div>
                         <span className="text-sm font-bold text-gray-900">{avgRating.toFixed(1)}</span>
                         <span className="text-sm text-gray-400">
-                          · {business.reviews.length} {t("reviews.reviewPlural")}
+                          · {reviewCount} {t("reviews.reviewPlural")}
                         </span>
                       </div>
                     )}
@@ -747,7 +752,7 @@ export default async function BusinessProfilePage({
                   </div>
                 )}
 
-                {business.reviews.length === 0 ? (
+                {reviewCount === 0 ? (
                   <div className="py-14 text-center rounded-2xl border border-dashed border-gray-200 bg-white">
                     <svg className="w-10 h-10 text-gray-200 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.25}
@@ -765,7 +770,12 @@ export default async function BusinessProfilePage({
                     <ReviewList reviews={previewReviews} locale={locale} />
                     {extraReviews.length > 0 && (
                       <CollapsibleReveal
-                        moreLabel={`${dsc.seeAllReviews} (${business.reviews.length})`}
+                        moreLabel={
+                          // Labels the revealed DISPLAY list (newest 20), so
+                          // its count is the list's length — the complete-set
+                          // reviewCount belongs to the aggregate lines above.
+                          `${dsc.seeAllReviews} (${business.reviews.length})`
+                        }
                         lessLabel={dsc.showLess}
                       >
                         <ReviewList reviews={extraReviews} locale={locale} />
@@ -952,7 +962,7 @@ export default async function BusinessProfilePage({
                     icon={
                       <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                     }
-                    label={`${business.reviews.length} ${business.reviews.length === 1 ? t("reviews.reviewSingular") : t("reviews.reviewPlural")}${avgRating !== null ? ` · ${avgRating.toFixed(1)}/5` : ""}`}
+                    label={`${reviewCount} ${reviewCount === 1 ? t("reviews.reviewSingular") : t("reviews.reviewPlural")}${avgRating !== null ? ` · ${avgRating.toFixed(1)}/5` : ""}`}
                     sub={t("sidebar.genuineRatings")}
                   />
 
