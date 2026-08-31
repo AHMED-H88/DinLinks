@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { SITE_URL, SITE_NAME } from "@/lib/site";
+import { SITE_URL, SITE_NAME, localeHreflang } from "@/lib/site";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useTranslations } from "next-intl";
@@ -26,7 +26,7 @@ export async function generateMetadata({
   return {
     title: t("metaTitle"),
     description: t("metaDescription"),
-    alternates: { canonical: `/${params.locale}/contact` },
+    alternates: { canonical: `/${params.locale}/contact`, languages: localeHreflang("/contact") },
     openGraph: {
       title: t("metaTitle"),
       description: t("metaDescription"),
