@@ -27,7 +27,38 @@ export const SITE_URL = normalize(
 
 export const SITE_NAME = "DinLinks";
 
-/** The public, locale-aware address of a business profile. */
-export function businessUrl(locale: string, id: string): string {
-  return `${SITE_URL}/${locale}/business/${id}`;
+/**
+ * The fields a business URL is built from.
+ *
+ * Only `id` is required: any call site that cannot supply the others still
+ * produces a working URL (the legacy id form, which the profile route resolves
+ * and permanently redirects to the canonical form). `shortId` and `isDemo`
+ * exist on every full Business row; `name` feeds the readable slug.
+ */
+export type BusinessUrlParts = {
+  id: string;
+  name?: string | null;
+  shortId?: string | null;
+  isDemo?: boolean;
+};
+
+/**
+ * The path segment identifying one business under /business/.
+ *
+ * Single source of truth for the public business URL shape — every link,
+ * canonical, Open Graph URL and structured-data URL must go through this (via
+ * businessPath/businessUrl) so the shape can only ever change in one place.
+ */
+export function businessUrlSegment(b: BusinessUrlParts): string {
+  return b.id;
+}
+
+/** Locale-less path for the locale-aware <Link> from @/i18n/routing. */
+export function businessPath(b: BusinessUrlParts): string {
+  return `/business/${businessUrlSegment(b)}`;
+}
+
+/** The absolute, locale-prefixed address of a business profile. */
+export function businessUrl(locale: string, b: BusinessUrlParts): string {
+  return `${SITE_URL}/${locale}${businessPath(b)}`;
 }

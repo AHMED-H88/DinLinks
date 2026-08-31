@@ -1,4 +1,5 @@
 "use client";
+import { businessPath } from "@/lib/site";
 
 import { useState, useTransition, useMemo } from "react";
 import { useRouter } from "next/navigation";
@@ -274,7 +275,7 @@ function DetailPanel({
           {business.status === "APPROVED" && (
             <a
               // Was hard-coded to /en/, so a Norwegian admin opened the English profile.
-              href={`/${locale}/business/${business.id}`}
+              href={`/${locale}${businessPath(business)}`}
               target="_blank"
               rel="noopener noreferrer"
               className="flex-1 btn btn-secondary btn-sm justify-center"

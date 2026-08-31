@@ -26,7 +26,7 @@ import { buildDisplayLocations } from "@/lib/locations";
 
 export const dynamic = "force-dynamic";
 
-import { SITE_URL } from "@/lib/site";
+import { businessUrl, businessPath } from "@/lib/site";
 import { safeJsonLdString } from "@/lib/jsonld";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -91,7 +91,7 @@ export async function generateMetadata({
     description,
     // Locale-prefixed: every public route lives under /[locale], so a bare
     // /business/<id> canonical named a path that only resolves via a redirect.
-    alternates: { canonical: `/${locale}/business/${id}` },
+    alternates: { canonical: businessUrl(locale, b) },
     // Outreach demo profiles are fictional companies. They exist to be opened
     // from a link, never to be found in a search engine, so they are withheld
     // from indexing rather than published as a Norwegian business that does
@@ -100,7 +100,7 @@ export async function generateMetadata({
     openGraph: {
       title, description,
       type: "website",
-      url:  `${SITE_URL}/${locale}/business/${id}`,
+      url:  businessUrl(locale, b),
       siteName: "DinLinks",
       ...(ogImage ? { images: [{ url: ogImage, width: 1200, height: 630, alt: b.name ?? "" }] } : {}),
     },
@@ -201,7 +201,7 @@ export default async function BusinessProfilePage({
   // keys nothing recognises shows no card instead of an empty one.
   const hasHours      = weekDays.length > 0;
   const openNow       = hasHours ? isOpenNow(openingHours) : null;
-  const profileUrl    = `${SITE_URL}/${locale}/business/${id}`;
+  const profileUrl    = businessUrl(locale, business);
 
   // Identity summary — short factual statement shown in the hero, in the
   // page's language. Falls back to nothing (no empty gap) when absent.
@@ -266,7 +266,7 @@ export default async function BusinessProfilePage({
     "@type":     "LocalBusiness",
     name:         business.name        ?? undefined,
     description:  business.description ?? undefined,
-    url:         `${SITE_URL}/${locale}/business/${id}`,
+    url:         businessUrl(locale, business),
     telephone:    business.phone       ?? undefined,
     email:        business.email       ?? undefined,
     ...(business.website ? { sameAs: [business.website] } : {}),
@@ -982,7 +982,7 @@ function SimilarBusinesses({
                             return (
                               <Link
                                 key={sb.id}
-                                href={`/${locale}/business/${sb.id}`}
+                                href={`/${locale}${businessPath(sb)}`}
                                 className="group flex flex-col rounded-2xl border border-gray-200 bg-white shadow-subtle hover:border-gray-300 hover:shadow-soft transition-all duration-200 overflow-hidden"
                               >
                                 {/* Mini cover */}

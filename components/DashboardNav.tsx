@@ -1,4 +1,5 @@
 "use client";
+import { businessPath } from "@/lib/site";
 
 import { Link, usePathname } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
@@ -90,7 +91,7 @@ export default function DashboardNav({ business }: { business: DashboardBusiness
             <DashboardIdentity business={business} categoryLabel={categoryLabel} />
             {business.status === "APPROVED" && (
               <Link
-                href={`/business/${business.id}` as any}
+                href={businessPath(business) as any}
                 className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors"
               >
                 {t("viewPublicProfile")}

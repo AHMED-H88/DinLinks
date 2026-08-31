@@ -145,7 +145,7 @@ export default async function CategoryDetailPage({
       "@type":    "ListItem",
       position:  (page - 1) * PAGE_SIZE + i + 1,
       name:       b.name ?? "",
-      url:       businessUrl(locale, b.id),
+      url:       businessUrl(locale, b),
     })),
   };
 

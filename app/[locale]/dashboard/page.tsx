@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Link } from "@/i18n/routing";
 import { getTranslations } from "next-intl/server";
+import { businessPath } from "@/lib/site";
 import { buildDisplayLocations } from "@/lib/locations";
 import type { Branch } from "@/components/BranchManager";
 
@@ -85,7 +86,7 @@ export default async function DashboardOverviewPage({
           </Link>
           {business.status === "APPROVED" && (
             <Link
-              href={`/business/${business.id}`}
+              href={businessPath(business)}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:border-gray-300 hover:bg-gray-50 transition-colors"
             >
               {t("viewPublicProfile")}

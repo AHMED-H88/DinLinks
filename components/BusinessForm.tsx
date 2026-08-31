@@ -1,4 +1,5 @@
 "use client";
+import { businessPath } from "@/lib/site";
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -1444,7 +1445,7 @@ export default function BusinessForm({ business, categories }: BusinessFormProps
       <div className="flex items-center justify-end gap-2.5 mb-4">
         {isEdit && business.status === "APPROVED" && (
           <a
-            href={`/${locale}/business/${business.id}`}
+            href={`/${locale}${businessPath(business)}`}
             target="_blank"
             rel="noopener noreferrer"
             className="btn btn-secondary btn-sm inline-flex items-center gap-2"
