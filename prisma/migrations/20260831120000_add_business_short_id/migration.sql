@@ -1,0 +1,33 @@
+-- Public URL identity for businesses.
+--
+-- Strictly additive: one new nullable column, a deterministic backfill for
+-- real rows, and a unique index. Nothing is dropped, renamed or retyped, and
+-- no existing data column is modified, so the previous application version
+-- keeps running against this schema unchanged (it never selects the column).
+--
+-- shortId is the immutable key the public business URL resolves from:
+-- /{locale}/business/{name-derived-slug}-{shortId}. The readable slug is
+-- derived from the current name at render time and never stored.
+--
+-- Backfill notes:
+-- - substr(md5(id), 1, 10) is 10 lowercase hex characters — a subset of the
+--   approved [a-z0-9] alphabet — derived from the immutable primary key, so
+--   re-running the statement is idempotent and produces the same values.
+-- - Demo rows are skipped (isDemo = true keeps shortId NULL): their
+--   /business/<id> outreach URLs must never change, and the profile route
+--   never redirects a demo.
+-- - The unique index is created AFTER the backfill: a collision (~16^-10
+--   scale) would fail the migration visibly instead of corrupting silently.
+--   Postgres unique indexes ignore NULLs, so the demo rows cannot conflict.
+--
+-- New rows get a crypto-random [a-z0-9]{10} shortId at creation
+-- (lib/shortid.ts), with a retry on the unique constraint.
+
+-- AlterTable
+ALTER TABLE "businesses" ADD COLUMN     "shortId" TEXT;
+
+-- Backfill real businesses deterministically from their immutable id.
+UPDATE "businesses" SET "shortId" = substr(md5(id), 1, 10) WHERE "isDemo" = false;
+
+-- CreateIndex
+CREATE UNIQUE INDEX "businesses_shortId_key" ON "businesses"("shortId");

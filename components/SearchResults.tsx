@@ -69,6 +69,7 @@ export default async function SearchResults({ searchParams }: SearchResultsProps
         where,
         select: {
           id:         true,
+          shortId:    true,
           name:       true,
           description: true,
           city:       true,
@@ -138,6 +139,7 @@ export default async function SearchResults({ searchParams }: SearchResultsProps
             <BusinessCard
               key={b.id}
               id={b.id}
+              shortId={b.shortId}
               name={b.name ?? ""}
               description={b.description ?? ""}
               category={b.category?.name ?? ""}

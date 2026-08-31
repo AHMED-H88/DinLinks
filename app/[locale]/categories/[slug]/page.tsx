@@ -219,6 +219,7 @@ export default async function CategoryDetailPage({
                     <BusinessCard
                       key={b.id}
                       id={b.id}
+                      shortId={b.shortId}
                       name={b.name ?? ""}
                       description={b.description ?? ""}
                       category={b.category?.name ?? catName}

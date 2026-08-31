@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
@@ -26,7 +26,7 @@ import { buildDisplayLocations } from "@/lib/locations";
 
 export const dynamic = "force-dynamic";
 
-import { businessUrl, businessPath } from "@/lib/site";
+import { businessUrl, businessPath, businessUrlSegment, shortIdFromBusinessRouteParam } from "@/lib/site";
 import { safeJsonLdString } from "@/lib/jsonld";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -57,6 +57,25 @@ function avgRatingOf(reviews: { rating: number }[]): number | null {
   return reviews.reduce((s, r) => s + r.rating, 0) / reviews.length;
 }
 
+/**
+ * Resolve which business a /business/[param] URL identifies.
+ *
+ * Order: shortId first (canonical `slug-shortId`, stale-slug and bare forms),
+ * then exact id (legacy cuids and the demo ids). Every lookup is an exact
+ * unique key, so no input can resolve to the wrong row — a token that merely
+ * looks like a shortId misses the lookup and falls through. Returns the
+ * primary id, or null for the existing hard-404 path.
+ */
+async function resolveBusinessId(param: string): Promise<string | null> {
+  const shortId = shortIdFromBusinessRouteParam(param);
+  if (shortId) {
+    const hit = await prisma.business.findUnique({ where: { shortId }, select: { id: true } });
+    if (hit) return hit.id;
+  }
+  const exact = await prisma.business.findUnique({ where: { id: param }, select: { id: true } });
+  return exact?.id ?? null;
+}
+
 // ─── Metadata ─────────────────────────────────────────────────────────────────
 
 export async function generateMetadata({
@@ -64,13 +83,16 @@ export async function generateMetadata({
 }: {
   params: Promise<{ id: string; locale: string }>;
 }): Promise<Metadata> {
-  const { id, locale } = await params;
+  const { id: routeParam, locale } = await params;
   const t = await getTranslations({ locale, namespace: "profile" });
 
-  const b = await prisma.business.findUnique({
-    where:   { id, status: "APPROVED" },
-    include: { category: true, reviews: { select: { rating: true } } },
-  });
+  const businessId = await resolveBusinessId(routeParam);
+  const b = businessId
+    ? await prisma.business.findUnique({
+        where:   { id: businessId, status: "APPROVED" },
+        include: { category: true, reviews: { select: { rating: true } } },
+      })
+    : null;
   if (!b) return { title: t("meta.notFound") };
 
   const rating    = avgRatingOf(b.reviews);
@@ -120,7 +142,7 @@ export default async function BusinessProfilePage({
   params: Promise<{ id: string; locale: string }>;
 }) {
   const session        = await auth();
-  const { id, locale } = await params;
+  const { id: routeParam, locale } = await params;
   const t = await getTranslations({ locale, namespace: "profile" });
   const tCat = await getTranslations({ locale, namespace: "categories" });
   // Reused for the Why-choose-us highlight labels (same source the owner form edits).
@@ -138,8 +160,11 @@ export default async function BusinessProfilePage({
   const isNo           = locale === "no";
 
   // ── Data ──────────────────────────────────────────────────────────────────
+  const businessId = await resolveBusinessId(routeParam);
+  if (!businessId) notFound();
+
   const business = await prisma.business.findUnique({
-    where:   { id },
+    where:   { id: businessId },
     include: {
       category: true,
       reviews:  { orderBy: { createdAt: "desc" }, take: 20 },
@@ -150,14 +175,24 @@ export default async function BusinessProfilePage({
 
   if (!business || business.status !== "APPROVED") notFound();
 
-  // Fire-and-forget view increment
-  prisma.business.update({ where: { id }, data: { views: { increment: 1 } } }).catch(() => {});
+  // One 308 to the canonical URL when the request used any other form — a
+  // legacy cuid, a stale name slug, or a bare shortId. Demos never redirect:
+  // their /business/<id> outreach address is permanent. Checked before the
+  // view increment so a redirected request is not counted twice.
+  const canonicalSegment = businessUrlSegment(business);
+  if (!business.isDemo && routeParam !== canonicalSegment) {
+    permanentRedirect(`/${locale}/business/${canonicalSegment}`);
+  }
+
+  // Fire-and-forget view increment — keyed on the resolved primary id, never
+  // the route param (a slug-form param would silently miss the row).
+  prisma.business.update({ where: { id: business.id }, data: { views: { increment: 1 } } }).catch(() => {});
 
   // Favourite state
   let isFavorite = false;
   if (session?.user?.id) {
     const fav = await prisma.favorite.findUnique({
-      where: { userId_businessId: { userId: session.user.id, businessId: id } },
+      where: { userId_businessId: { userId: session.user.id, businessId: business.id } },
     });
     isFavorite = !!fav;
   }
@@ -172,7 +207,7 @@ export default async function BusinessProfilePage({
   // so no call site needs a guard.
   const similarBusinesses = business.categoryId && !business.isDemo
     ? await prisma.business.findMany({
-        where:   { categoryId: business.categoryId, id: { not: id }, ...PUBLIC_DISCOVERY_WHERE },
+        where:   { categoryId: business.categoryId, id: { not: business.id }, ...PUBLIC_DISCOVERY_WHERE },
         include: { category: true, reviews: { select: { rating: true } } },
         orderBy: { views: "desc" },
         take:    3,

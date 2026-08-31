@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
+import { generateBusinessShortId } from "@/lib/shortid";
 import { validateBusinessExtras } from "@/lib/business-fields";
 import { validateSelectedSubcategory } from "@/lib/taxonomy-v1";
 
@@ -108,14 +110,30 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid category selection.", code: catCheck.code, field: "categoryId" }, { status: 400 });
     }
 
-    const business = await prisma.business.create({
-      data: {
-        userId: session.user.id,
-        status: "PENDING",
-        ...pickFields(data),
-        ...extras.data,
-      },
-    });
+    // shortId is the immutable public URL identity. Generated server-side only
+    // (it is not in the pickFields whitelist, so a client can never set it) and
+    // retried on the practically-unreachable unique-constraint collision.
+    let business;
+    for (let attempt = 0; ; attempt++) {
+      try {
+        business = await prisma.business.create({
+          data: {
+            userId: session.user.id,
+            status: "PENDING",
+            ...pickFields(data),
+            ...extras.data,
+            shortId: generateBusinessShortId(),
+          },
+        });
+        break;
+      } catch (err) {
+        const isShortIdCollision =
+          err instanceof Prisma.PrismaClientKnownRequestError &&
+          err.code === "P2002" &&
+          String(err.meta?.target ?? "").includes("shortId");
+        if (!isShortIdCollision || attempt >= 4) throw err;
+      }
+    }
 
     return NextResponse.json(business, { status: 201 });
   } catch (err) {
