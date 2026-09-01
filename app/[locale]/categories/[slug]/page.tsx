@@ -14,12 +14,16 @@ import { subOrder } from "@/lib/taxonomy-v1";
 import { businessUrl, SITE_URL, SITE_NAME, localeHreflang } from "@/lib/site";
 import { safeJsonLdString } from "@/lib/jsonld";
 import { buildCategoryItemListJsonLd } from "@/lib/structured-data";
-import { parseCategoryListingQuery, type CategorySort, type RawSearchParams } from "@/lib/category-listing";
+import {
+  parseCategoryListingQuery,
+  categoryTargetIds,
+  CATEGORY_PAGE_SIZE,
+  type CategorySort,
+  type RawSearchParams,
+} from "@/lib/category-listing";
 
 // No `force-dynamic`: this page reads `searchParams` (sort / page), which
 // already forces dynamic rendering. The flag was redundant.
-
-const PAGE_SIZE = 12;
 
 // ── Metadata ──────────────────────────────────────────────────────────────────
 
@@ -46,7 +50,7 @@ export async function generateMetadata({
   if (!category) return { title: t("metaNotFound") };
 
   // Top-level Category counts span its Subcategories; a leaf counts its own.
-  const targetIds = category.children.length > 0 ? category.children.map((c) => c.id) : [category.id];
+  const targetIds = categoryTargetIds(category);
   const count = await prisma.business.count({
     where: { categoryId: { in: targetIds }, ...PUBLIC_DISCOVERY_WHERE },
   });
@@ -59,7 +63,7 @@ export async function generateMetadata({
   // must not assert a self-canonical and hreflang pair for a page that does
   // not exist, so metadata collapses to the not-found title on the same
   // range rule.
-  if (listing.page > 1 && listing.page > Math.ceil(count / PAGE_SIZE)) {
+  if (listing.page > 1 && listing.page > Math.ceil(count / CATEGORY_PAGE_SIZE)) {
     return { title: t("metaNotFound") };
   }
 
@@ -176,7 +180,7 @@ export default async function CategoryDetailPage({
   // A top-level Category shows businesses across its Subcategories; a leaf (a
   // Subcategory, or a not-yet-migrated flat row) shows its own businesses.
   const isTopLevel = category.parentId === null && category.children.length > 0;
-  const targetIds = category.children.length > 0 ? category.children.map((c) => c.id) : [category.id];
+  const targetIds = categoryTargetIds(category);
   const subcategories = [...category.children]
     .map((c) => ({ id: c.id, name: tCat.has(c.slug) ? tCat(c.slug) : c.name, slug: c.slug }))
     .sort((a, b) => subOrder(a.slug) - subOrder(b.slug));
@@ -199,7 +203,7 @@ export default async function CategoryDetailPage({
       : Promise.resolve([]),
   ]);
 
-  const totalPages = Math.ceil(total / PAGE_SIZE);
+  const totalPages = Math.ceil(total / CATEGORY_PAGE_SIZE);
 
   // Beyond the real range → hard 404. Page 1 stays reachable even at zero
   // inventory: the D6 empty-category page is a valid (noindexed) URL, but
@@ -217,8 +221,8 @@ export default async function CategoryDetailPage({
       _count:   { select: { branches: true } },
     },
     orderBy: buildOrderBy(sort),
-    skip:  (page - 1) * PAGE_SIZE,
-    take:  PAGE_SIZE,
+    skip:  (page - 1) * CATEGORY_PAGE_SIZE,
+    take:  CATEGORY_PAGE_SIZE,
   });
 
   // Chips render only Subcategories that hold at least one discoverable

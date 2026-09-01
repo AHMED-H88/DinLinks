@@ -1,6 +1,11 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { parseCategoryListingQuery } from "../lib/category-listing";
+import {
+  parseCategoryListingQuery,
+  categoryTargetIds,
+  canonicalCategorySearch,
+  CATEGORY_PAGE_SIZE,
+} from "../lib/category-listing";
 
 // ── Valid canonical forms: no redirect ───────────────────────────────────────
 
@@ -85,4 +90,35 @@ test("safe very deep pages parse exactly", () => {
   assert.equal(q.page, 999999999999999);
   assert.equal(Number.isSafeInteger(q.page), true);
   assert.equal(q.canonicalSearch, "?page=999999999999999");
+});
+
+// ── Shared category invariants (PR-6 extractions) ────────────────────────────
+
+test("CATEGORY_PAGE_SIZE is exactly the shipped page size", () => {
+  assert.equal(CATEGORY_PAGE_SIZE, 12);
+});
+
+test("categoryTargetIds: a leaf category targets only itself", () => {
+  assert.deepEqual(categoryTargetIds({ id: "leaf1", children: [] }), ["leaf1"]);
+});
+
+test("categoryTargetIds: a parent with children targets the children only", () => {
+  assert.deepEqual(
+    categoryTargetIds({ id: "top1", children: [{ id: "sub1" }, { id: "sub2" }] }),
+    ["sub1", "sub2"],
+  );
+});
+
+test("categoryTargetIds: the parent id is never silently added beside children", () => {
+  const ids = categoryTargetIds({ id: "top1", children: [{ id: "sub1" }] });
+  assert.equal(ids.includes("top1"), false);
+  assert.deepEqual(ids, ["sub1"]);
+});
+
+test("canonicalCategorySearch: bare for page 1, ?page=N for 2+, and the parser agrees", () => {
+  assert.equal(canonicalCategorySearch(1), "");
+  assert.equal(canonicalCategorySearch(2), "?page=2");
+  assert.equal(canonicalCategorySearch(7), "?page=7");
+  assert.equal(parseCategoryListingQuery({})!.canonicalSearch, canonicalCategorySearch(1));
+  assert.equal(parseCategoryListingQuery({ page: "3" })!.canonicalSearch, canonicalCategorySearch(3));
 });

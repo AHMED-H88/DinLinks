@@ -22,6 +22,43 @@
 export const CATEGORY_SORTS = ["popular", "reviewed", "newest", "alpha"] as const;
 export type CategorySort = (typeof CATEGORY_SORTS)[number];
 
+/**
+ * The one category page size. The category page's pagination and the sitemap's
+ * page-count expansion must agree on this number, or a URL one of them
+ * advertises could 404 on the other's math — so it lives here, next to the
+ * canonical-form rules both consume.
+ */
+export const CATEGORY_PAGE_SIZE = 12;
+
+/**
+ * The businesses a category page counts and lists: its children's ids when it
+ * has children (a top-level Category spans its Subcategories), otherwise its
+ * own id (a leaf counts itself). A business attached directly to a top level
+ * that HAS children is deliberately not counted — the final data model
+ * requires every business to live in a Subcategory.
+ *
+ * This is the ONE population rule shared by the category page and the sitemap
+ * (D6: the same count that flips a category's noindex decides its sitemap
+ * membership) — never the divergent count sources in lib/cached-data.ts.
+ */
+export function categoryTargetIds(category: {
+  id: string;
+  children: readonly { id: string }[];
+}): string[] {
+  return category.children.length > 0
+    ? category.children.map((c) => c.id)
+    : [category.id];
+}
+
+/**
+ * Canonical search suffix for a category page number: "" for page 1 (the bare
+ * URL), `?page=N` for 2+, never a sort. Shared by the parser below and the
+ * sitemap so an advertised pagination URL is always the canonical form.
+ */
+export function canonicalCategorySearch(page: number): string {
+  return page > 1 ? `?page=${page}` : "";
+}
+
 export type RawSearchParams = { [key: string]: string | string[] | undefined };
 
 export type CategoryListingQuery = {
@@ -89,7 +126,7 @@ export function parseCategoryListingQuery(
     page,
     sort,
     isSorted: sort !== "popular",
-    canonicalSearch: page > 1 ? `?page=${page}` : "",
+    canonicalSearch: canonicalCategorySearch(page),
     redirectSearch,
   };
 }
