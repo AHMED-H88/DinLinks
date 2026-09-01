@@ -36,6 +36,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       select: { id: true, slug: true, children: { select: { id: true } } },
       orderBy: { slug: "asc" },
     }),
+    // Only what eligibility (the where), category counting (categoryId), and
+    // canonical URL construction (id/name/shortId/isDemo) need. Deliberately
+    // NOT updatedAt: it is @updatedAt and the profile page's view counter
+    // bumps it on ordinary visits, so it cannot honestly feed a sitemap
+    // lastModified — none is emitted (see lib/sitemap-entries.ts).
     prisma.business.findMany({
       where: PUBLIC_DISCOVERY_WHERE,
       select: {
@@ -43,7 +48,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         name: true,
         shortId: true,
         isDemo: true,
-        updatedAt: true,
         categoryId: true,
       },
       orderBy: { id: "asc" },

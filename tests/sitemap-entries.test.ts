@@ -124,7 +124,6 @@ const businessRow = {
   name: "Bakst & Bønner",
   shortId: "a1b2c3d4e5",
   isDemo: false,
-  updatedAt: new Date("2026-08-30T12:00:00Z"),
 };
 
 test("an eligible business gets exactly its NO canonical businessUrl(), nothing hand-built", () => {
@@ -139,11 +138,6 @@ test("no EN business URL is ever emitted (D2)", () => {
     assert.equal(e.url.includes("/en/"), false);
     assert.equal(e.url.startsWith(`${SITE_URL}/no/business/`), true);
   }
-});
-
-test("the stored updatedAt is preserved as lastModified", () => {
-  const [entry] = buildBusinessEntries([businessRow]);
-  assert.equal(entry.lastModified, businessRow.updatedAt);
 });
 
 test("a NULL-shortId row advertises its id URL — that row's actual canonical", () => {
@@ -166,9 +160,16 @@ test("no entry carries alternates, changeFrequency, or priority", () => {
   }
 });
 
-test("lastModified exists on business entries only", () => {
+test("no entry carries lastModified — business, static, or category", () => {
+  // Regression for the PR #39 review finding: Business.updatedAt is
+  // @updatedAt and the profile page's view counter bumps it on ordinary
+  // visits, so it must never feed a sitemap lastModified. Until a field
+  // exists that means "public profile content changed", the ENTIRE sitemap
+  // emits zero lastModified.
+  for (const e of buildBusinessEntries([businessRow, { ...businessRow, id: "z2", shortId: "zzzzzzzzz9" }]))
+    assert.equal("lastModified" in e, false);
   for (const e of buildStaticEntries([...LOCALES])) assert.equal("lastModified" in e, false);
-  for (const e of buildCategoryEntries([{ slug: "mat", count: 5 }], [...LOCALES]))
+  for (const e of buildCategoryEntries([{ slug: "mat", count: 25 }], [...LOCALES]))
     assert.equal("lastModified" in e, false);
 });
 

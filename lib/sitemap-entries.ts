@@ -18,9 +18,13 @@ import {
  * hreflang annotations (no alternates, no xhtml:link): PR-3 made HTML
  * metadata the single authoritative hreflang system, and a second emitter
  * would be a second system to keep truthful. Each eligible localized URL is
- * simply its own entry. No changeFrequency and no priority anywhere — both
- * would be guessed values; lastModified only where a truthful stored
- * timestamp exists (Business.updatedAt).
+ * simply its own entry. No changeFrequency, no priority, and no lastModified
+ * anywhere — the first two would be guessed values, and DinLinks deliberately
+ * omits sitemap lastModified until there is a timestamp that represents
+ * meaningful public-page content changes rather than incidental Business row
+ * writes: Business.updatedAt is @updatedAt, and the profile page's view
+ * counter bumps it on ordinary visits, so it would claim "content changed"
+ * for URLs whose content did not. Absence is better than a misleading signal.
  */
 
 /**
@@ -115,7 +119,7 @@ export function buildCategoryEntries(
 }
 
 /** A business row as the sitemap query selects it. */
-export type SitemapBusiness = BusinessUrlParts & { updatedAt: Date };
+export type SitemapBusiness = BusinessUrlParts;
 
 /**
  * One entry per discoverable business — the caller's query is
@@ -123,13 +127,13 @@ export type SitemapBusiness = BusinessUrlParts & { updatedAt: Date };
  * construction. Norwegian URL only (D2: /en/business/* is noindexed and stays
  * out), in canonical form via businessUrl() — never hand-built, so a row with
  * a NULL shortId advertises its id URL, which for such a row IS the
- * canonical. lastModified is the stored updatedAt — real data, not a guess.
+ * canonical. Deliberately no lastModified — see the module comment: no stored
+ * field yet means "public profile content changed", and updatedAt does not.
  */
 export function buildBusinessEntries(
   businesses: readonly SitemapBusiness[],
 ): MetadataRoute.Sitemap {
   return businesses.map((b) => ({
     url: businessUrl("no", b),
-    lastModified: b.updatedAt,
   }));
 }
