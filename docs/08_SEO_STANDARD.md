@@ -43,7 +43,7 @@ Rules:
 - Every public canonical URL, Open Graph URL, structured-data URL, and sitemap URL is built from the central site URL helper (`SITE_URL` and the URL helper family in `lib/site.ts`).
 - Public canonical URLs must never be derived from authentication configuration (`NEXTAUTH_URL` is an auth setting, not the public origin).
 - The unprefixed root `/` performs locale negotiation with a temporary redirect. It is not itself a canonical indexable page, and it never appears in the sitemap.
-- Every public page lives under a locale prefix: `/no` (default) or `/en`.
+- Every public HTML/content route governed by locale routing lives under `/no` (default) or `/en`. Root metadata endpoints such as `/robots.txt` and `/sitemap.xml` are intentional non-localized exceptions.
 
 ---
 
@@ -58,6 +58,10 @@ Identity:
 - Identity is the immutable `Business.shortId`: 10 lowercase alphanumeric characters, unique in the database, generated server-side at creation, never settable through any API or form.
 - The readable slug is derived from the CURRENT business name at render time. It is presentation only. It is never persisted, and there is no slug history.
 - A business whose name yields no slug canonicalizes to the bare shortId form.
+
+Fail-safe for an exceptional data state:
+
+- Normal real businesses must carry their immutable shortId. If an unexpected real row has `shortId` NULL, the shared URL helper falls back to the exact id URL as that row's canonical form — no shortId redirect can be produced — until the data is repaired. Callers must not fabricate or hand-build a replacement identity. This fallback is defensive behavior, not part of the normal architecture. (Demos are different: they always use their stable id URLs intentionally.)
 
 Slug derivation (in `lib/site.ts`):
 
@@ -97,7 +101,7 @@ Demos:
 - canonical default-sort category pagination pages (`?page=N`, page 2+);
 - real APPROVED Norwegian business profiles.
 
-Every indexable page carries unique localized metadata and a self-canonical.
+Every indexable page carries appropriate localized metadata and a self-canonical. Canonical pagination identity is represented by the URL and the self-canonical (and the same-page hreflang pair) even where the collection's title and description are shared across its pages.
 
 ## Crawlable but noindex
 
@@ -361,7 +365,7 @@ Before a real business becomes public and indexable, verify:
 
 - it is a real, non-demo business;
 - status is APPROVED;
-- the canonical shortId architecture is valid for the row;
+- the canonical shortId architecture is valid for the row — a newly published normal real business carries its immutable shortId (the id-URL fallback in Section C is repair territory, not a publishing path);
 - the canonical NO URL resolves correctly;
 - EN follows D2;
 - every fact shown or schema-marked is truthful;
@@ -426,7 +430,7 @@ Re-verify:
 - legacy, bare-shortId, and stale-slug forms issue one-hop permanent redirects;
 - NO profile is indexable; EN profile is `noindex, follow`;
 - the business's category flips to indexable when it qualifies;
-- LocalBusiness markup is truthful (name and address present; hours, aggregate, and geo match stored values);
+- if a genuine name AND physical street address exist, LocalBusiness markup is emitted and every optional field (hours, aggregate, geo) matches stored, visible truth; otherwise, verify LocalBusiness markup is omitted;
 - the business enters the sitemap as its NO canonical URL only.
 
 ## First category reaching 13+ publicly discoverable businesses
